@@ -1,4 +1,5 @@
-This is a WIP implementation of Trello like drag and drop for Svelte using a custom action
+This is a WIP implementation of Trello like drag and drop for Svelte using a custom action.
+For examples please see [here](https://github.com/isaacHagoel/svelte-dnd-action-examples)
 
 TODO
 

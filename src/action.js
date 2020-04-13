@@ -9,6 +9,9 @@ let shadowElData;
 let shadowElDropZone;
 let originalPosition;
 let typeToDropZones = new Map();
+// important - this is needed because otherwise the config that would be used for everyone is the config of the element that created the event listeners
+let dzToConfig = new Map();
+
 function registerDropZone(dropZoneEl, type) {
     console.log('registering dropzone if absent')
     if (!typeToDropZones.has(type)) {
@@ -23,6 +26,36 @@ function unregisterDropZone(dropZoneEl, type) {
     if (typeToDropZones.get(type).size === 0) {
         typeToDropZones.delete(type);
     }
+}
+
+function handleDraggedEntered(e) {
+    console.log('dragged entered', e.target, e.detail);
+    shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
+    // TODO - it should sometimes added to the beginning and sometimes to the end. add
+    const {items} = dzToConfig.get(e.target);
+    console.warn("dragged entered items", items);
+    shadowElIdx = event.detail.index;
+    shadowElDropZone = e.target;
+    items.splice( shadowElIdx, 0, shadowElData);
+    dispatchConsiderEvent(e.target, items);
+}
+function handleDraggedLeft(e) {
+    console.log('dragged left', e.target, e.detail);
+    const {items} = dzToConfig.get(e.target);
+    // TODO - do we want it to leave or jump to its original position instead?
+    items.splice(shadowElIdx, 1);
+    shadowElIdx = undefined;
+    shadowElDropZone = undefined;
+    dispatchConsiderEvent(e.target, items); 
+}
+function handleDraggedIsOverIndex(e) {
+    console.log('dragged is over index', e.target, e.detail);
+    const {items} = dzToConfig.get(e.target);
+    const {index} = e.detail;
+    items.splice(shadowElIdx, 1);
+    items.splice( index, 0, shadowElData);
+    shadowElIdx = index;
+    dispatchConsiderEvent(e.target, items);
 }
 
 export function dndzone(node, options) {
@@ -50,7 +83,7 @@ export function dndzone(node, options) {
         
         // it was dropped in a drop-zone
         if (!!shadowElDropZone) {
-            let {items} = config;
+            let {items} = dzToConfig.get(shadowElDropZone);
             items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
             dispatchFinalizeEvent(shadowElDropZone, items);
             draggedEl.remove();
@@ -83,48 +116,13 @@ export function dndzone(node, options) {
         document.body.appendChild(draggedEl);
         items.splice( currentIdx, 1);
         dispatchConsiderEvent(e.target.parentNode, items);
-
-        // TODO - what will happen to its styles when I do this? will it mess up its css?
-        //const indexOfDragged = elToIdx.get(e.target);
-       
-
-        ///
-        
+        // TODO - what will happen to its styles when I do this? will it mess up its css?   
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleDrop);
         window.addEventListener('mouseleave', handleDrop);
         watchDraggedElement();
     }
     //////////
-    function handleDraggedEntered(e) {
-        console.log('dragged entered', e.target, e.detail);
-        shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
-        // TODO - it should sometimes added to the beginning and sometimes to the end. add
-        const {items} = config;
-        console.warn("dragged entered items", items);
-        shadowElIdx = event.detail.index;
-        shadowElDropZone = e.target;
-        items.splice( shadowElIdx, 0, shadowElData);
-        dispatchConsiderEvent(e.target, items);
-    }
-    function handleDraggedLeft(e) {
-        console.log('dragged left', e.target, e.detail);
-        const {items} = config;
-        // TODO - do we want it to leave or jump to its original position instead?
-        items.splice(shadowElIdx, 1);
-        shadowElIdx = undefined;
-        shadowElDropZone = undefined;
-        dispatchConsiderEvent(e.target, items); 
-    }
-    function handleDraggedIsOverIndex(e) {
-        console.log('dragged is over index', e.target, e.detail);
-        const {items} = config;
-        const {index} = e.detail;
-        items.splice(shadowElIdx, 1);
-        items.splice( index, 0, shadowElData);
-        shadowElIdx = index;
-        dispatchConsiderEvent(e.target, items);
-    }
     function watchDraggedElement() {
         const {type} = config;
         console.log('type', type);
@@ -158,6 +156,7 @@ export function dndzone(node, options) {
         registerDropZone(node, newType);
 
         config.items = opts.items || []; 
+        dzToConfig.set(node, config);
         for (let idx=0; idx< node.childNodes.length; idx++) {
             const draggableEl = node.childNodes[idx];
             // making it the placeholder element
@@ -187,6 +186,7 @@ export function dndzone(node, options) {
         destroy: () => {
             console.log("dndzone will destroy");
             unregisterDropZone(node, config.type);
+            dzToConfig.delete(node);
             // TODO - do we need to call unobserve?
         }
     });

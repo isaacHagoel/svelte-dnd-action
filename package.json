@@ -1,0 +1,50 @@
+{
+  "name": "svelte-dnd-action",
+  "svelte": "src/index.js",
+  "module": "dist/index.mjs",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^6.0.0",
+    "rollup": "^1.20.0",
+    "rollup-plugin-svelte": "^5.0.0",
+    "svelte": "^3.0.0"
+  },
+  "keywords": [
+    "svelte",
+    "drag and drop",
+    "sortable",
+    "dnd",
+    "draggable"
+  ],
+  "files": [
+    "src",
+    "dist"
+  ],
+  "description": "*Psst — looking for an app template? Go here --> [sveltejs/template](https://github.com/sveltejs/template)*",
+  "version": "0.1.0",
+  "dependencies": {
+    "is-module": "^1.0.0",
+    "path-parse": "^1.0.6",
+    "estree-walker": "^0.6.1",
+    "acorn": "^7.1.1",
+    "rollup-pluginutils": "^2.8.2",
+    "builtin-modules": "^3.1.0",
+    "require-relative": "^0.8.7",
+    "resolve": "^1.15.1",
+    "sourcemap-codec": "^1.4.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isaacHagoel/svelte-dnd-action.git"
+  },
+  "author": "Isaac Hagoel",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/isaacHagoel/svelte-dnd-action/issues"
+  },
+  "homepage": "https://github.com/isaacHagoel/svelte-dnd-action#readme"
+}

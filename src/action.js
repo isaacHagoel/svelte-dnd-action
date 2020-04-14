@@ -111,6 +111,10 @@ export function dndzone(node, options) {
         draggedEl.style.position = "fixed";
         draggedEl.style.top = `${rect.top}px`;
         draggedEl.style.left = `${rect.left}px`;
+        // we can't have relative or automatic height and width or it will break the illusion
+        draggedEl.style.height = `${rect.height}px`;
+        draggedEl.style.width = `${rect.width}px`;
+        draggedEl.style.transition = 'width 0.2s ease, height 0.2s ease';
         draggedEl.style.zIndex = 9999;
         // taking the child out
         document.body.appendChild(draggedEl);
@@ -161,6 +165,13 @@ export function dndzone(node, options) {
             const draggableEl = node.childNodes[idx];
             // making it the placeholder element
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
+                // maybe there is a better place for resizing the dragged
+                //draggedEl.style = draggableEl.style; // should i clone?
+                const rect = draggableEl.getBoundingClientRect();
+                draggedEl.style.height = `${rect.height}px`;
+                draggedEl.style.width = `${rect.width}px`;
+                // TODO - set more css properties to compelete the illusion
+                //////
                 draggableEl.style.visibility = "hidden";
                 continue;
             }

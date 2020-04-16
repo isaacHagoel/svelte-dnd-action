@@ -1,8 +1,15 @@
 import { isCentreOfAInsideB, calcDistanceBetweenCenters } from './intersection';
+
+/**
+ * @typedef {Object} Index
+ * @property {number} index - the would be index
+ * @property {boolean} isProximityBased - false if the element is actually over the index, true if it is not over it but this index is the closest
+ */
 /**
  * 
  * @param {HTMLElement} floatingAboveEl 
  * @param {HTMLElement} collectionBelowEl 
+ * @returns {Index | null} -  if the element is over the container the Index object otherwise null 
  */
 export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     if (!isCentreOfAInsideB(floatingAboveEl, collectionBelowEl)) {
@@ -11,13 +18,13 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     const children = collectionBelowEl.childNodes;
     // the container is empty, floating element should be the first 
     if (children.length === 0) {
-        return 0;
+        return {index: 0, isProximityBased: true};
     }
     // the search could be more efficient but keeping it simple for now
     // a possible improvement: pass in the lastIndex it was found in and check there first, then expand from there
     for (let i=0; i< children.length; i++) {
         if (isCentreOfAInsideB(floatingAboveEl, children[i])) {
-            return i;
+            return {index: i, isProximityBased: false};
         }
     }
     // this can happen if there is space around the children so the floating element has 
@@ -32,5 +39,5 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
             indexOfMin = i;
         }
     }
-    return indexOfMin;
+    return {index: indexOfMin, isProximityBased: true};
 }

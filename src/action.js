@@ -30,11 +30,10 @@ function unregisterDropZone(dropZoneEl, type) {
 
 function handleDraggedEntered(e) {
     console.log('dragged entered', e.target, e.detail);
-    shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
-    // TODO - it should sometimes added to the beginning and sometimes to the end. add
     const {items} = dzToConfig.get(e.target);
     console.warn("dragged entered items", items);
-    shadowElIdx = event.detail.index;
+    const {index, isProximityBased} = event.detail.indexObj; 
+    shadowElIdx = isProximityBased && index === e.target.childNodes.length - 1? index + 1 : index;
     shadowElDropZone = e.target;
     items.splice( shadowElIdx, 0, shadowElData);
     dispatchConsiderEvent(e.target, items);
@@ -51,7 +50,7 @@ function handleDraggedLeft(e) {
 function handleDraggedIsOverIndex(e) {
     console.log('dragged is over index', e.target, e.detail);
     const {items} = dzToConfig.get(e.target);
-    const {index} = e.detail;
+    const {index, isProximityBased} = event.detail.indexObj; 
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     shadowElIdx = index;
@@ -105,6 +104,7 @@ export function dndzone(node, options) {
         draggedEl = e.target.cloneNode(true);
         const currentIdx = elToIdx.get(e.target);
         draggedElData = items[currentIdx]; 
+        shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
         originalPosition = {x: e.clientX, y:e.clientY};
         // TODO - should I backup original attributes? probably not
         const rect = e.target.getBoundingClientRect();

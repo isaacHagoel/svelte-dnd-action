@@ -21,22 +21,23 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false
         for (const dz of dropZones) {
-            const wouldBeIndex = findWouldBeIndex(draggedEl, dz); 
-            if (wouldBeIndex === null) {
+            const indexObj = findWouldBeIndex(draggedEl, dz); 
+            if (indexObj === null) {
                // it is not inside 
                continue;     
             }
+            const {index, isProximityBased} = indexObj;
             isDraggedInADropZone = true;
             // the element is over a container
             if (dz !== lastDropZoneFound) {
                 lastDropZoneFound && dispatchDraggedElementLeftContainer(lastDropZoneFound, draggedEl);
-                dispatchDraggedElementEnteredContainer(dz, wouldBeIndex, draggedEl);
+                dispatchDraggedElementEnteredContainer(dz, indexObj, draggedEl);
                 lastDropZoneFound = dz;
-                lastIndexFound = wouldBeIndex;
+                lastIndexFound = index;
             }
-            else if (wouldBeIndex !== lastIndexFound) {
-                dispatchDraggedElementIsOverIndex(dz, wouldBeIndex, draggedEl);
-                lastIndexFound = wouldBeIndex;
+            else if (index !== lastIndexFound) {
+                dispatchDraggedElementIsOverIndex(dz, indexObj, draggedEl);
+                lastIndexFound = index;
             }
             // we handle looping with the 'continue' statement above
             break;

@@ -4,10 +4,12 @@ const DEFAULT_DROP_ZONE_TYPE = '--any--';
 
 let draggedEl;
 let draggedElData;
+let originDropZone;
+let originIndex;
 let shadowElIdx;
 let shadowElData;
 let shadowElDropZone;
-let originalPosition;
+let dragStartMouselPosition;
 let typeToDropZones = new Map();
 // important - this is needed because otherwise the config that would be used for everyone is the config of the element that created the event listeners
 let dzToConfig = new Map();
@@ -68,34 +70,41 @@ export function dndzone(node, options) {
         }
         // TODO - add another visual queue like a border or increased scale and shadow	
         // TODO - is it better to update its top and left instead?	
-        draggedEl.style.transform = `translate3d(${e.clientX - originalPosition.x}px, ${e.clientY-originalPosition.y}px, 0)`;
+        draggedEl.style.transform = `translate3d(${e.clientX - dragStartMouselPosition.x}px, ${e.clientY-dragStartMouselPosition.y}px, 0)`;
     }
     function handleDrop(e) {
         console.log('dropped', e.target);
         // cleanup
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleDrop);
-        window.removeEventListener('mouseleave', handleDrop);
+        document.body.removeEventListener('mouseleave', handleDrop);
         unWatchDraggedElement();
         // it might not be dropped over anything we care about - in that case it needs to return to its original place (animate)
         // raise the finalize event
         
         // it was dropped in a drop-zone
         if (!!shadowElDropZone) {
+            console.log('dropped in dz', shadowElDropZone);
             let {items} = dzToConfig.get(shadowElDropZone);
             items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
             dispatchFinalizeEvent(shadowElDropZone, items);
             draggedEl.remove();
         }
         else { // it needs to return to its place
-            // TODO - HERE
-        }
+            console.log('no dz available');
+            let {items} = dzToConfig.get(originDropZone);
+            items.splice(originIndex, 0, draggedElData);
+            dispatchFinalizeEvent(originDropZone, items);
+            draggedEl.remove();
+         }
 
         draggedEl = undefined;
         draggedElData = undefined;
+        originDropZone = undefined;
+        originIndex = undefined;
         shadowElData = undefined;
         shadowElIdx = undefined;
-        originalPosition = undefined;
+        dragStartMouselPosition = undefined;
 
     }
     function handleDragStart(e) {
@@ -103,9 +112,11 @@ export function dndzone(node, options) {
         const {items} = config;
         draggedEl = e.target.cloneNode(true);
         const currentIdx = elToIdx.get(e.target);
+        originIndex = currentIdx;
+        originDropZone = e.target.parentNode;
         draggedElData = items[currentIdx]; 
         shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
-        originalPosition = {x: e.clientX, y:e.clientY};
+        dragStartMouselPosition = {x: e.clientX, y:e.clientY};
         // TODO - should I backup original attributes? probably not
         const rect = e.target.getBoundingClientRect();
         draggedEl.style.position = "fixed";
@@ -123,7 +134,7 @@ export function dndzone(node, options) {
         // TODO - what will happen to its styles when I do this? will it mess up its css?   
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleDrop);
-        window.addEventListener('mouseleave', handleDrop);
+        document.body.addEventListener('mouseleave', handleDrop);
         watchDraggedElement();
     }
     //////////

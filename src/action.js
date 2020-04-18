@@ -9,7 +9,7 @@ let originIndex;
 let shadowElIdx;
 let shadowElData;
 let shadowElDropZone;
-let dragStartMouselPosition;
+let dragStartMousePosition;
 let typeToDropZones = new Map();
 // important - this is needed because otherwise the config that would be used for everyone is the config of the element that created the event listeners
 let dzToConfig = new Map();
@@ -52,17 +52,17 @@ function handleDraggedLeft(e) {
 function handleDraggedIsOverIndex(e) {
     console.log('dragged is over index', e.target, e.detail);
     const {items} = dzToConfig.get(e.target);
-    const {index, isProximityBased} = event.detail.indexObj; 
+    const {index} = event.detail.indexObj;
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     shadowElIdx = index;
-    dispatchConsiderEvent(e.target, items);
+    dispatchConsiderEvent(e.target, items);///
 }
 
 export function dndzone(node, options) {
     const config =  {items: [], type: DEFAULT_DROP_ZONE_TYPE};
     console.log("dndzone good to go", {node, options, config});
-    let elToIdx = new Map();;
+    let elToIdx = new Map();
 
     function handleMouseMove(e) {
         if (!draggedEl) {
@@ -70,7 +70,7 @@ export function dndzone(node, options) {
         }
         // TODO - add another visual queue like a border or increased scale and shadow	
         // TODO - is it better to update its top and left instead?	
-        draggedEl.style.transform = `translate3d(${e.clientX - dragStartMouselPosition.x}px, ${e.clientY-dragStartMouselPosition.y}px, 0)`;
+        draggedEl.style.transform = `translate3d(${e.clientX - dragStartMousePosition.x}px, ${e.clientY-dragStartMousePosition.y}px, 0)`;
     }
     function handleDrop(e) {
         console.log('dropped', e.target);
@@ -104,7 +104,7 @@ export function dndzone(node, options) {
         originIndex = undefined;
         shadowElData = undefined;
         shadowElIdx = undefined;
-        dragStartMouselPosition = undefined;
+        dragStartMousePosition = undefined;
 
     }
     function handleDragStart(e) {
@@ -116,7 +116,7 @@ export function dndzone(node, options) {
         originDropZone = e.target.parentNode;
         draggedElData = items[currentIdx]; 
         shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
-        dragStartMouselPosition = {x: e.clientX, y:e.clientY};
+        dragStartMousePosition = {x: e.clientX, y:e.clientY};
         // TODO - should I backup original attributes? probably not
         const rect = e.target.getBoundingClientRect();
         draggedEl.style.position = "fixed";

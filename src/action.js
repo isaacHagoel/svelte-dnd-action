@@ -47,7 +47,7 @@ function handleDraggedLeft(e) {
     items.splice(shadowElIdx, 1);
     shadowElIdx = undefined;
     shadowElDropZone = undefined;
-    dispatchConsiderEvent(e.target, items); 
+    dispatchConsiderEvent(e.target, items);
 }
 function handleDraggedIsOverIndex(e) {
     console.log('dragged is over index', e.target, e.detail);
@@ -68,8 +68,7 @@ export function dndzone(node, options) {
         if (!draggedEl) {
             return;
         }
-        // TODO - add another visual queue like a border or increased scale and shadow	
-        // TODO - is it better to update its top and left instead?	
+        // TODO - add another visual queue like a border or increased scale and shadow
         draggedEl.style.transform = `translate3d(${e.clientX - dragStartMousePosition.x}px, ${e.clientY-dragStartMousePosition.y}px, 0)`;
     }
     function handleDrop(e) {
@@ -87,17 +86,41 @@ export function dndzone(node, options) {
             console.log('dropped in dz', shadowElDropZone);
             let {items} = dzToConfig.get(shadowElDropZone);
             items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
-            dispatchFinalizeEvent(shadowElDropZone, items);
-            draggedEl.remove();
+            function finalizeWithinZone() {
+                dispatchFinalizeEvent(shadowElDropZone, items);
+                cleanupPostDrop();
+            }
+            animateDraggedToFinalPosition(finalizeWithinZone);
         }
         else { // it needs to return to its place
             console.log('no dz available');
             let {items} = dzToConfig.get(originDropZone);
-            items.splice(originIndex, 0, draggedElData);
-            dispatchFinalizeEvent(originDropZone, items);
-            draggedEl.remove();
+            items.splice(originIndex, 0, shadowElData);
+            shadowElDropZone = originDropZone;
+            shadowElIdx = originIndex;
+            dispatchConsiderEvent(originDropZone, items);
+            function finalizeBackToOrigin() {
+                items.splice(originIndex, 1, draggedElData);
+                dispatchFinalizeEvent(originDropZone, items);
+                cleanupPostDrop();
+            }
+            window.setTimeout(() => animateDraggedToFinalPosition(finalizeBackToOrigin), 0);
          }
-
+    }
+    function animateDraggedToFinalPosition(callback) {
+        const shadowElRect = shadowElDropZone.childNodes[shadowElIdx].getBoundingClientRect();
+        const newTransform = {
+            x: shadowElRect.left - parseFloat(draggedEl.style.left),
+            y: shadowElRect.top - parseFloat(draggedEl.style.top)
+        };
+        const {dropAnimationDurationMs} = dzToConfig.get(shadowElDropZone);
+        const transition = `transform ${dropAnimationDurationMs}ms ease`
+        draggedEl.style.transition = draggedEl.style.transition? draggedEl.style.transition + "," + transition : transition;
+        draggedEl.style.transform = `translate3d(${newTransform.x}px, ${newTransform.y}px, 0)`;
+        window.setTimeout(callback, dropAnimationDurationMs);
+    }
+    function cleanupPostDrop() {
+        draggedEl.remove();
         draggedEl = undefined;
         draggedElData = undefined;
         originDropZone = undefined;
@@ -105,7 +128,6 @@ export function dndzone(node, options) {
         shadowElData = undefined;
         shadowElIdx = undefined;
         dragStartMousePosition = undefined;
-
     }
     function handleDragStart(e) {
         console.log('drag start', e.target, {config, elToIdx});
@@ -117,7 +139,6 @@ export function dndzone(node, options) {
         draggedElData = items[currentIdx]; 
         shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
         dragStartMousePosition = {x: e.clientX, y:e.clientY};
-        // TODO - should I backup original attributes? probably not
         const rect = e.target.getBoundingClientRect();
         draggedEl.style.position = "fixed";
         draggedEl.style.top = `${rect.top}px`;
@@ -164,10 +185,12 @@ export function dndzone(node, options) {
     /////
     // Main :)
     function configure(opts) {
+        config.dropAnimationDurationMs = opts.flipDurationMs || 0;
         const newType  = opts.type|| DEFAULT_DROP_ZONE_TYPE;
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
         }
+        config.type = newType;
         registerDropZone(node, newType);
 
         config.items = opts.items || []; 
@@ -198,11 +221,7 @@ export function dndzone(node, options) {
 
     return ({
         update: (newOptions) => {
-            // TODO - this needs to rewire all of the listeners and everything
             console.log("dndzone will update", newOptions);
-            if (newOptions.type !== options.type) {
-                throw new Error("a dynamic change of type is not supported yet (but shouldn't be hard to add");
-            }
             configure(newOptions);
         },
         destroy: () => {

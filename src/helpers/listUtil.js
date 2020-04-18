@@ -9,7 +9,7 @@ import { isCentreOfAInsideB, calcDistanceBetweenCenters } from './intersection';
  * 
  * @param {HTMLElement} floatingAboveEl 
  * @param {HTMLElement} collectionBelowEl 
- * @returns {Index | null} -  if the element is over the container the Index object otherwise null 
+ * @returns {Index|null} -  if the element is over the container the Index object otherwise null
  */
 export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     if (!isCentreOfAInsideB(floatingAboveEl, collectionBelowEl)) {

@@ -52,7 +52,7 @@ function handleDraggedLeft(e) {
 function handleDraggedIsOverIndex(e) {
     console.log('dragged is over index', e.target, e.detail);
     const {items} = dzToConfig.get(e.target);
-    const {index} = event.detail.indexObj;
+    const {index} = e.detail.indexObj;
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     shadowElIdx = index;

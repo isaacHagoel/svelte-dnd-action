@@ -15,8 +15,17 @@ function findCenter(position) {
     });    
 }
 
+/**
+ * find the absolute coordinates of the centre of a dom element
+ * @param el {HTMLElement}
+ * @returns {{x: number, y: number}}
+ */
+export function findCenterOfElement(el) {
+    return findCenter( calcAbsolutePosition(el));
+}
+
 export function isCentreOfAInsideB(elA, elB) {
-    const centerOfA = findCenter( calcAbsolutePosition(elA));
+    const centerOfA = findCenterOfElement(elA);
     const positionB = calcAbsolutePosition(elB);
     return (
         (centerOfA.y <= positionB.bottom && centerOfA.y >= positionB.top)
@@ -26,7 +35,7 @@ export function isCentreOfAInsideB(elA, elB) {
 }
 
 export function calcDistanceBetweenCenters(elA, elB) {
-    const centerOfA = findCenter( calcAbsolutePosition(elA));
-    const centerOfB = findCenter( calcAbsolutePosition(elB));
+    const centerOfA = findCenterOfElement(elA);
+    const centerOfB = findCenterOfElement(elB);
     return Math.sqrt(Math.pow(centerOfA.x - centerOfB.x, 2) +  Math.pow(centerOfA.y - centerOfB.y, 2));
 }

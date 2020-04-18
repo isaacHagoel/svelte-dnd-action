@@ -1,10 +1,12 @@
 import {findWouldBeIndex} from './listUtil';
+import {findCenterOfElement} from "./intersection";
 import {dispatchDraggedElementEnteredContainer, 
         dispatchDraggedElementLeftContainer, 
         dispatchDraggedElementIsOverIndex} 
     from './dispatcher';
 
 const INTERVAL_MS = 100;
+const tolerancePx = 5;
 let next;
 
 /**
@@ -17,16 +19,26 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
     let lastDropZoneFound;
     let lastIndexFound;
     let lastIsDraggedInADropZone = false;
+    let lastCentrePositionOfDragged;
     function andNow() {
+        // we only want to make a new decision after the element was moved a bit to prevent flickering
+        const currentCenterOfDragged = findCenterOfElement(draggedEl);
+        if (lastCentrePositionOfDragged &&
+            Math.abs(lastCentrePositionOfDragged.x - currentCenterOfDragged.x) < tolerancePx &&
+            Math.abs(lastCentrePositionOfDragged.y - currentCenterOfDragged.y) < tolerancePx ) {
+            next = window.setTimeout(andNow, intervalMs);
+            return;
+        }
+        lastCentrePositionOfDragged = currentCenterOfDragged;
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false
         for (const dz of dropZones) {
-            const indexObj = findWouldBeIndex(draggedEl, dz); 
+            const indexObj = findWouldBeIndex(draggedEl, dz);
             if (indexObj === null) {
-               // it is not inside 
+               // it is not inside
                continue;     
             }
-            const {index, isProximityBased} = indexObj;
+            const {index} = indexObj;
             isDraggedInADropZone = true;
             // the element is over a container
             if (dz !== lastDropZoneFound) {

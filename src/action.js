@@ -1,6 +1,7 @@
 import { observe, unobserve } from './helpers/observer';
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
+const MIN_OBSERVATION_INTERVAL_MS = 100;
 
 let draggedEl;
 let draggedElData;
@@ -10,6 +11,7 @@ let shadowElIdx;
 let shadowElData;
 let shadowElDropZone;
 let dragStartMousePosition;
+// a map from type to a set of dropzones
 let typeToDropZones = new Map();
 // important - this is needed because otherwise the config that would be used for everyone is the config of the element that created the event listeners
 let dzToConfig = new Map();
@@ -169,7 +171,10 @@ export function dndzone(node, options) {
             dz.addEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
         }
         window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
-        observe(draggedEl, dropZones);
+        // TODO - even better if we can encapsulate the flip somehow and control its speed
+        // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
+        const observationIntervalMs = Math.max(MIN_OBSERVATION_INTERVAL_MS, ...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
+        observe(draggedEl, dropZones, observationIntervalMs);
     }
     function unWatchDraggedElement() {
         const {type} = config;

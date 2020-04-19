@@ -1,18 +1,22 @@
-function calcAbsolutePosition(el) {
+export function calcAbsolutePosition(el) {
     const rect = el.getBoundingClientRect();
     return ({
         top: rect.top + window.scrollY,
         bottom: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
-        right: rect.right + window.scrollY
+        right: rect.right + window.scrollX
     });
 }
 
-function findCenter(position) {
+export function findCenter(position) {
     return ({
         x: (position.left + position.right) /2,
         y: (position.top + position.bottom) /2
     });    
+}
+
+function calcDistance(pointA, pointB) {
+    return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) +  Math.pow(pointA.y - pointB.y, 2));
 }
 
 /**
@@ -37,5 +41,14 @@ export function isCentreOfAInsideB(elA, elB) {
 export function calcDistanceBetweenCenters(elA, elB) {
     const centerOfA = findCenterOfElement(elA);
     const centerOfB = findCenterOfElement(elB);
-    return Math.sqrt(Math.pow(centerOfA.x - centerOfB.x, 2) +  Math.pow(centerOfA.y - centerOfB.y, 2));
+    return calcDistance(centerOfA, centerOfB);
+}
+
+/**
+ * @param {HTMLElement} el - the element to check
+ * @returns {boolean} - true if the element in its entirety is off screen including the scrollable area (the normal dom events look at the mouse rather than the element)
+ */
+export function isElementOffDocument(el) {
+    const position = calcAbsolutePosition(el);
+    return position.right < 0 || position.left > document.documentElement.scrollWidth || position.bottom < 0 || position.top > document.documentElement.scrollHeight;
 }

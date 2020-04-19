@@ -18,6 +18,7 @@ export function dispatchConsiderEvent(el, items) {
 export const DRAGGED_ENTERED_EVENT_NAME = 'draggedentered';
 export const DRAGGED_LEFT_EVENT_NAME = 'draggedleft';
 export const DRAGGED_OVER_INDEX_EVENT_NAME = 'draggedoverindex';
+export const DRAGGED_LEFT_DOCUMENT_EVENT_NAME = 'draggedleftdocument';
 export function dispatchDraggedElementEnteredContainer(containerEl, indexObj, draggedEl) {
     containerEl.dispatchEvent(new CustomEvent(DRAGGED_ENTERED_EVENT_NAME, {
         detail: {indexObj, draggedEl}
@@ -31,5 +32,10 @@ export function dispatchDraggedElementLeftContainer(containerEl, draggedEl) {
 export function dispatchDraggedElementIsOverIndex(containerEl, indexObj, draggedEl) {
     containerEl.dispatchEvent(new CustomEvent(DRAGGED_OVER_INDEX_EVENT_NAME, {
         detail: {indexObj, draggedEl}
+    }));
+}
+export function dispatchDraggedLeftDocument(draggedEl) {
+    window.dispatchEvent(new CustomEvent(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, {
+        detail: { draggedEl}
     }));
 }

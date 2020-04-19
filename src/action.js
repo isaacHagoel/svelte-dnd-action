@@ -1,5 +1,5 @@
 import { observe, unobserve } from './helpers/observer';
-import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME,  DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
+import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 
 let draggedEl;
@@ -76,7 +76,7 @@ export function dndzone(node, options) {
         // cleanup
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleDrop);
-        document.body.removeEventListener('mouseleave', handleDrop);
+        //document.body.removeEventListener('mouseleave', handleDrop);
         unWatchDraggedElement();
         // it might not be dropped over anything we care about - in that case it needs to return to its original place (animate)
         // raise the finalize event
@@ -155,7 +155,7 @@ export function dndzone(node, options) {
         // TODO - what will happen to its styles when I do this? will it mess up its css?   
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleDrop);
-        document.body.addEventListener('mouseleave', handleDrop);
+        //document.body.addEventListener('mouseleave', handleDrop);
         watchDraggedElement();
     }
     //////////
@@ -168,17 +168,18 @@ export function dndzone(node, options) {
             dz.addEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
             dz.addEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
         }
+        window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
         observe(draggedEl, dropZones);
     }
     function unWatchDraggedElement() {
         const {type} = config;
         const dropZones = typeToDropZones.get(type);
         for (const dz of dropZones) {
-           
             dz.removeEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
             dz.removeEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
             dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
         }
+        window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
         unobserve(draggedEl, dropZones);
     }
 

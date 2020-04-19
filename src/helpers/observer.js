@@ -1,12 +1,13 @@
 import {findWouldBeIndex} from './listUtil';
-import {findCenterOfElement} from "./intersection";
+import {findCenterOfElement, isElementOffDocument} from "./intersection";
 import {dispatchDraggedElementEnteredContainer, 
-        dispatchDraggedElementLeftContainer, 
+        dispatchDraggedElementLeftContainer,
+        dispatchDraggedLeftDocument,
         dispatchDraggedElementIsOverIndex} 
     from './dispatcher';
 
-const INTERVAL_MS = 100;
-const tolerancePx = 5;
+const INTERVAL_MS = 200;
+const TOLERANCE_PX = 10;
 let next;
 
 /**
@@ -24,11 +25,17 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         const currentCenterOfDragged = findCenterOfElement(draggedEl);
         if (lastCentrePositionOfDragged &&
-            Math.abs(lastCentrePositionOfDragged.x - currentCenterOfDragged.x) < tolerancePx &&
-            Math.abs(lastCentrePositionOfDragged.y - currentCenterOfDragged.y) < tolerancePx ) {
+            Math.abs(lastCentrePositionOfDragged.x - currentCenterOfDragged.x) < TOLERANCE_PX &&
+            Math.abs(lastCentrePositionOfDragged.y - currentCenterOfDragged.y) < TOLERANCE_PX ) {
             next = window.setTimeout(andNow, intervalMs);
             return;
         }
+        if (isElementOffDocument(draggedEl)) {
+            console.warn("off document");
+            dispatchDraggedLeftDocument(draggedEl);
+            return;
+        }
+
         lastCentrePositionOfDragged = currentCenterOfDragged;
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false

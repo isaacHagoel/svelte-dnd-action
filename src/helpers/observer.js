@@ -1,14 +1,21 @@
 import {findWouldBeIndex} from './listUtil';
-import {findCenterOfElement, isElementOffDocument} from "./intersection";
+import {findCenterOfElement, isElementOffDocument, calcInnerDistancesBetweenCenterOfAAndSidesOfB} from "./intersection";
 import {dispatchDraggedElementEnteredContainer, 
         dispatchDraggedElementLeftContainer,
         dispatchDraggedLeftDocument,
         dispatchDraggedElementIsOverIndex} 
     from './dispatcher';
 
+// TODO - 13 - NEEDS TO BEHAVE CORRECTLY WHEN THE ELEMENT IS DROPPED INTO THE LAST POSITION
+// TODO 13 - EXTRACT SCROLLING FUNCTIONALITY TO A SEPARATE HELPER
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
+const SCROLL_ZONE_PX = 20;
 let next;
+let shouldTryScrollingDZ;
+function resetScrolling() {
+    shouldTryScrollingDZ = {directionObj: undefined, stepPx: 0};
+}
 
 /**
  * 
@@ -17,14 +24,74 @@ let next;
  * @param {number} [intervalMs = INTERVAL_MS]
  */
 export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
+    // initialization
     let lastDropZoneFound;
     let lastIndexFound;
     let lastIsDraggedInADropZone = false;
     let lastCentrePositionOfDragged;
+    resetScrolling();
+
+    // directionObj {x: 0|1|-1, y:0|1|-1} - 1 means down in y and right in x
+    function scrollContainer(containerEl){
+        const {directionObj, stepPx} = shouldTryScrollingDZ;
+        if(directionObj) {
+           containerEl.scrollBy(directionObj.x * stepPx, directionObj.y * stepPx);
+            window.requestAnimationFrame(() => scrollContainer(containerEl));
+        }
+    }
+    function calcScrollStepPx(distancePx) {
+        return SCROLL_ZONE_PX - distancePx;
+    }
+
+    /**
+     * Manipulated the global `shouldTryScrollingDZ` to decide whether to scroll `lastDropZoneFound` in which direction and in which speed
+     * Kicks off `scrollContainer` that handles the actual scrolling based on the modified global
+     * @return {boolean}
+     */
+    function scrollIfNeeded() {
+        if (lastDropZoneFound) {
+            const distances = calcInnerDistancesBetweenCenterOfAAndSidesOfB(draggedEl, lastDropZoneFound);
+            if (distances === null) {
+                resetScrolling();
+                return false;
+            }
+            const isAlreadyScrolling = !!shouldTryScrollingDZ.directionObj;
+            // vertical
+            if (lastDropZoneFound.scrollHeight > lastDropZoneFound.clientHeight) {
+                if(distances.bottom < SCROLL_ZONE_PX) {
+                    shouldTryScrollingDZ.directionObj = {x:0, y:1};
+                    shouldTryScrollingDZ.stepPx = calcScrollStepPx(distances.bottom);
+                } else if (distances.top < SCROLL_ZONE_PX) {
+                    shouldTryScrollingDZ.directionObj = {x:0, y:-1};
+                    shouldTryScrollingDZ.stepPx = calcScrollStepPx(distances.top);
+                }
+                !isAlreadyScrolling && scrollContainer(lastDropZoneFound);
+                return true;
+            }
+            // horizontal
+            else if (lastDropZoneFound.scrollWidth > lastDropZoneFound.clientWidth) {
+                if (distances.right < SCROLL_ZONE_PX) {
+                    shouldTryScrollingDZ.directionObj = {x:1, y:0};
+                    shouldTryScrollingDZ.stepPx = calcScrollStepPx(distances.right);
+                } else if (distances.left < SCROLL_ZONE_PX) {
+                    shouldTryScrollingDZ.directionObj = {x:-1, y:0};
+                    shouldTryScrollingDZ.stepPx = calcScrollStepPx(distances.left);
+                }
+                !isAlreadyScrolling && scrollContainer(lastDropZoneFound);
+                return true;
+            }
+            else {
+                resetScrolling();
+                return false;
+            }
+        }
+    }
+
     function andNow() {
+        const scrolled = scrollIfNeeded();
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         const currentCenterOfDragged = findCenterOfElement(draggedEl);
-        if (lastCentrePositionOfDragged &&
+        if (!scrolled && lastCentrePositionOfDragged &&
             Math.abs(lastCentrePositionOfDragged.x - currentCenterOfDragged.x) < TOLERANCE_PX &&
             Math.abs(lastCentrePositionOfDragged.y - currentCenterOfDragged.y) < TOLERANCE_PX ) {
             next = window.setTimeout(andNow, intervalMs);
@@ -77,5 +144,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
 
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
 export function unobserve() {
+    console.warn("unobserving");
+    resetScrolling();
     clearTimeout(next);
 }

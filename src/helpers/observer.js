@@ -7,7 +7,6 @@ import {dispatchDraggedElementEnteredContainer,
     from './dispatcher';
 
 // TODO - 13 - NEEDS TO BEHAVE CORRECTLY WHEN THE ELEMENT IS DROPPED INTO THE LAST POSITION
-// TODO 13 - EXTRACT SCROLLING FUNCTIONALITY TO A SEPARATE HELPER
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
 const SCROLL_ZONE_PX = 20;
@@ -46,7 +45,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
     /**
      * Manipulated the global `shouldTryScrollingDZ` to decide whether to scroll `lastDropZoneFound` in which direction and in which speed
      * Kicks off `scrollContainer` that handles the actual scrolling based on the modified global
-     * @return {boolean}
+     * @return {boolean} - true if scrolling was needed
      */
     function scrollIfNeeded() {
         if (lastDropZoneFound) {

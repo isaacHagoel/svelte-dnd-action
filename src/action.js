@@ -131,6 +131,7 @@ export function dndzone(node, options) {
         shadowElIdx = undefined;
         dragStartMousePosition = undefined;
     }
+
     function handleDragStart(e) {
         console.log('drag start', e.target, {config, elToIdx});
         const {items} = config;
@@ -148,7 +149,9 @@ export function dndzone(node, options) {
         // we can't have relative or automatic height and width or it will break the illusion
         draggedEl.style.height = `${rect.height}px`;
         draggedEl.style.width = `${rect.width}px`;
-        draggedEl.style.transition = 'width 0.2s ease, height 0.2s ease, top 0.2s ease, left 0.2s ease';
+        draggedEl.style.transition = 'width 0.2s ease, height 0.2s ease';
+        // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
+        window.setTimeout(() => draggedEl.style.transition +=', top 0.2s ease, left 0.2s ease',0);
         draggedEl.style.zIndex = 9999;
         // taking the child out
         document.body.appendChild(draggedEl);

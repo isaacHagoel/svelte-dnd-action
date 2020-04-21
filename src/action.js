@@ -36,7 +36,7 @@ function handleDraggedEntered(e) {
     console.log('dragged entered', e.target, e.detail);
     const {items} = dzToConfig.get(e.target);
     console.warn("dragged entered items", items);
-    const {index, isProximityBased} = event.detail.indexObj; 
+    const {index, isProximityBased} = e.detail.indexObj;
     shadowElIdx = isProximityBased && index === e.target.childNodes.length - 1? index + 1 : index;
     shadowElDropZone = e.target;
     items.splice( shadowElIdx, 0, shadowElData);
@@ -131,6 +131,7 @@ export function dndzone(node, options) {
         shadowElIdx = undefined;
         dragStartMousePosition = undefined;
     }
+
     function handleDragStart(e) {
         console.log('drag start', e.target, {config, elToIdx});
         const {items} = config;
@@ -149,6 +150,8 @@ export function dndzone(node, options) {
         draggedEl.style.height = `${rect.height}px`;
         draggedEl.style.width = `${rect.width}px`;
         draggedEl.style.transition = 'width 0.2s ease, height 0.2s ease';
+        // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
+        window.setTimeout(() => draggedEl.style.transition +=', top 0.2s ease, left 0.2s ease',0);
         draggedEl.style.zIndex = 9999;
         // taking the child out
         document.body.appendChild(draggedEl);
@@ -208,9 +211,14 @@ export function dndzone(node, options) {
                 // maybe there is a better place for resizing the dragged
                 //draggedEl.style = draggableEl.style; // should i clone?
                 const rect = draggableEl.getBoundingClientRect();
+
+                const heightChange = parseFloat(draggedEl.style.height) - rect.height;
+                const widthChange = parseFloat(draggedEl.style.width) - rect.width;
                 draggedEl.style.height = `${rect.height}px`;
                 draggedEl.style.width = `${rect.width}px`;
-                // TODO - set more css properties to compelete the illusion
+                draggedEl.style.top = `${parseFloat(draggedEl.style.top) + heightChange}px`;
+                draggedEl.style.left = `${parseFloat(draggedEl.style.left) + widthChange}px`;
+                // TODO - set more css properties to complete the illusion
                 //////
                 draggableEl.style.visibility = "hidden";
                 continue;

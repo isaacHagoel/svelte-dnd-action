@@ -62,11 +62,12 @@ function handleDraggedIsOverIndex(e) {
 }
 
 export function dndzone(node, options) {
-    const config =  {items: [], type: DEFAULT_DROP_ZONE_TYPE};
+    const config =  {items: [], type: undefined};
     console.log("dndzone good to go", {node, options, config});
     let elToIdx = new Map();
 
     function handleMouseMove(e) {
+        e.stopPropagation();
         if (!draggedEl) {
             return;
         }
@@ -75,6 +76,7 @@ export function dndzone(node, options) {
     }
     function handleDrop(e) {
         console.log('dropped', e.target);
+        e.stopPropagation();
         // cleanup
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleDrop);
@@ -134,6 +136,7 @@ export function dndzone(node, options) {
 
     function handleDragStart(e) {
         console.log('drag start', e.target, {config, elToIdx});
+        e.stopPropagation();
         const {items} = config;
         draggedEl = e.target.cloneNode(true);
         const currentIdx = elToIdx.get(e.target);
@@ -194,6 +197,7 @@ export function dndzone(node, options) {
     /////
     // Main :)
     function configure(opts) {
+        console.log(`configuring ${JSON.stringify(opts)}`);
         config.dropAnimationDurationMs = opts.flipDurationMs || 0;
         const newType  = opts.type|| DEFAULT_DROP_ZONE_TYPE;
         if (config.type && newType !== config.type) {
@@ -206,12 +210,12 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
         for (let idx=0; idx< node.childNodes.length; idx++) {
             const draggableEl = node.childNodes[idx];
+            //draggableEl.ondragstart = () => false;
             // making it the placeholder element
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
                 // maybe there is a better place for resizing the dragged
                 //draggedEl.style = draggableEl.style; // should i clone?
                 const rect = draggableEl.getBoundingClientRect();
-
                 const heightChange = parseFloat(draggedEl.style.height) - rect.height;
                 const widthChange = parseFloat(draggedEl.style.width) - rect.width;
                 draggedEl.style.height = `${rect.height}px`;

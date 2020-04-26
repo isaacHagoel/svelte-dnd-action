@@ -33,32 +33,32 @@ function unregisterDropZone(dropZoneEl, type) {
 }
 
 function handleDraggedEntered(e) {
-    console.log('dragged entered', e.target, e.detail);
-    const {items} = dzToConfig.get(e.target);
+    console.log('dragged entered', e.currentTarget, e.detail);
+    const {items} = dzToConfig.get(e.currentTarget);
     console.warn("dragged entered items", items);
     const {index, isProximityBased} = e.detail.indexObj;
-    shadowElIdx = isProximityBased && index === e.target.childNodes.length - 1? index + 1 : index;
-    shadowElDropZone = e.target;
+    shadowElIdx = isProximityBased && index === e.currentTarget.childNodes.length - 1? index + 1 : index;
+    shadowElDropZone = e.currentTarget;
     items.splice( shadowElIdx, 0, shadowElData);
-    dispatchConsiderEvent(e.target, items);
+    dispatchConsiderEvent(e.currentTarget, items);
 }
 function handleDraggedLeft(e) {
-    console.log('dragged left', e.target, e.detail);
-    const {items} = dzToConfig.get(e.target);
+    console.log('dragged left', e.currentTarget, e.detail);
+    const {items} = dzToConfig.get(e.currentTarget);
     // TODO - do we want it to leave or jump to its original position instead?
     items.splice(shadowElIdx, 1);
     shadowElIdx = undefined;
     shadowElDropZone = undefined;
-    dispatchConsiderEvent(e.target, items);
+    dispatchConsiderEvent(e.currentTarget, items);
 }
 function handleDraggedIsOverIndex(e) {
-    console.log('dragged is over index', e.target, e.detail);
-    const {items} = dzToConfig.get(e.target);
+    console.log('dragged is over index', e.currentTarget, e.detail);
+    const {items} = dzToConfig.get(e.currentTarget);
     const {index} = e.detail.indexObj;
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     shadowElIdx = index;
-    dispatchConsiderEvent(e.target, items);///
+    dispatchConsiderEvent(e.currentTarget, items);///
 }
 
 export function dndzone(node, options) {
@@ -75,7 +75,7 @@ export function dndzone(node, options) {
         draggedEl.style.transform = `translate3d(${e.clientX - dragStartMousePosition.x}px, ${e.clientY-dragStartMousePosition.y}px, 0)`;
     }
     function handleDrop(e) {
-        console.log('dropped', e.target);
+        console.log('dropped', e.currentTarget);
         e.stopPropagation();
         // cleanup
         window.removeEventListener('mousemove', handleMouseMove);
@@ -135,17 +135,17 @@ export function dndzone(node, options) {
     }
 
     function handleDragStart(e) {
-        console.log('drag start', e.target, {config, elToIdx});
+        console.log('drag start', e.currentTarget, {config, elToIdx});
         e.stopPropagation();
         const {items} = config;
-        draggedEl = e.target.cloneNode(true);
-        const currentIdx = elToIdx.get(e.target);
+        draggedEl = e.currentTarget.cloneNode(true);
+        const currentIdx = elToIdx.get(e.currentTarget);
         originIndex = currentIdx;
-        originDropZone = e.target.parentNode;
-        draggedElData = items[currentIdx]; 
+        originDropZone = e.currentTarget.parentNode;
+        draggedElData = {...items[currentIdx]};
         shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
         dragStartMousePosition = {x: e.clientX, y:e.clientY};
-        const rect = e.target.getBoundingClientRect();
+        const rect = e.currentTarget.getBoundingClientRect();
         draggedEl.style.position = "fixed";
         draggedEl.style.top = `${rect.top}px`;
         draggedEl.style.left = `${rect.left}px`;
@@ -159,7 +159,7 @@ export function dndzone(node, options) {
         // taking the child out
         document.body.appendChild(draggedEl);
         items.splice( currentIdx, 1);
-        dispatchConsiderEvent(e.target.parentNode, items);
+        dispatchConsiderEvent(e.currentTarget.parentNode, items);
         // TODO - what will happen to its styles when I do this? will it mess up its css?   
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleDrop);

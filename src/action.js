@@ -11,6 +11,8 @@ let shadowElIdx;
 let shadowElData;
 let shadowElDropZone;
 let dragStartMousePosition;
+let isFinalizingPreviousOperation = false;
+
 // a map from type to a set of dropzones
 let typeToDropZones = new Map();
 // important - this is needed because otherwise the config that would be used for everyone is the config of the element that created the event listeners
@@ -77,6 +79,7 @@ export function dndzone(node, options) {
     function handleDrop(e) {
         console.log('dropped', e.currentTarget);
         e.stopPropagation();
+        isFinalizingPreviousOperation = true;
         // cleanup
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleDrop);
@@ -93,6 +96,7 @@ export function dndzone(node, options) {
             function finalizeWithinZone() {
                 dispatchFinalizeEvent(shadowElDropZone, items);
                 cleanupPostDrop();
+                isFinalizingPreviousOperation = false;
             }
             animateDraggedToFinalPosition(finalizeWithinZone);
         }
@@ -107,6 +111,7 @@ export function dndzone(node, options) {
                 items.splice(originIndex, 1, draggedElData);
                 dispatchFinalizeEvent(originDropZone, items);
                 cleanupPostDrop();
+                isFinalizingPreviousOperation = false;
             }
             window.setTimeout(() => animateDraggedToFinalPosition(finalizeBackToOrigin), 0);
          }
@@ -137,6 +142,10 @@ export function dndzone(node, options) {
     function handleDragStart(e) {
         console.log('drag start', e.currentTarget, {config, elToIdx});
         e.stopPropagation();
+        if (isFinalizingPreviousOperation) {
+            console.warn('cannot start a new drag before finalizing previous one');
+            return;
+        }
         const {items} = config;
         draggedEl = e.currentTarget.cloneNode(true);
         const currentIdx = elToIdx.get(e.currentTarget);

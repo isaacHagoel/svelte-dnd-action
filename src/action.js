@@ -11,6 +11,7 @@ let shadowElIdx;
 let shadowElData;
 let shadowElDropZone;
 let dragStartMousePosition;
+let currentMousePosition;
 let isFinalizingPreviousOperation = false;
 
 // a map from type to a set of dropzones
@@ -73,6 +74,7 @@ export function dndzone(node, options) {
         if (!draggedEl) {
             return;
         }
+        currentMousePosition = {x: e.clientX, y: e.clientY};
         // TODO - add another visual queue like a border or increased scale and shadow
         draggedEl.style.transform = `translate3d(${e.clientX - dragStartMousePosition.x}px, ${e.clientY-dragStartMousePosition.y}px, 0)`;
     }
@@ -137,6 +139,7 @@ export function dndzone(node, options) {
         shadowElData = undefined;
         shadowElIdx = undefined;
         dragStartMousePosition = undefined;
+        currentMousePosition = undefined;
     }
 
     function handleDragStart(e) {
@@ -154,6 +157,7 @@ export function dndzone(node, options) {
         draggedElData = {...items[currentIdx]};
         shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
         dragStartMousePosition = {x: e.clientX, y:e.clientY};
+        currentMousePosition = {...dragStartMousePosition};
         const rect = e.currentTarget.getBoundingClientRect();
         draggedEl.style.position = "fixed";
         draggedEl.style.top = `${rect.top}px`;
@@ -228,13 +232,23 @@ export function dndzone(node, options) {
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
                 // maybe there is a better place for resizing the dragged
                 //draggedEl.style = draggableEl.style; // should i clone?
-                const rect = draggableEl.getBoundingClientRect();
-                const heightChange = parseFloat(draggedEl.style.height) - rect.height;
-                const widthChange = parseFloat(draggedEl.style.width) - rect.width;
-                draggedEl.style.height = `${rect.height}px`;
-                draggedEl.style.width = `${rect.width}px`;
-                draggedEl.style.top = `${parseFloat(draggedEl.style.top) + heightChange}px`;
-                draggedEl.style.left = `${parseFloat(draggedEl.style.left) + widthChange}px`;
+                // TODO - extract a function to do all of this and probably put in another helper
+                const newRect = draggableEl.getBoundingClientRect();
+                const draggedElRect = draggedEl.getBoundingClientRect();
+                const heightChange = draggedElRect.height - newRect.height;
+                const widthChange = draggedElRect.width - newRect.width;
+                const distanceOfMousePointerFromDraggedSides = {
+                    left: currentMousePosition.x - draggedElRect.left,
+                    top: currentMousePosition.y - draggedElRect.top
+                };
+                draggedEl.style.height = `${newRect.height}px`;
+                draggedEl.style.width = `${newRect.width}px`;
+                if (newRect.height <= distanceOfMousePointerFromDraggedSides.top) {
+                    draggedEl.style.top = `${parseFloat(draggedEl.style.top) + heightChange}px`;
+                }
+                if (newRect.width <= distanceOfMousePointerFromDraggedSides.left) {
+                    draggedEl.style.left = `${parseFloat(draggedEl.style.left) + widthChange}px`;
+                }
                 // TODO - set more css properties to complete the illusion
                 //////
                 draggableEl.style.visibility = "hidden";

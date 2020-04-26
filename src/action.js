@@ -149,6 +149,7 @@ export function dndzone(node, options) {
         draggedEl.style.position = "fixed";
         draggedEl.style.top = `${rect.top}px`;
         draggedEl.style.left = `${rect.left}px`;
+        draggedEl.style.margin = 0;
         // we can't have relative or automatic height and width or it will break the illusion
         draggedEl.style.height = `${rect.height}px`;
         draggedEl.style.width = `${rect.width}px`;

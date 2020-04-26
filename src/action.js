@@ -33,40 +33,41 @@ function unregisterDropZone(dropZoneEl, type) {
 }
 
 function handleDraggedEntered(e) {
-    console.log('dragged entered', e.target, e.detail);
-    const {items} = dzToConfig.get(e.target);
+    console.log('dragged entered', e.currentTarget, e.detail);
+    const {items} = dzToConfig.get(e.currentTarget);
     console.warn("dragged entered items", items);
     const {index, isProximityBased} = e.detail.indexObj;
-    shadowElIdx = isProximityBased && index === e.target.childNodes.length - 1? index + 1 : index;
-    shadowElDropZone = e.target;
+    shadowElIdx = isProximityBased && index === e.currentTarget.childNodes.length - 1? index + 1 : index;
+    shadowElDropZone = e.currentTarget;
     items.splice( shadowElIdx, 0, shadowElData);
-    dispatchConsiderEvent(e.target, items);
+    dispatchConsiderEvent(e.currentTarget, items);
 }
 function handleDraggedLeft(e) {
-    console.log('dragged left', e.target, e.detail);
-    const {items} = dzToConfig.get(e.target);
+    console.log('dragged left', e.currentTarget, e.detail);
+    const {items} = dzToConfig.get(e.currentTarget);
     // TODO - do we want it to leave or jump to its original position instead?
     items.splice(shadowElIdx, 1);
     shadowElIdx = undefined;
     shadowElDropZone = undefined;
-    dispatchConsiderEvent(e.target, items);
+    dispatchConsiderEvent(e.currentTarget, items);
 }
 function handleDraggedIsOverIndex(e) {
-    console.log('dragged is over index', e.target, e.detail);
-    const {items} = dzToConfig.get(e.target);
+    console.log('dragged is over index', e.currentTarget, e.detail);
+    const {items} = dzToConfig.get(e.currentTarget);
     const {index} = e.detail.indexObj;
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     shadowElIdx = index;
-    dispatchConsiderEvent(e.target, items);///
+    dispatchConsiderEvent(e.currentTarget, items);///
 }
 
 export function dndzone(node, options) {
-    const config =  {items: [], type: DEFAULT_DROP_ZONE_TYPE};
+    const config =  {items: [], type: undefined};
     console.log("dndzone good to go", {node, options, config});
     let elToIdx = new Map();
 
     function handleMouseMove(e) {
+        e.stopPropagation();
         if (!draggedEl) {
             return;
         }
@@ -74,7 +75,8 @@ export function dndzone(node, options) {
         draggedEl.style.transform = `translate3d(${e.clientX - dragStartMousePosition.x}px, ${e.clientY-dragStartMousePosition.y}px, 0)`;
     }
     function handleDrop(e) {
-        console.log('dropped', e.target);
+        console.log('dropped', e.currentTarget);
+        e.stopPropagation();
         // cleanup
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleDrop);
@@ -133,19 +135,21 @@ export function dndzone(node, options) {
     }
 
     function handleDragStart(e) {
-        console.log('drag start', e.target, {config, elToIdx});
+        console.log('drag start', e.currentTarget, {config, elToIdx});
+        e.stopPropagation();
         const {items} = config;
-        draggedEl = e.target.cloneNode(true);
-        const currentIdx = elToIdx.get(e.target);
+        draggedEl = e.currentTarget.cloneNode(true);
+        const currentIdx = elToIdx.get(e.currentTarget);
         originIndex = currentIdx;
-        originDropZone = e.target.parentNode;
-        draggedElData = items[currentIdx]; 
+        originDropZone = e.currentTarget.parentNode;
+        draggedElData = {...items[currentIdx]};
         shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
         dragStartMousePosition = {x: e.clientX, y:e.clientY};
-        const rect = e.target.getBoundingClientRect();
+        const rect = e.currentTarget.getBoundingClientRect();
         draggedEl.style.position = "fixed";
         draggedEl.style.top = `${rect.top}px`;
         draggedEl.style.left = `${rect.left}px`;
+        draggedEl.style.margin = 0;
         // we can't have relative or automatic height and width or it will break the illusion
         draggedEl.style.height = `${rect.height}px`;
         draggedEl.style.width = `${rect.width}px`;
@@ -156,7 +160,7 @@ export function dndzone(node, options) {
         // taking the child out
         document.body.appendChild(draggedEl);
         items.splice( currentIdx, 1);
-        dispatchConsiderEvent(e.target.parentNode, items);
+        dispatchConsiderEvent(e.currentTarget.parentNode, items);
         // TODO - what will happen to its styles when I do this? will it mess up its css?   
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleDrop);
@@ -194,6 +198,7 @@ export function dndzone(node, options) {
     /////
     // Main :)
     function configure(opts) {
+        console.log(`configuring ${JSON.stringify(opts)}`);
         config.dropAnimationDurationMs = opts.flipDurationMs || 0;
         const newType  = opts.type|| DEFAULT_DROP_ZONE_TYPE;
         if (config.type && newType !== config.type) {
@@ -206,12 +211,15 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
         for (let idx=0; idx< node.childNodes.length; idx++) {
             const draggableEl = node.childNodes[idx];
+            // TODO - attempt to disable the browser's built-in dnd - it might be solving issue #29, keep an eye for this error
+            draggableEl.draggable = false;
+            draggableEl.ondragstart = () => false;
+            //draggableEl.ondragstart = () => false;
             // making it the placeholder element
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
                 // maybe there is a better place for resizing the dragged
                 //draggedEl.style = draggableEl.style; // should i clone?
                 const rect = draggableEl.getBoundingClientRect();
-
                 const heightChange = parseFloat(draggedEl.style.height) - rect.height;
                 const widthChange = parseFloat(draggedEl.style.width) - rect.width;
                 draggedEl.style.height = `${rect.height}px`;

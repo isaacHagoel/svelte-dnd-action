@@ -64,6 +64,10 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
                     shouldTryScrollingDZ.directionObj = {x:0, y:-1};
                     shouldTryScrollingDZ.stepPx = calcScrollStepPx(distances.top);
                 }
+                else {
+                    resetScrolling();
+                    return false;
+                }
                 !isAlreadyScrolling && scrollContainer(lastDropZoneFound);
                 return true;
             }
@@ -75,6 +79,10 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
                 } else if (distances.left < SCROLL_ZONE_PX) {
                     shouldTryScrollingDZ.directionObj = {x:-1, y:0};
                     shouldTryScrollingDZ.stepPx = calcScrollStepPx(distances.left);
+                }
+                else {
+                    resetScrolling();
+                    return false;
                 }
                 !isAlreadyScrolling && scrollContainer(lastDropZoneFound);
                 return true;

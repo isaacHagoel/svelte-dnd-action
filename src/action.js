@@ -211,6 +211,9 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
         for (let idx=0; idx< node.childNodes.length; idx++) {
             const draggableEl = node.childNodes[idx];
+            // TODO - attempt to disable the browser's built-in dnd - it might be solving issue #29, keep an eye for this error
+            draggableEl.draggable = false;
+            draggableEl.ondragstart = () => false;
             //draggableEl.ondragstart = () => false;
             // making it the placeholder element
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {

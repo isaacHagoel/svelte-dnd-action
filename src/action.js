@@ -169,7 +169,7 @@ export function dndzone(node, options) {
         // taking the child out
         document.body.appendChild(draggedEl);
         items.splice( currentIdx, 1);
-        dispatchConsiderEvent(e.currentTarget.parentNode, items);
+        dispatchConsiderEvent(originDropZone, items);
         // TODO - what will happen to its styles when I do this? will it mess up its css?   
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleDrop);
@@ -220,7 +220,7 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
         for (let idx=0; idx< node.childNodes.length; idx++) {
             const draggableEl = node.childNodes[idx];
-            // TODO - attempt to disable the browser's built-in dnd - it might be solving issue #29, keep an eye for this error
+            // TODO - attempt to disable the browser's built-in dnd - probably not needed
             draggableEl.draggable = false;
             draggableEl.ondragstart = () => false;
             //draggableEl.ondragstart = () => false;

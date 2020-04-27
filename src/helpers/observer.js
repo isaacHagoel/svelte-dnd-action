@@ -34,7 +34,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
     function scrollContainer(containerEl){
         const {directionObj, stepPx} = shouldTryScrollingDZ;
         if(directionObj) {
-           containerEl.scrollBy(directionObj.x * stepPx, directionObj.y * stepPx);
+            containerEl.scrollBy(directionObj.x * stepPx, directionObj.y * stepPx);
             window.requestAnimationFrame(() => scrollContainer(containerEl));
         }
     }

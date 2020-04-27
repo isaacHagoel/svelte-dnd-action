@@ -97,6 +97,7 @@ export function dndzone(node, options) {
             items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
             function finalizeWithinZone() {
                 dispatchFinalizeEvent(shadowElDropZone, items);
+                shadowElDropZone.childNodes[shadowElIdx].style.visibility = 'visible';
                 cleanupPostDrop();
                 isFinalizingPreviousOperation = false;
             }
@@ -112,6 +113,7 @@ export function dndzone(node, options) {
             function finalizeBackToOrigin() {
                 items.splice(originIndex, 1, draggedElData);
                 dispatchFinalizeEvent(originDropZone, items);
+                shadowElDropZone.childNodes[shadowElIdx].style.visibility = 'visible';
                 cleanupPostDrop();
                 isFinalizingPreviousOperation = false;
             }
@@ -155,7 +157,7 @@ export function dndzone(node, options) {
         originIndex = currentIdx;
         originDropZone = e.currentTarget.parentNode;
         draggedElData = {...items[currentIdx]};
-        shadowElData = {...draggedElData, id: Math.round(Math.random() * 1000000), isDndShadowItem: true};
+        shadowElData = {...draggedElData, isDndShadowItem: true};
         dragStartMousePosition = {x: e.clientX, y:e.clientY};
         currentMousePosition = {...dragStartMousePosition};
         const rect = e.currentTarget.getBoundingClientRect();

@@ -13,7 +13,7 @@ let shadowElData;
 let shadowElDropZone;
 let dragStartMousePosition;
 let currentMousePosition;
-let isFinalizingPreviousOperation = false;
+let isWorkingOnPreviousDrag = false;
 
 // a map from type to a set of dropzones
 let typeToDropZones = new Map();
@@ -39,7 +39,7 @@ function unregisterDropZone(dropZoneEl, type) {
 function handleDraggedEntered(e) {
     console.log('dragged entered', e.currentTarget, e.detail);
     const {items} = dzToConfig.get(e.currentTarget);
-    console.warn("dragged entered items", items);
+    console.warn(`dragged entered items ${JSON.stringify(items)}`);
     const {index, isProximityBased} = e.detail.indexObj;
     shadowElIdx = isProximityBased && index === e.currentTarget.childNodes.length - 1? index + 1 : index;
     shadowElDropZone = e.currentTarget;
@@ -82,12 +82,10 @@ export function dndzone(node, options) {
     function handleDrop(e) {
         console.log('dropped', e.currentTarget);
         e.stopPropagation();
-        isFinalizingPreviousOperation = true;
         // cleanup
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleDrop);
         unWatchDraggedElement();
-
 
         if (!!shadowElDropZone) { // it was dropped in a drop-zone
             console.log('dropped in dz', shadowElDropZone);
@@ -95,9 +93,9 @@ export function dndzone(node, options) {
             items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
             function finalizeWithinZone() {
                 dispatchFinalizeEvent(shadowElDropZone, items);
-                shadowElDropZone.childNodes[shadowElIdx].style.visibility = 'visible';
+                shadowElDropZone.childNodes[shadowElIdx].style.visibility = '';
                 cleanupPostDrop();
-                isFinalizingPreviousOperation = false;
+                isWorkingOnPreviousDrag = false;
             }
             animateDraggedToFinalPosition(finalizeWithinZone);
         }
@@ -111,9 +109,9 @@ export function dndzone(node, options) {
             function finalizeBackToOrigin() {
                 items.splice(originIndex, 1, draggedElData);
                 dispatchFinalizeEvent(originDropZone, items);
-                shadowElDropZone.childNodes[shadowElIdx].style.visibility = 'visible';
+                shadowElDropZone.childNodes[shadowElIdx].style.visibility = '';
                 cleanupPostDrop();
-                isFinalizingPreviousOperation = false;
+                isWorkingOnPreviousDrag = false;
             }
             window.setTimeout(() => animateDraggedToFinalPosition(finalizeBackToOrigin), 0);
          }
@@ -145,10 +143,11 @@ export function dndzone(node, options) {
     function handleDragStart(e) {
         console.log('drag start', e.currentTarget, {config, elToIdx});
         e.stopPropagation();
-        if (isFinalizingPreviousOperation) {
+        if (isWorkingOnPreviousDrag) {
             console.warn('cannot start a new drag before finalizing previous one');
             return;
         }
+        isWorkingOnPreviousDrag = true;
         const {items} = config;
         const currentIdx = elToIdx.get(e.currentTarget);
         originIndex = currentIdx;

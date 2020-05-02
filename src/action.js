@@ -38,10 +38,12 @@ function unregisterDropZone(dropZoneEl, type) {
 
 function handleDraggedEntered(e) {
     console.log('dragged entered', e.currentTarget, e.detail);
-    const {items} = dzToConfig.get(e.currentTarget);
+    let {items} = dzToConfig.get(e.currentTarget);
+    // this deals with another svelte related race condition. in rare occasions (super rapid operations) the list hasn't updated yet
+    items = items.filter(i => i.id !== shadowElData.id)
     console.warn(`dragged entered items ${JSON.stringify(items)}`);
     const {index, isProximityBased} = e.detail.indexObj;
-    shadowElIdx = isProximityBased && index === e.currentTarget.childNodes.length - 1? index + 1 : index;
+    shadowElIdx = (isProximityBased && index === e.currentTarget.childNodes.length - 1)? index + 1 : index;
     shadowElDropZone = e.currentTarget;
     items.splice( shadowElIdx, 0, shadowElData);
     dispatchConsiderEvent(e.currentTarget, items);

@@ -16,14 +16,14 @@ let dragStartMousePosition;
 let currentMousePosition;
 let isWorkingOnPreviousDrag = false;
 
-// a map from type to a set of dropzones
+// a map from type to a set of drop-zones
 let typeToDropZones = new Map();
 // important - this is needed because otherwise the config that would be used for everyone is the config of the element that created the event listeners
 let dzToConfig = new Map();
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
-    console.debug('registering dropzone if absent')
+    console.debug('registering drop-zone if absent')
     if (!typeToDropZones.has(type)) {
         typeToDropZones.set(type, new Set());
     }
@@ -140,6 +140,7 @@ function handleDrop(e) {
         window.setTimeout(() => animateDraggedToFinalPosition(finalizeBackToOrigin), 0);
     }
 }
+
 // helper function for handleDrop
 function animateDraggedToFinalPosition(callback) {
     const shadowElRect = shadowElDropZone.childNodes[shadowElIdx].getBoundingClientRect();

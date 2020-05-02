@@ -1,4 +1,5 @@
 import { observe, unobserve } from './helpers/observer';
+import { createDraggedElementFrom } from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -61,7 +62,7 @@ function handleDraggedIsOverIndex(e) {
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     shadowElIdx = index;
-    dispatchConsiderEvent(e.currentTarget, items);///
+    dispatchConsiderEvent(e.currentTarget, items);
 }
 
 export function dndzone(node, options) {
@@ -85,13 +86,10 @@ export function dndzone(node, options) {
         // cleanup
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleDrop);
-        //document.body.removeEventListener('mouseleave', handleDrop);
         unWatchDraggedElement();
-        // it might not be dropped over anything we care about - in that case it needs to return to its original place (animate)
-        // raise the finalize event
-        
-        // it was dropped in a drop-zone
-        if (!!shadowElDropZone) {
+
+
+        if (!!shadowElDropZone) { // it was dropped in a drop-zone
             console.log('dropped in dz', shadowElDropZone);
             let {items} = dzToConfig.get(shadowElDropZone);
             items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
@@ -152,7 +150,6 @@ export function dndzone(node, options) {
             return;
         }
         const {items} = config;
-        draggedEl = e.currentTarget.cloneNode(true);
         const currentIdx = elToIdx.get(e.currentTarget);
         originIndex = currentIdx;
         originDropZone = e.currentTarget.parentNode;
@@ -160,29 +157,20 @@ export function dndzone(node, options) {
         shadowElData = {...draggedElData, isDndShadowItem: true};
         dragStartMousePosition = {x: e.clientX, y:e.clientY};
         currentMousePosition = {...dragStartMousePosition};
-        const rect = e.currentTarget.getBoundingClientRect();
-        draggedEl.style.position = "fixed";
-        draggedEl.style.top = `${rect.top}px`;
-        draggedEl.style.left = `${rect.left}px`;
-        draggedEl.style.margin = 0;
-        // we can't have relative or automatic height and width or it will break the illusion
-        draggedEl.style.height = `${rect.height}px`;
-        draggedEl.style.width = `${rect.width}px`;
-        draggedEl.style.transition = 'width 0.2s ease, height 0.2s ease';
-        // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
-        window.setTimeout(() => draggedEl.style.transition +=', top 0.2s ease, left 0.2s ease',0);
-        draggedEl.style.zIndex = 9999;
-        // taking the child out
+
+        // creating the draggable element
+        draggedEl = createDraggedElementFrom(e.currentTarget);
         document.body.appendChild(draggedEl);
+
+        // removing the original element by removing its data entry
         items.splice( currentIdx, 1);
         dispatchConsiderEvent(originDropZone, items);
         // TODO - what will happen to its styles when I do this? will it mess up its css?   
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleDrop);
-        //document.body.addEventListener('mouseleave', handleDrop);
         watchDraggedElement();
     }
-    //////////
+
     function watchDraggedElement() {
         const {type} = config;
         console.log('type', type);
@@ -193,7 +181,6 @@ export function dndzone(node, options) {
             dz.addEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
         }
         window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
-        // TODO - even better if we can encapsulate the flip somehow and control its speed
         // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
         const observationIntervalMs = Math.max(MIN_OBSERVATION_INTERVAL_MS, ...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
         observe(draggedEl, dropZones, observationIntervalMs);
@@ -210,7 +197,6 @@ export function dndzone(node, options) {
         unobserve(draggedEl, dropZones);
     }
 
-    /////
     // Main :)
     function configure(opts) {
         console.log(`configuring ${JSON.stringify(opts)}`);
@@ -226,11 +212,10 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
         for (let idx=0; idx< node.childNodes.length; idx++) {
             const draggableEl = node.childNodes[idx];
-            // TODO - attempt to disable the browser's built-in dnd - probably not needed
+            //disabling the browser's built-in dnd - maybe not needed
             draggableEl.draggable = false;
             draggableEl.ondragstart = () => false;
-            //draggableEl.ondragstart = () => false;
-            // making it the placeholder element
+
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
                 // maybe there is a better place for resizing the dragged
                 //draggedEl.style = draggableEl.style; // should i clone?

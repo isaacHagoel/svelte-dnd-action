@@ -1,4 +1,3 @@
-// TODO - extract transition duration and add transition on background color and others
 const TRANSITION_DURATION_SECONDS = 0.2;
 
 /**
@@ -64,4 +63,22 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
         .forEach(s =>
             draggedEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s))
         );
+}
+
+/**
+ * makes the element compatible with being draggable
+ * @param {HTMLElement} draggableEl
+ */
+export function styleDraggable(draggableEl) {
+    draggableEl.draggable = false;
+    draggableEl.ondragstart = () => false;
+    draggableEl.style.userSelect = 'none';
+}
+
+/**
+ * styles the shadow element
+ * @param {HTMLElement} shadowEl
+ */
+export function styleShadowEl(shadowEl) {
+    shadowEl.style.visibility = "hidden";
 }

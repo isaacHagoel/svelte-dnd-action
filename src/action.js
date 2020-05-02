@@ -1,5 +1,5 @@
 import { observe, unobserve } from './helpers/observer';
-import {createDraggedElementFrom, morphDraggedElementToBeLike} from "./helpers/styler";
+import {createDraggedElementFrom, morphDraggedElementToBeLike, styleDraggable, styleShadowEl} from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -23,7 +23,7 @@ let dzToConfig = new Map();
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
-    console.log('registering dropzone if absent')
+    console.debug('registering dropzone if absent')
     if (!typeToDropZones.has(type)) {
         typeToDropZones.set(type, new Set());
     }
@@ -64,11 +64,11 @@ function unWatchDraggedElement() {
 
 /* custom drag-events handlers */
 function handleDraggedEntered(e) {
-    console.log('dragged entered', e.currentTarget, e.detail);
+    console.debug('dragged entered', e.currentTarget, e.detail);
     let {items} = dzToConfig.get(e.currentTarget);
     // this deals with another svelte related race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(i => i.id !== shadowElData.id)
-    console.warn(`dragged entered items ${JSON.stringify(items)}`);
+    console.debug(`dragged entered items ${JSON.stringify(items)}`);
     const {index, isProximityBased} = e.detail.indexObj;
     shadowElIdx = (isProximityBased && index === e.currentTarget.childNodes.length - 1)? index + 1 : index;
     shadowElDropZone = e.currentTarget;
@@ -76,16 +76,15 @@ function handleDraggedEntered(e) {
     dispatchConsiderEvent(e.currentTarget, items);
 }
 function handleDraggedLeft(e) {
-    console.log('dragged left', e.currentTarget, e.detail);
+    console.debug('dragged left', e.currentTarget, e.detail);
     const {items} = dzToConfig.get(e.currentTarget);
-    // TODO - do we want it to leave or jump to its original position instead?
     items.splice(shadowElIdx, 1);
     shadowElIdx = undefined;
     shadowElDropZone = undefined;
     dispatchConsiderEvent(e.currentTarget, items);
 }
 function handleDraggedIsOverIndex(e) {
-    console.log('dragged is over index', e.currentTarget, e.detail);
+    console.debug('dragged is over index', e.currentTarget, e.detail);
     const {items} = dzToConfig.get(e.currentTarget);
     const {index} = e.detail.indexObj;
     items.splice(shadowElIdx, 1);
@@ -101,12 +100,11 @@ function handleMouseMove(e) {
         return;
     }
     currentMousePosition = {x: e.clientX, y: e.clientY};
-    // TODO - add another visual queue like a border or increased scale and shadow
     draggedEl.style.transform = `translate3d(${e.clientX - dragStartMousePosition.x}px, ${e.clientY-dragStartMousePosition.y}px, 0)`;
 }
 
 function handleDrop(e) {
-    console.log('dropped', e.currentTarget);
+    console.debug('dropped', e.currentTarget);
     e.stopPropagation();
     // cleanup
     window.removeEventListener('mousemove', handleMouseMove);
@@ -114,7 +112,7 @@ function handleDrop(e) {
     unWatchDraggedElement();
 
     if (!!shadowElDropZone) { // it was dropped in a drop-zone
-        console.log('dropped in dz', shadowElDropZone);
+        console.debug('dropped in dz', shadowElDropZone);
         let {items} = dzToConfig.get(shadowElDropZone);
         items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
         function finalizeWithinZone() {
@@ -126,7 +124,7 @@ function handleDrop(e) {
         animateDraggedToFinalPosition(finalizeWithinZone);
     }
     else { // it needs to return to its place
-        console.log('no dz available');
+        console.debug('no dz available');
         let {items} = dzToConfig.get(originDropZone);
         items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
@@ -170,16 +168,29 @@ function cleanupPostDrop() {
     currentMousePosition = undefined;
 }
 
+/**
+ * A Svelte custom action to turn any container to a dnd zone and all of its direct children to draggables
+ * dispatches two events that the container is expected to react to by modifying its list of items,
+ * which will then feed back in to this action via the update function
+ *
+ * @typedef {Object} Options
+ * @property {Array} items - the list of items that was used to generate the children of the given node (the list used in the #each block
+ * @property {string} [type] - the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, default to a base type
+ * @property {number} [flipDurationMs] - if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
+ * @param {HTMLElement} node - the element to enhance
+ * @param {Options} options
+ * @return {{update: function, destroy: function}}
+ */
 export function dndzone(node, options) {
     const config =  {items: [], type: undefined};
-    console.log("dndzone good to go", {node, options, config});
+    console.debug("dndzone good to go", {node, options, config});
     let elToIdx = new Map();
 
     function handleDragStart(e) {
-        console.log('drag start', e.currentTarget, {config});
+        console.debug('drag start', e.currentTarget, {config});
         e.stopPropagation();
         if (isWorkingOnPreviousDrag) {
-            console.warn('cannot start a new drag before finalizing previous one');
+            console.debug('cannot start a new drag before finalizing previous one');
             return;
         }
         isWorkingOnPreviousDrag = true;
@@ -210,7 +221,7 @@ export function dndzone(node, options) {
     }
 
     function configure(opts) {
-        console.log(`configuring ${JSON.stringify(opts)}`);
+        console.debug(`configuring ${JSON.stringify(opts)}`);
         config.dropAnimationDurationMs = opts.flipDurationMs || 0;
         const newType  = opts.type|| DEFAULT_DROP_ZONE_TYPE;
         if (config.type && newType !== config.type) {
@@ -223,16 +234,10 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
         for (let idx=0; idx< node.childNodes.length; idx++) {
             const draggableEl = node.childNodes[idx];
-            //disabling the browser's built-in dnd - maybe not needed
-            draggableEl.draggable = false;
-            draggableEl.ondragstart = () => false;
-
+            styleDraggable(draggableEl);
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
-                // maybe there is a better place for resizing the dragged
-                //draggedEl.style = draggableEl.style; // should i clone?
-                // TODO - extract a function to do all of this and probably put in another helper
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
-                draggableEl.style.visibility = "hidden";
+                styleShadowEl(draggableEl);
                 continue;
             }
             if (!elToIdx.has(draggableEl)) {
@@ -240,21 +245,19 @@ export function dndzone(node, options) {
             }
             // updating the idx
             elToIdx.set(draggableEl, idx);
-            // TODO - consider removing the mouse down listeners from removed items (although probably no need cause they were destroyed)
         }
     }
     configure(options);
 
     return ({
         update: (newOptions) => {
-            console.log("dndzone will update", newOptions);
+            console.debug("dndzone will update", newOptions);
             configure(newOptions);
         },
         destroy: () => {
-            console.log("dndzone will destroy");
+            console.debug("dndzone will destroy");
             unregisterDropZone(node, config.type);
             dzToConfig.delete(node);
-            // TODO - do we need to call unobserve?
         }
     });
 }

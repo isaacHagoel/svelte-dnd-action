@@ -1,3 +1,8 @@
+/**
+ * Gets the absolute bounding rect (accounts for the window's scroll position)
+ * @param {HTMLElement }el
+ * @return {{top: number, left: number, bottom: number, right: number}}
+ */
 export function getAbsoluteRect(el) {
     const rect = el.getBoundingClientRect();
     return ({
@@ -8,6 +13,16 @@ export function getAbsoluteRect(el) {
     });
 }
 
+/**
+ * finds the center :)
+ * @typedef {Object} Rect
+ * @property {number} top
+ * @property {number} bottom
+ * @property {number} left
+ * @property {number} right
+ * @param {Rect} rect
+ * @return {{x: number, y: number}}
+ */
 export function findCenter(rect) {
     return ({
         x: (rect.left + rect.right) /2,
@@ -15,10 +30,23 @@ export function findCenter(rect) {
     });    
 }
 
+/**
+ * @typedef {Object} Point
+ * @property {number} x
+ * @property {number} y
+ * @param {Point} pointA
+ * @param {Point} pointB
+ * @return {number}
+ */
 function calcDistance(pointA, pointB) {
     return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) +  Math.pow(pointA.y - pointB.y, 2));
 }
 
+/**
+ * @param {Point} point
+ * @param {Rect} rect
+ * @return {boolean|boolean}
+ */
 function isPointInsideRect(point, rect) {
     return (
         (point.y <= rect.bottom && point.y >= rect.top)
@@ -36,12 +64,22 @@ export function findCenterOfElement(el) {
     return findCenter( getAbsoluteRect(el));
 }
 
+/**
+ * @param {HTMLElement} elA
+ * @param {HTMLElement} elB
+ * @return {boolean}
+ */
 export function isCentreOfAInsideB(elA, elB) {
     const centerOfA = findCenterOfElement(elA);
     const rectOfB = getAbsoluteRect(elB);
     return isPointInsideRect(centerOfA, rectOfB);
 }
 
+/**
+ * @param {HTMLElement} elA
+ * @param {HTMLElement} elB
+ * @return {number}
+ */
 export function calcDistanceBetweenCenters(elA, elB) {
     const centerOfA = findCenterOfElement(elA);
     const centerOfB = findCenterOfElement(elB);
@@ -57,6 +95,11 @@ export function isElementOffDocument(el) {
     return rect.right < 0 || rect.left > document.documentElement.scrollWidth || rect.bottom < 0 || rect.top > document.documentElement.scrollHeight;
 }
 
+/**
+ * @param {HTMLElement} elA
+ * @param {HTMLElement} elB
+ * @return {null|{top: number, left: number, bottom: number, right: number}} - null if the center of elA is not inside elB
+ */
 export function calcInnerDistancesBetweenCenterOfAAndSidesOfB(elA, elB) {
     const centerOfA = findCenterOfElement(elA);
     const rectB = getAbsoluteRect(elB);

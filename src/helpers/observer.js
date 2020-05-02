@@ -6,7 +6,6 @@ import {dispatchDraggedElementEnteredContainer,
         dispatchDraggedElementIsOverIndex} 
     from './dispatcher';
 
-// TODO - 13 - NEEDS TO BEHAVE CORRECTLY WHEN THE ELEMENT IS DROPPED INTO THE LAST POSITION
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
 const SCROLL_ZONE_PX = 20;
@@ -17,7 +16,7 @@ function resetScrolling() {
 }
 
 /**
- * 
+ * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
  * @param {Set<HTMLElement>} dropZones 
  * @param {HTMLElement} draggedEl 
  * @param {number} [intervalMs = INTERVAL_MS]
@@ -94,6 +93,9 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         }
     }
 
+    /**
+     * The main function in this module. Tracks where everything is/ should be a take the actions
+     */
     function andNow() {
         const scrolled = scrollIfNeeded();
         // we only want to make a new decision after the element was moved a bit to prevent flickering
@@ -105,7 +107,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
             return;
         }
         if (isElementOffDocument(draggedEl)) {
-            console.warn("off document");
+            console.debug("off document");
             dispatchDraggedLeftDocument(draggedEl);
             return;
         }
@@ -151,7 +153,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
 
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
 export function unobserve() {
-    console.warn("unobserving");
+    console.debug("unobserving");
     resetScrolling();
     clearTimeout(next);
 }

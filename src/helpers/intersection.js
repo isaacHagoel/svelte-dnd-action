@@ -96,20 +96,20 @@ export function isElementOffDocument(el) {
 }
 
 /**
- * @param {HTMLElement} elA
- * @param {HTMLElement} elB
- * @return {null|{top: number, left: number, bottom: number, right: number}} - null if the center of elA is not inside elB
+ * @param {Point} point
+ * @param {HTMLElement} el
+ * @return {null|{top: number, left: number, bottom: number, right: number}}
  */
-export function calcInnerDistancesBetweenCenterOfAAndSidesOfB(elA, elB) {
-    const centerOfA = findCenterOfElement(elA);
-    const rectB = getAbsoluteRect(elB);
-    if (!isPointInsideRect(centerOfA, rectB)) {
+export function calcInnerDistancesBetweenPointAndSidesOfElement(point, el) {
+    const rect = getAbsoluteRect(el);
+    if (!isPointInsideRect(point, rect)) {
         return null;
     }
     return {
-        top: centerOfA.y - rectB.top,
-        bottom: rectB.bottom - centerOfA.y,
-        left: centerOfA.x - rectB.left,
-        right: rectB.right - centerOfA.x
+        top: point.y - rect.top,
+        bottom: rect.bottom - point.y,
+        left: point.x - rect.left,
+        // TODO - figure out what is so special about right (why the rect is too big)
+        right: Math.min(rect.right, document.documentElement.clientWidth) - point.x
     }
 }

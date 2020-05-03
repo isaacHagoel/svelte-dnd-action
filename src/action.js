@@ -1,4 +1,5 @@
 import { observe, unobserve } from './helpers/observer';
+import { armWindowScroller, disarmWindowScroller} from "./helpers/windowScroller";
 import {createDraggedElementFrom, morphDraggedElementToBeLike, styleDraggable, styleShadowEl} from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
@@ -40,6 +41,7 @@ function unregisterDropZone(dropZoneEl, type) {
 
 /* functions to manage observing the dragged element and trigger custom drag-events */
 function watchDraggedElement() {
+    armWindowScroller();
     const dropZones = typeToDropZones.get(draggedElType);
     for (const dz of dropZones) {
         dz.addEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
@@ -52,6 +54,7 @@ function watchDraggedElement() {
     observe(draggedEl, dropZones, observationIntervalMs);
 }
 function unWatchDraggedElement() {
+    disarmWindowScroller();
     const dropZones = typeToDropZones.get(draggedElType);
     for (const dz of dropZones) {
         dz.removeEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);

@@ -96,22 +96,27 @@ function handleDraggedIsOverIndex(e) {
     dispatchConsiderEvent(e.currentTarget, items);
 }
 
-/* global mouse-events handlers */
+/* global mouse/touch-events handlers */
 function handleMouseMove(e) {
     e.stopPropagation();
+    e.preventDefault();
     if (!draggedEl) {
         return;
     }
-    currentMousePosition = {x: e.clientX, y: e.clientY};
-    draggedEl.style.transform = `translate3d(${e.clientX - dragStartMousePosition.x}px, ${e.clientY-dragStartMousePosition.y}px, 0)`;
+    const c = e.touches? e.touches[0] : e;
+    currentMousePosition = {x: c.clientX, y: c.clientY};
+    draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${currentMousePosition.y - dragStartMousePosition.y}px, 0)`;
 }
 
 function handleDrop(e) {
     console.debug('dropped', e.currentTarget);
     e.stopPropagation();
+    e.preventDefault();
     // cleanup
     window.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('touchmove', handleMouseMove);
     window.removeEventListener('mouseup', handleDrop);
+    window.removeEventListener('touchend', handleDrop);
     unWatchDraggedElement();
 
     if (!!shadowElDropZone) { // it was dropped in a drop-zone
@@ -207,7 +212,8 @@ export function dndzone(node, options) {
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
         shadowElData = {...draggedElData, isDndShadowItem: true};
-        dragStartMousePosition = {x: e.clientX, y:e.clientY};
+        const c = e.touches? e.touches[0] : e;
+        dragStartMousePosition = {x: c.clientX, y:c.clientY};
         currentMousePosition = {...dragStartMousePosition};
 
         // creating the draggable element
@@ -219,8 +225,10 @@ export function dndzone(node, options) {
         dispatchConsiderEvent(originDropZone, items);
 
         // handing over to global handlers - starting to watch the element
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleDrop);
+        window.addEventListener('mousemove', handleMouseMove, {passive: false});
+        window.addEventListener('touchmove', handleMouseMove, {passive: false});
+        window.addEventListener('mouseup', handleDrop, {passive: false});
+        window.addEventListener('touchend', handleDrop, {passive: false});
         watchDraggedElement();
     }
 
@@ -246,6 +254,7 @@ export function dndzone(node, options) {
             }
             if (!elToIdx.has(draggableEl)) {
                 draggableEl.addEventListener('mousedown', handleDragStart);
+                draggableEl.addEventListener('touchstart', handleDragStart);
             }
             // updating the idx
             elToIdx.set(draggableEl, idx);

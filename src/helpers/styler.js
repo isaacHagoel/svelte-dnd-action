@@ -40,19 +40,17 @@ export function createDraggedElementFrom(originalElement) {
 export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY) {
     const newRect = copyFromEl.getBoundingClientRect();
     const draggedElRect = draggedEl.getBoundingClientRect();
-    const heightChange = draggedElRect.height - newRect.height;
-    const widthChange = draggedElRect.width - newRect.width;
-    const distanceOfMousePointerFromDraggedSides = {
-        left: currentMouseX - draggedElRect.left,
-        top: currentMouseY - draggedElRect.top
-    };
-    draggedEl.style.height = `${newRect.height}px`;
-    draggedEl.style.width = `${newRect.width}px`;
-    if (newRect.height <= distanceOfMousePointerFromDraggedSides.top) {
-        draggedEl.style.top = `${parseFloat(draggedEl.style.top) + heightChange}px`;
-    }
-    if (newRect.width <= distanceOfMousePointerFromDraggedSides.left) {
-        draggedEl.style.left = `${parseFloat(draggedEl.style.left) + widthChange}px`;
+    const widthChange = newRect.width - draggedElRect.width;
+    const heightChange = newRect.height - draggedElRect.height;
+    if (widthChange || heightChange) {
+        const relativeDistanceOfMousePointerFromDraggedSides = {
+            left: (currentMouseX - draggedElRect.left) / draggedElRect.width,
+            top: (currentMouseY - draggedElRect.top) / draggedElRect.height
+        };
+        draggedEl.style.height = `${newRect.height}px`;
+        draggedEl.style.width = `${newRect.width}px`;
+        draggedEl.style.left = `${parseFloat(draggedEl.style.left) - relativeDistanceOfMousePointerFromDraggedSides.left * widthChange}px`;
+        draggedEl.style.top = `${parseFloat(draggedEl.style.top) - relativeDistanceOfMousePointerFromDraggedSides.top * heightChange}px`;
     }
 
     /// other properties

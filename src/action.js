@@ -1,6 +1,6 @@
 import { observe, unobserve } from './helpers/observer';
 import { armWindowScroller, disarmWindowScroller} from "./helpers/windowScroller";
-import {createDraggedElementFrom, morphDraggedElementToBeLike, styleDraggable, styleShadowEl} from "./helpers/styler";
+import {createDraggedElementFrom, moveDraggedElementToWasDroppedState, morphDraggedElementToBeLike, styleDraggable, styleShadowEl} from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -118,7 +118,7 @@ function handleDrop(e) {
     window.removeEventListener('mouseup', handleDrop);
     window.removeEventListener('touchend', handleDrop);
     unWatchDraggedElement();
-
+    moveDraggedElementToWasDroppedState(draggedEl);
     if (!!shadowElDropZone) { // it was dropped in a drop-zone
         console.debug('dropped in dz', shadowElDropZone);
         let {items} = dzToConfig.get(shadowElDropZone);

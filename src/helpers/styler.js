@@ -90,3 +90,23 @@ export function styleDraggable(draggableEl) {
 export function styleShadowEl(shadowEl) {
     shadowEl.style.visibility = "hidden";
 }
+
+/**
+ * will mark the given dropzones as visually active
+ * @param {Array<HTMLElement>} dropZones
+ */
+export function styleActiveDropZones(dropZones) {
+    dropZones.forEach(dz => {
+        dz.style.outline = 'rgba(255, 255, 102, 0.7) solid 2px';
+    });
+}
+
+/**
+ * will remove the 'active' styling from given dropzones
+ * @param {Array<HTMLElement>} dropZones
+ */
+export function styleInActiveDropZones(dropZones) {
+    dropZones.forEach(dz => {
+        dz.style.outline = '';
+    });
+}

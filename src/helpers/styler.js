@@ -27,7 +27,16 @@ export function createDraggedElementFrom(originalElement) {
     // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
     window.setTimeout(() => draggedEl.style.transition +=`, ${trs('top')}, ${trs('left')}`,0);
     draggedEl.style.zIndex = 9999;
+    draggedEl.style.cursor = 'grabbing';
     return draggedEl;
+}
+
+/**
+ * styles the dragged element to a 'dropped' state
+ * @param {HTMLElement} draggedEl
+ */
+export function moveDraggedElementToWasDroppedState(draggedEl) {
+    draggedEl.style.cursor = 'grab';
 }
 
 /**
@@ -71,6 +80,7 @@ export function styleDraggable(draggableEl) {
     draggableEl.draggable = false;
     draggableEl.ondragstart = () => false;
     draggableEl.style.userSelect = 'none';
+    draggableEl.style.cursor = 'grab';
 }
 
 /**
@@ -79,4 +89,24 @@ export function styleDraggable(draggableEl) {
  */
 export function styleShadowEl(shadowEl) {
     shadowEl.style.visibility = "hidden";
+}
+
+/**
+ * will mark the given dropzones as visually active
+ * @param {Array<HTMLElement>} dropZones
+ */
+export function styleActiveDropZones(dropZones) {
+    dropZones.forEach(dz => {
+        dz.style.outline = 'rgba(255, 255, 102, 0.7) solid 2px';
+    });
+}
+
+/**
+ * will remove the 'active' styling from given dropzones
+ * @param {Array<HTMLElement>} dropZones
+ */
+export function styleInActiveDropZones(dropZones) {
+    dropZones.forEach(dz => {
+        dz.style.outline = '';
+    });
 }

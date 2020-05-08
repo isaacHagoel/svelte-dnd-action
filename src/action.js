@@ -1,6 +1,14 @@
 import { observe, unobserve } from './helpers/observer';
 import { armWindowScroller, disarmWindowScroller} from "./helpers/windowScroller";
-import {createDraggedElementFrom, morphDraggedElementToBeLike, styleDraggable, styleShadowEl} from "./helpers/styler";
+import {
+    createDraggedElementFrom,
+    moveDraggedElementToWasDroppedState,
+    morphDraggedElementToBeLike,
+    styleDraggable,
+    styleShadowEl,
+    styleActiveDropZones,
+    styleInActiveDropZones
+} from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -118,10 +126,11 @@ function handleDrop(e) {
     window.removeEventListener('mouseup', handleDrop);
     window.removeEventListener('touchend', handleDrop);
     unWatchDraggedElement();
-
+    moveDraggedElementToWasDroppedState(draggedEl);
     if (!!shadowElDropZone) { // it was dropped in a drop-zone
         console.debug('dropped in dz', shadowElDropZone);
-        let {items} = dzToConfig.get(shadowElDropZone);
+        let {items, type} = dzToConfig.get(shadowElDropZone);
+        styleInActiveDropZones(typeToDropZones.get(type));
         items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
         function finalizeWithinZone() {
             dispatchFinalizeEvent(shadowElDropZone, items);
@@ -133,7 +142,8 @@ function handleDrop(e) {
     }
     else { // it needs to return to its place
         console.debug('no dz available');
-        let {items} = dzToConfig.get(originDropZone);
+        let {items, type} = dzToConfig.get(originDropZone);
+        styleInActiveDropZones(typeToDropZones.get(type));
         items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
         shadowElIdx = originIndex;
@@ -219,6 +229,7 @@ export function dndzone(node, options) {
         // creating the draggable element
         draggedEl = createDraggedElementFrom(e.currentTarget);
         document.body.appendChild(draggedEl);
+        styleActiveDropZones(typeToDropZones.get(config.type));
 
         // removing the original element by removing its data entry
         items.splice( currentIdx, 1);

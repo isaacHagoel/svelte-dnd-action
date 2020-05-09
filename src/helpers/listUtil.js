@@ -1,4 +1,4 @@
-import { isCentreOfAInsideB, calcDistanceBetweenCenters } from './intersection';
+import { isCenterOfAInsideB, calcDistanceBetweenCenters } from './intersection';
 
 /**
  * @typedef {Object} Index
@@ -6,13 +6,13 @@ import { isCentreOfAInsideB, calcDistanceBetweenCenters } from './intersection';
  * @property {boolean} isProximityBased - false if the element is actually over the index, true if it is not over it but this index is the closest
  */
 /**
- * 
+ * Find the index for the dragged element in the list it is dragged over
  * @param {HTMLElement} floatingAboveEl 
  * @param {HTMLElement} collectionBelowEl 
  * @returns {Index|null} -  if the element is over the container the Index object otherwise null
  */
 export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
-    if (!isCentreOfAInsideB(floatingAboveEl, collectionBelowEl)) {
+    if (!isCenterOfAInsideB(floatingAboveEl, collectionBelowEl)) {
         return null;
     }
     const children = collectionBelowEl.childNodes;
@@ -23,7 +23,7 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     // the search could be more efficient but keeping it simple for now
     // a possible improvement: pass in the lastIndex it was found in and check there first, then expand from there
     for (let i=0; i< children.length; i++) {
-        if (isCentreOfAInsideB(floatingAboveEl, children[i])) {
+        if (isCenterOfAInsideB(floatingAboveEl, children[i])) {
             return {index: i, isProximityBased: false};
         }
     }

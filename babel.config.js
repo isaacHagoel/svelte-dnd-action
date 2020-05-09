@@ -1,4 +1,4 @@
-// babel is only used in order to make jest work
+// babel is only used in order to make the tests work
 module.exports = {
     presets: [
         [

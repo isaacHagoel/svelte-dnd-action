@@ -6,14 +6,14 @@
   "scripts": {
     "build": "rollup -c",
     "prepublishOnly": "npm run build",
-    "test": "jest /test"
+    "test": "cypress open"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
     "@rollup/plugin-node-resolve": "^6.0.0",
     "babel-jest": "^26.0.1",
-    "jest": "^26.0.1",
+    "cypress": "^4.5.0",
     "rollup": "^1.20.0",
     "rollup-plugin-svelte": "^5.0.0",
     "svelte": "^3.0.0"

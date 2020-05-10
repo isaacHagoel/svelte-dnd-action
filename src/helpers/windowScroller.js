@@ -3,7 +3,12 @@ import {makeScroller} from "./scroller";
 const INTERVAL_MS = 300;
 let mousePosition;
 
-function updateMousePosition(e) {
+/**
+ * Do not use this! it is visible for testing only until we get over the issue Cypress not triggering the mousemove listeners
+ * // TODO - make private (remove export)
+ * @param {{clientX: number, clientY: number}} e
+ */
+export function updateMousePosition(e) {
     mousePosition = {x: e.clientX, y: e.clientY};
 }
 const {scrollIfNeeded, resetScrolling} = makeScroller();

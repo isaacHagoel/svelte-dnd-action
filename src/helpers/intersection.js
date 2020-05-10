@@ -76,8 +76,8 @@ export function isCenterOfAInsideB(elA, elB) {
 }
 
 /**
- * @param {HTMLElement} elA
- * @param {HTMLElement} elB
+ * @param {HTMLElement|ChildNode} elA
+ * @param {HTMLElement|ChildNode} elB
  * @return {number}
  */
 export function calcDistanceBetweenCenters(elA, elB) {
@@ -96,6 +96,7 @@ export function isElementOffDocument(el) {
 }
 
 /**
+ * If the point is inside the element returns its distances from the sides, otherwise returns null
  * @param {Point} point
  * @param {HTMLElement} el
  * @return {null|{top: number, left: number, bottom: number, right: number}}

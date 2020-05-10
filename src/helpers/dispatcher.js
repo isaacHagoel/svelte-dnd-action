@@ -4,13 +4,13 @@ const CONSIDER_EVENT_NAME = 'consider';
 
 export function dispatchFinalizeEvent(el, items) {
     el.dispatchEvent(new CustomEvent(FINALIZE_EVENT_NAME, {
-        detail: items
+        detail: {items}
     }));
 }
 
 export function dispatchConsiderEvent(el, items) {
     el.dispatchEvent(new CustomEvent(CONSIDER_EVENT_NAME, {
-        detail: items
+        detail: {items}
     }));
 }
 

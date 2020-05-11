@@ -7,7 +7,6 @@ function makeDiv(widthPx = 50, heightPx = 50) {
     return el;
 }
 
-// TODO - add missing functions
 describe("intersection", () => {
     describe("isCenterOfAInsideB", () => {
         it("center is inside", () => {

@@ -11,6 +11,7 @@ The library is working well as far as I can tell, but I have not used it in prod
 ### Features
 - Awesome drag and drop with minimal fuss 
 - Supports horizontal, vertical or any other type of container (it doesn't care much about the shape)
+- Supports nested dnd-zones (draggable containers with other draggable elements inside)
 - Rich animations (can be opted out of)
 - Touch support (beta)
 - Define what can be dropped where (dnd-zones optionally have a "type")
@@ -28,6 +29,13 @@ npm install --save-dev svelte-dnd-action
 ```
 
 ### Usage
+```html
+    <div use:dndzone="{{items: myItems, ...otherOptions}}" on:consider={handler} on:finalize={handler}>
+         {#each myItems as item(item.id)}
+            <div>this is now a draggable div that can be dropped in other dnd zones</div>
+         {/each}   
+    </div>
+```
 
 #### Basic Example:
 
@@ -76,7 +84,7 @@ npm install --save-dev svelte-dnd-action
 ```
 
 #### Input:
-An object with the following attributes:
+An options-object with the following attributes:
 - `items`: Array. The data array that is used to produce the list with the draggable items (the same thing you run your #each block on)
 - `flipDurationMs`: Number. The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations.
 - `type`: Optional. String. dnd-zones that share the same type can have elements from one dragged into another. By default all dnd-zones have the same type.   

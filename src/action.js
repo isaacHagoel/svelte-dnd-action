@@ -12,6 +12,7 @@ import {
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
+const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
 
 let draggedEl;
 let draggedElData;
@@ -106,8 +107,6 @@ function handleDraggedIsOverIndex(e) {
 
 /* global mouse/touch-events handlers */
 function handleMouseMove(e) {
-    e.stopPropagation();
-    e.preventDefault();
     if (!draggedEl) {
         return;
     }
@@ -116,10 +115,8 @@ function handleMouseMove(e) {
     draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${currentMousePosition.y - dragStartMousePosition.y}px, 0)`;
 }
 
-function handleDrop(e) {
-    console.debug('dropped', e.currentTarget);
-    e.stopPropagation();
-    e.preventDefault();
+function handleDrop() {
+    console.debug('dropped');
     // cleanup
     window.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('touchmove', handleMouseMove);
@@ -204,10 +201,47 @@ export function dndzone(node, options) {
     const config =  {items: [], type: undefined};
     console.debug("dndzone good to go", {node, options, config});
     let elToIdx = new Map();
+    // used before the actual drag starts
+    let potentialDragTarget;
 
-    function handleDragStart(e) {
-        console.debug('drag start', e.currentTarget, {config});
-        e.stopPropagation();
+    function addMaybeListeners() {
+        window.addEventListener('mousemove', handleMouseMoveMaybeDragStart, {passive: false});
+        window.addEventListener('touchmove', handleMouseMoveMaybeDragStart, {passive: false});
+        window.addEventListener('mouseup', handleFalseAlarm, {passive: false});
+        window.addEventListener('touchend', handleFalseAlarm, {passive: false});
+    }
+    function removeMaybeListeners() {
+        window.removeEventListener('mousemove', handleMouseMoveMaybeDragStart);
+        window.removeEventListener('touchmove', handleMouseMoveMaybeDragStart);
+        window.removeEventListener('mouseup', handleFalseAlarm);
+        window.removeEventListener('touchend', handleFalseAlarm);
+    }
+    function handleFalseAlarm() {
+        removeMaybeListeners();
+        potentialDragTarget = undefined;
+        dragStartMousePosition = undefined;
+        currentMousePosition = undefined;
+    }
+
+    function handleMouseMoveMaybeDragStart(e) {
+        const c = e.touches? e.touches[0] : e;
+        currentMousePosition = {x: c.clientX, y: c.clientY};
+        if(Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
+            removeMaybeListeners();
+            handleDragStart(potentialDragTarget);
+            potentialDragTarget = undefined;
+        }
+    }
+    function handleMouseDown(e) {
+        const c = e.touches? e.touches[0] : e;
+        dragStartMousePosition = {x: c.clientX, y:c.clientY};
+        currentMousePosition = {...dragStartMousePosition};
+        potentialDragTarget = e.currentTarget;
+        addMaybeListeners();
+    }
+
+    function handleDragStart(dragTarget) {
+        console.debug('drag start', dragTarget, {config});
         if (isWorkingOnPreviousDrag) {
             console.debug('cannot start a new drag before finalizing previous one');
             return;
@@ -215,19 +249,16 @@ export function dndzone(node, options) {
         isWorkingOnPreviousDrag = true;
 
         // initialising globals
-        const currentIdx = elToIdx.get(e.currentTarget);
+        const currentIdx = elToIdx.get(dragTarget);
         originIndex = currentIdx;
-        originDropZone = e.currentTarget.parentNode;
-        const {items, type} = dzToConfig.get(originDropZone);
+        originDropZone = dragTarget.parentNode;
+        const {items, type} = config;
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
         shadowElData = {...draggedElData, isDndShadowItem: true};
-        const c = e.touches? e.touches[0] : e;
-        dragStartMousePosition = {x: c.clientX, y:c.clientY};
-        currentMousePosition = {...dragStartMousePosition};
 
         // creating the draggable element
-        draggedEl = createDraggedElementFrom(e.currentTarget);
+        draggedEl = createDraggedElementFrom(dragTarget);
         document.body.appendChild(draggedEl);
         styleActiveDropZones(typeToDropZones.get(config.type));
 
@@ -264,8 +295,8 @@ export function dndzone(node, options) {
                 continue;
             }
             if (!elToIdx.has(draggableEl)) {
-                draggableEl.addEventListener('mousedown', handleDragStart);
-                draggableEl.addEventListener('touchstart', handleDragStart);
+                draggableEl.addEventListener('mousedown', handleMouseDown);
+                draggableEl.addEventListener('touchstart', handleMouseDown);
             }
             // updating the idx
             elToIdx.set(draggableEl, idx);

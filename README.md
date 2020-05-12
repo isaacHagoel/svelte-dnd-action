@@ -81,12 +81,12 @@ An object with the following attributes:
 - `flipDurationMs`: Number. The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations.
 - `type`: Optional. String. dnd-zones that share the same type can have elements from one dragged into another. By default all dnd-zones have the same type.   
 
-### Output:
-The action dispatches to custom events:
-- `consider` - dispatched whenever the dragged element needs to make room for itself in a new position in the list and when it leaves. The host (your component) is expected to update the list (you can keep a copy of the original list if you need to)
+#### Output:
+The action dispatches two custom events:
+- `consider` - dispatched whenever the dragged element needs to make room for itself in a new position in the items list and when it leaves. The host (your component) is expected to update the items list (you can keep a copy of the original list if you need to)
 - `finalize` - dispatched when the dragged element is dropped into position. The expectation is the same - update the list of items.
-in both cases the payload (within e.detail) is the same: an object with a single attribute: `items`, that contains the updated items list.
-You have to listen to both events and update the list of items in order for this library to work correctly.
+In both cases the payload (within e.detail) is the same: an object with a single attribute: `items`, that contains the updated items list.
+You have to listen for both events and update the list of items in order for this library to work correctly.
 
 ### Rules/ assumptions to keep in mind
 * Only one element can be dragged in any given time
@@ -100,3 +100,4 @@ You have to listen to both events and update the list of items in order for this
 ### Contributing
 There is still quite a lot to do. If you'd like to contribute please get in touch (raise an issue or comment on an existing one).
 Ideally, be specific about which area you'd like to help with.
+Thank you for reading :)

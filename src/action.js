@@ -107,9 +107,7 @@ function handleDraggedIsOverIndex(e) {
 
 /* global mouse/touch-events handlers */
 function handleMouseMove(e) {
-    if (!draggedEl) {
-        return;
-    }
+    e.preventDefault();
     const c = e.touches? e.touches[0] : e;
     currentMousePosition = {x: c.clientX, y: c.clientY};
     draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${currentMousePosition.y - dragStartMousePosition.y}px, 0)`;
@@ -206,7 +204,7 @@ export function dndzone(node, options) {
 
     function addMaybeListeners() {
         window.addEventListener('mousemove', handleMouseMoveMaybeDragStart, {passive: false});
-        window.addEventListener('touchmove', handleMouseMoveMaybeDragStart, {passive: false});
+        window.addEventListener('touchmove', handleMouseMoveMaybeDragStart, {passive: false, capture: false});
         window.addEventListener('mouseup', handleFalseAlarm, {passive: false});
         window.addEventListener('touchend', handleFalseAlarm, {passive: false});
     }
@@ -224,6 +222,7 @@ export function dndzone(node, options) {
     }
 
     function handleMouseMoveMaybeDragStart(e) {
+        e.preventDefault();
         const c = e.touches? e.touches[0] : e;
         currentMousePosition = {x: c.clientX, y: c.clientY};
         if(Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
@@ -268,7 +267,7 @@ export function dndzone(node, options) {
 
         // handing over to global handlers - starting to watch the element
         window.addEventListener('mousemove', handleMouseMove, {passive: false});
-        window.addEventListener('touchmove', handleMouseMove, {passive: false});
+        window.addEventListener('touchmove', handleMouseMove, {passive: false, capture: false});
         window.addEventListener('mouseup', handleDrop, {passive: false});
         window.addEventListener('touchend', handleDrop, {passive: false});
         watchDraggedElement();

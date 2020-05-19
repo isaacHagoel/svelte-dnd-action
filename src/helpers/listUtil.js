@@ -15,7 +15,7 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     if (!isCenterOfAInsideB(floatingAboveEl, collectionBelowEl)) {
         return null;
     }
-    const children = collectionBelowEl.childNodes;
+    const children = collectionBelowEl.children;
     // the container is empty, floating element should be the first 
     if (children.length === 0) {
         return {index: 0, isProximityBased: true};

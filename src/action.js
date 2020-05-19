@@ -82,7 +82,7 @@ function handleDraggedEntered(e) {
     items = items.filter(i => i.id !== shadowElData.id)
     console.debug(`dragged entered items ${JSON.stringify(items)}`);
     const {index, isProximityBased} = e.detail.indexObj;
-    shadowElIdx = (isProximityBased && index === e.currentTarget.childNodes.length - 1)? index + 1 : index;
+    shadowElIdx = (isProximityBased && index === e.currentTarget.children.length - 1)? index + 1 : index;
     shadowElDropZone = e.currentTarget;
     items.splice( shadowElIdx, 0, shadowElData);
     dispatchConsiderEvent(e.currentTarget, items);
@@ -129,7 +129,7 @@ function handleDrop() {
         items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
         function finalizeWithinZone() {
             dispatchFinalizeEvent(shadowElDropZone, items);
-            shadowElDropZone.childNodes[shadowElIdx].style.visibility = '';
+            shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
             isWorkingOnPreviousDrag = false;
         }
@@ -146,7 +146,7 @@ function handleDrop() {
         function finalizeBackToOrigin() {
             items.splice(originIndex, 1, draggedElData);
             dispatchFinalizeEvent(originDropZone, items);
-            shadowElDropZone.childNodes[shadowElIdx].style.visibility = '';
+            shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
             isWorkingOnPreviousDrag = false;
         }
@@ -156,7 +156,7 @@ function handleDrop() {
 
 // helper function for handleDrop
 function animateDraggedToFinalPosition(callback) {
-    const shadowElRect = shadowElDropZone.childNodes[shadowElIdx].getBoundingClientRect();
+    const shadowElRect = shadowElDropZone.children[shadowElIdx].getBoundingClientRect();
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
         y: shadowElRect.top - parseFloat(draggedEl.style.top)
@@ -285,8 +285,8 @@ export function dndzone(node, options) {
 
         config.items = opts.items || []; 
         dzToConfig.set(node, config);
-        for (let idx=0; idx< node.childNodes.length; idx++) {
-            const draggableEl = node.childNodes[idx];
+        for (let idx=0; idx< node.children.length; idx++) {
+            const draggableEl = node.children[idx];
             styleDraggable(draggableEl);
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);

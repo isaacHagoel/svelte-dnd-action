@@ -92,7 +92,7 @@ An options-object with the following attributes:
 #### Output:
 The action dispatches two custom events:
 - `consider` - dispatched whenever the dragged element needs to make room for itself in a new position in the items list and when it leaves. The host (your component) is expected to update the items list (you can keep a copy of the original list if you need to)
-- `finalize` - dispatched when the dragged element is dropped into position. The expectation is the same - update the list of items.
+- `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position. The expectation is the same - update the list of items.
 In both cases the payload (within e.detail) is the same: an object with a single attribute: `items`, that contains the updated items list.
 You have to listen for both events and update the list of items in order for this library to work correctly.
 

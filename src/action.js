@@ -129,6 +129,10 @@ function handleDrop() {
         items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
         function finalizeWithinZone() {
             dispatchFinalizeEvent(shadowElDropZone, items);
+            if (shadowElDropZone !== originDropZone) {
+                // letting the origin drop zone know the element was permanently taken away
+                dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items);
+            }
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
             isWorkingOnPreviousDrag = false;

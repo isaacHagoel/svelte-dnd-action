@@ -277,27 +277,33 @@ export function dndzone(node, options) {
         watchDraggedElement();
     }
 
-    function configure(opts) {
-        console.debug(`configuring ${JSON.stringify(opts)}`);
-        config.dropAnimationDurationMs = opts.flipDurationMs || 0;
-        const newType  = opts.type|| DEFAULT_DROP_ZONE_TYPE;
+    function configure({items = [], flipDurationMs:dropAnimationDurationMs = 0, type:newType = DEFAULT_DROP_ZONE_TYPE, dragDisabled = false, dropDisabled = false, ...rest }) {
+        if (Object.keys(rest).length > 0) {
+            console.warn(`dndzone will ignore unknown options`, rest);
+        }
+        config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
         }
         config.type = newType;
         registerDropZone(node, newType);
 
-        config.items = opts.items || []; 
+        config.items = items;
+
+        config.dragDisabled = dragDisabled;
+        config.dropDisabled = dropDisabled;
         dzToConfig.set(node, config);
-        for (let idx=0; idx< node.children.length; idx++) {
+        for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];
-            styleDraggable(draggableEl);
+            styleDraggable(draggableEl, dragDisabled);
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
                 styleShadowEl(draggableEl);
                 continue;
             }
-            if (!elToIdx.has(draggableEl)) {
+            draggableEl.removeEventListener('mousedown', handleMouseDown);
+            draggableEl.removeEventListener('touchstart', handleMouseDown);
+            if (!dragDisabled) {
                 draggableEl.addEventListener('mousedown', handleMouseDown);
                 draggableEl.addEventListener('touchstart', handleMouseDown);
             }

@@ -86,8 +86,10 @@ npm install --save-dev svelte-dnd-action
 #### Input:
 An options-object with the following attributes:
 - `items`: Array. The data array that is used to produce the list with the draggable items (the same thing you run your #each block on)
-- `flipDurationMs`: Number. The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations.
-- `type`: Optional. String. dnd-zones that share the same type can have elements from one dragged into another. By default all dnd-zones have the same type.   
+- `flipDurationMs`: Optional. Number. The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations.
+- `type`: Optional. String. dnd-zones that share the same type can have elements from one dragged into another. By default all dnd-zones have the same type. 
+- `dragDisabled`: Optional. Boolean. Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly.
+- `dropFromOthersDisabled`: Optional. Boolean. Setting it to true will make it impossible to drop elements from other dnd-zones of the same type. Can be useful if you want to limit the max number of items for example. You can change it at any time, and the zone will adjust on the fly.   
 
 #### Output:
 The action dispatches two custom events:

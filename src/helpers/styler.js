@@ -76,12 +76,13 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
 /**
  * makes the element compatible with being draggable
  * @param {HTMLElement} draggableEl
+ * @param {boolean} dragDisabled
  */
-export function styleDraggable(draggableEl) {
+export function styleDraggable(draggableEl, dragDisabled) {
     draggableEl.draggable = false;
     draggableEl.ondragstart = () => false;
     draggableEl.style.userSelect = 'none';
-    draggableEl.style.cursor = 'grab';
+    draggableEl.style.cursor = dragDisabled? '': 'grab';
 }
 
 /**

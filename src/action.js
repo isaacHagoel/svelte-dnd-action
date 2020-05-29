@@ -77,8 +77,8 @@ function unWatchDraggedElement() {
 /* custom drag-events handlers */
 function handleDraggedEntered(e) {
     console.debug('dragged entered', e.currentTarget, e.detail);
-    let {items, dropDisabled} = dzToConfig.get(e.currentTarget);
-    if (dropDisabled && e.currentTarget !== originDropZone) {
+    let {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         console.debug('drop is currently disabled');
         return;
     }
@@ -93,8 +93,8 @@ function handleDraggedEntered(e) {
 }
 function handleDraggedLeft(e) {
     console.debug('dragged left', e.currentTarget, e.detail);
-    const {items, dropDisabled} = dzToConfig.get(e.currentTarget);
-    if (dropDisabled && e.currentTarget !== originDropZone) {
+    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         console.debug('drop is currently disabled');
         return;
     }
@@ -105,8 +105,8 @@ function handleDraggedLeft(e) {
 }
 function handleDraggedIsOverIndex(e) {
     console.debug('dragged is over index', e.currentTarget, e.detail);
-    const {items, dropDisabled} = dzToConfig.get(e.currentTarget);
-    if (dropDisabled && e.currentTarget !== originDropZone) {
+    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         console.debug('drop is currently disabled');
         return;
     }
@@ -212,7 +212,7 @@ function cleanupPostDrop() {
  * @return {{update: function, destroy: function}}
  */
 export function dndzone(node, options) {
-    const config =  {items: [], type: undefined, flipDurationMs: 0, dragDisabled: false, dropDisabled: false};
+    const config =  {items: [], type: undefined, flipDurationMs: 0, dragDisabled: false, dropFromOthersDisabled: false};
     console.debug("dndzone good to go", {node, options, config});
     let elToIdx = new Map();
     // used before the actual drag starts
@@ -277,7 +277,7 @@ export function dndzone(node, options) {
         document.body.appendChild(draggedEl);
         styleActiveDropZones(
             Array.from(typeToDropZones.get(config.type))
-            .filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropDisabled)
+            .filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled)
         );
 
         // removing the original element by removing its data entry
@@ -292,7 +292,7 @@ export function dndzone(node, options) {
         watchDraggedElement();
     }
 
-    function configure({items = [], flipDurationMs:dropAnimationDurationMs = 0, type:newType = DEFAULT_DROP_ZONE_TYPE, dragDisabled = false, dropDisabled = false, ...rest }) {
+    function configure({items = [], flipDurationMs:dropAnimationDurationMs = 0, type:newType = DEFAULT_DROP_ZONE_TYPE, dragDisabled = false, dropFromOthersDisabled = false, ...rest }) {
         if (Object.keys(rest).length > 0) {
             console.warn(`dndzone will ignore unknown options`, rest);
         }
@@ -307,14 +307,14 @@ export function dndzone(node, options) {
 
         config.dragDisabled = dragDisabled;
 
-        if (isWorkingOnPreviousDrag && config.dropDisabled !== dropDisabled) {
-            if (dropDisabled) {
+        if (isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
+            if (dropFromOthersDisabled) {
                 styleInActiveDropZones([node]);
             } else {
                 styleActiveDropZones([node]);
             }
         }
-        config.dropDisabled = dropDisabled;
+        config.dropFromOthersDisabled = dropFromOthersDisabled;
         dzToConfig.set(node, config);
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];

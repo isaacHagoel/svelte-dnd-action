@@ -16,6 +16,8 @@ function trs(property) {
 export function createDraggedElementFrom(originalElement) {
     const rect = originalElement.getBoundingClientRect();
     const draggedEl = originalElement.cloneNode(true);
+    draggedEl.id = `svelte-dnd-action-dragged-el`;
+    draggedEl.name = `svelte-dnd-action-dragged-el`;
     draggedEl.style.position = "fixed";
     draggedEl.style.top = `${rect.top}px`;
     draggedEl.style.left = `${rect.left}px`;
@@ -83,6 +85,16 @@ export function styleDraggable(draggableEl, dragDisabled) {
     draggableEl.ondragstart = () => false;
     draggableEl.style.userSelect = 'none';
     draggableEl.style.cursor = dragDisabled? '': 'grab';
+}
+
+/**
+ * Hides the provided element so that it can stay in the dom without interrupting
+ * @param {HTMLElement} dragTarget
+ */
+export function hideOriginalDragTarget(dragTarget) {
+    dragTarget.style.display = 'none';
+    dragTarget.style.position = 'fixed';
+    dragTarget.style.zIndex = '-5';
 }
 
 /**

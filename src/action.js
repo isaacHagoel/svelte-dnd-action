@@ -7,13 +7,15 @@ import {
     styleDraggable,
     styleShadowEl,
     styleActiveDropZones,
-    styleInActiveDropZones
+    styleInActiveDropZones,
+    hideOriginalDragTarget
 } from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
 
+let originalDragTarget;
 let draggedEl;
 let draggedElData;
 let draggedElType;
@@ -187,7 +189,9 @@ function animateDraggedToFinalPosition(callback) {
 /* cleanup */
 function cleanupPostDrop() {
     draggedEl.remove();
+    originalDragTarget.remove();
     draggedEl = undefined;
+    originalDragTarget = undefined;
     draggedElData = undefined;
     draggedElType = undefined;
     originDropZone = undefined;
@@ -215,8 +219,6 @@ export function dndzone(node, options) {
     const config =  {items: [], type: undefined, flipDurationMs: 0, dragDisabled: false, dropFromOthersDisabled: false};
     console.debug("dndzone good to go", {node, options, config});
     let elToIdx = new Map();
-    // used before the actual drag starts
-    let potentialDragTarget;
 
     function addMaybeListeners() {
         window.addEventListener('mousemove', handleMouseMoveMaybeDragStart, {passive: false});
@@ -232,7 +234,7 @@ export function dndzone(node, options) {
     }
     function handleFalseAlarm() {
         removeMaybeListeners();
-        potentialDragTarget = undefined;
+        originalDragTarget = undefined;
         dragStartMousePosition = undefined;
         currentMousePosition = undefined;
     }
@@ -243,20 +245,19 @@ export function dndzone(node, options) {
         currentMousePosition = {x: c.clientX, y: c.clientY};
         if(Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
             removeMaybeListeners();
-            handleDragStart(potentialDragTarget);
-            potentialDragTarget = undefined;
+            handleDragStart(originalDragTarget);
         }
     }
     function handleMouseDown(e) {
         const c = e.touches? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y:c.clientY};
         currentMousePosition = {...dragStartMousePosition};
-        potentialDragTarget = e.currentTarget;
+        originalDragTarget = e.currentTarget;
         addMaybeListeners();
     }
 
-    function handleDragStart(dragTarget) {
-        console.debug('drag start', dragTarget, {config});
+    function handleDragStart() {
+        console.debug('drag start', originalDragTarget, {config});
         if (isWorkingOnPreviousDrag) {
             console.debug('cannot start a new drag before finalizing previous one');
             return;
@@ -264,24 +265,30 @@ export function dndzone(node, options) {
         isWorkingOnPreviousDrag = true;
 
         // initialising globals
-        const currentIdx = elToIdx.get(dragTarget);
+        const currentIdx = elToIdx.get(originalDragTarget);
         originIndex = currentIdx;
-        originDropZone = dragTarget.parentNode;
+        originDropZone = originalDragTarget.parentElement;
         const {items, type} = config;
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
         shadowElData = {...draggedElData, isDndShadowItem: true};
 
         // creating the draggable element
-        draggedEl = createDraggedElementFrom(dragTarget);
-        document.body.appendChild(draggedEl);
+        draggedEl = createDraggedElementFrom(originalDragTarget);
+        // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after Svelte removes it
+        window.setTimeout(() => {
+            document.body.appendChild(draggedEl);
+            hideOriginalDragTarget(originalDragTarget);
+            document.body.appendChild(originalDragTarget);
+        }, 0);
+
         styleActiveDropZones(
             Array.from(typeToDropZones.get(config.type))
             .filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled)
         );
 
         // removing the original element by removing its data entry
-        items.splice( currentIdx, 1);
+        items.splice(currentIdx, 1);
         dispatchConsiderEvent(originDropZone, items);
 
         // handing over to global handlers - starting to watch the element

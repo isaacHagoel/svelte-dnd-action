@@ -52,6 +52,7 @@ function unregisterDropZone(dropZoneEl, type) {
 
 /* functions to manage observing the dragged element and trigger custom drag-events */
 function watchDraggedElement() {
+    console.debug('watching dragged element');
     armWindowScroller();
     const dropZones = typeToDropZones.get(draggedElType);
     for (const dz of dropZones) {
@@ -65,6 +66,7 @@ function watchDraggedElement() {
     observe(draggedEl, dropZones, observationIntervalMs);
 }
 function unWatchDraggedElement() {
+    console.debug('unwatching dragged element');
     disarmWindowScroller();
     const dropZones = typeToDropZones.get(draggedElType);
     for (const dz of dropZones) {
@@ -278,6 +280,7 @@ export function dndzone(node, options) {
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after Svelte removes it
         window.setTimeout(() => {
             document.body.appendChild(draggedEl);
+            watchDraggedElement();
             hideOriginalDragTarget(originalDragTarget);
             document.body.appendChild(originalDragTarget);
         }, 0);
@@ -296,7 +299,6 @@ export function dndzone(node, options) {
         window.addEventListener('touchmove', handleMouseMove, {passive: false, capture: false});
         window.addEventListener('mouseup', handleDrop, {passive: false});
         window.addEventListener('touchend', handleDrop, {passive: false});
-        watchDraggedElement();
     }
 
     function configure({items = [], flipDurationMs:dropAnimationDurationMs = 0, type:newType = DEFAULT_DROP_ZONE_TYPE, dragDisabled = false, dropFromOthersDisabled = false, ...rest }) {

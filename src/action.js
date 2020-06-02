@@ -151,7 +151,6 @@ function handleDrop() {
             }
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
-            isWorkingOnPreviousDrag = false;
         }
         animateDraggedToFinalPosition(finalizeWithinZone);
     }
@@ -168,7 +167,6 @@ function handleDrop() {
             dispatchFinalizeEvent(originDropZone, items);
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
-            isWorkingOnPreviousDrag = false;
         }
         window.setTimeout(() => animateDraggedToFinalPosition(finalizeBackToOrigin), 0);
     }
@@ -200,8 +198,10 @@ function cleanupPostDrop() {
     originIndex = undefined;
     shadowElData = undefined;
     shadowElIdx = undefined;
+    shadowElDropZone = undefined;
     dragStartMousePosition = undefined;
     currentMousePosition = undefined;
+    isWorkingOnPreviousDrag = false;
 }
 
 /**

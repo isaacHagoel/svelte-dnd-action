@@ -251,6 +251,7 @@ export function dndzone(node, options) {
         }
     }
     function handleMouseDown(e) {
+        e.stopPropagation();
         const c = e.touches? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y:c.clientY};
         currentMousePosition = {...dragStartMousePosition};
@@ -283,7 +284,7 @@ export function dndzone(node, options) {
             watchDraggedElement();
             hideOriginalDragTarget(originalDragTarget);
             document.body.appendChild(originalDragTarget);
-        }, 0);
+        }, 20);
 
         styleActiveDropZones(
             Array.from(typeToDropZones.get(config.type))

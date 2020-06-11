@@ -83,8 +83,14 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
 export function styleDraggable(draggableEl, dragDisabled) {
     draggableEl.draggable = false;
     draggableEl.ondragstart = () => false;
-    draggableEl.style.userSelect = 'none';
-    draggableEl.style.cursor = dragDisabled? '': 'grab';
+    if (!dragDisabled) {
+        draggableEl.style.userSelect = 'none';
+        draggableEl.style.cursor = 'grab';
+    }
+    else {
+        draggableEl.style.userSelect = '';
+        draggableEl.style.cursor = '';
+    }
 }
 
 /**

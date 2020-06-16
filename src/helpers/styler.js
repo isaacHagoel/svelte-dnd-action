@@ -115,8 +115,9 @@ export function styleShadowEl(shadowEl) {
  * will mark the given dropzones as visually active
  * @param {Array<HTMLElement>} dropZones
  */
-export function styleActiveDropZones(dropZones, styles) {
+export function styleActiveDropZones(dropZones, getStyles) {
     dropZones.forEach(dz => {
+        const styles = getStyles(dz)
         Object.keys(styles).forEach(style => {
             dz.style[style] = styles[style];
         });
@@ -127,8 +128,9 @@ export function styleActiveDropZones(dropZones, styles) {
  * will remove the 'active' styling from given dropzones
  * @param {Array<HTMLElement>} dropZones
  */
-export function styleInActiveDropZones(dropZones, styles) {
+export function styleInActiveDropZones(dropZones, getStyles) {
     dropZones.forEach(dz => {
+        const styles = getStyles(dz)
         Object.keys(styles).forEach(style => {
             dz.style[style] = '';
         });

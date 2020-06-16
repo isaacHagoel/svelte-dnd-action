@@ -90,6 +90,7 @@ An options-object with the following attributes:
 - `type`: Optional. String. dnd-zones that share the same type can have elements from one dragged into another. By default all dnd-zones have the same type. 
 - `dragDisabled`: Optional. Boolean. Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly.
 - `dropFromOthersDisabled`: Optional. Boolean. Setting it to true will make it impossible to drop elements from other dnd-zones of the same type. Can be useful if you want to limit the max number of items for example. You can change it at any time, and the zone will adjust on the fly.   
+- `dropTargetStyle`: Optional. Object. An object of styles to apply to the dnd-zone when items can be dragged in to it.
 
 #### Output:
 The action dispatches two custom events:

@@ -14,7 +14,7 @@ import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUM
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
-const DEFAULT_ACTIVE_STYLES = {
+const DEFAULT_DROP_TARGET_STYLE = {
     outline: 'rgba(255, 255, 102, 0.7) solid 2px',
 };
 
@@ -144,7 +144,7 @@ function handleDrop() {
     if (!!shadowElDropZone) { // it was dropped in a drop-zone
         console.debug('dropped in dz', shadowElDropZone);
         let {items, type} = dzToConfig.get(shadowElDropZone);
-        styleInActiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).activeStyle);
+        styleInActiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
         items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
         function finalizeWithinZone() {
             dispatchFinalizeEvent(shadowElDropZone, items);
@@ -160,7 +160,7 @@ function handleDrop() {
     else { // it needs to return to its place
         console.debug('no dz available');
         let {items, type} = dzToConfig.get(originDropZone);
-        styleInActiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).activeStyle);
+        styleInActiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
         items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
         shadowElIdx = originIndex;
@@ -227,7 +227,7 @@ export function dndzone(node, options) {
         flipDurationMs: 0,
         dragDisabled: false,
         dropFromOthersDisabled: false,
-        activeStyle: DEFAULT_ACTIVE_STYLES,
+        dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
     };
     console.debug("dndzone good to go", {node, options, config});
     let elToIdx = new Map();
@@ -299,7 +299,7 @@ export function dndzone(node, options) {
         styleActiveDropZones(
             Array.from(typeToDropZones.get(config.type))
             .filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
-            dz => dzToConfig.get(dz).activeStyle,
+            dz => dzToConfig.get(dz).dropTargetStyle,
         );
 
         // removing the original element by removing its data entry
@@ -319,7 +319,7 @@ export function dndzone(node, options) {
         type:newType = DEFAULT_DROP_ZONE_TYPE,
         dragDisabled = false,
         dropFromOthersDisabled = false,
-        activeStyle = DEFAULT_ACTIVE_STYLES,
+        dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
          ...rest
      }) {
         if (Object.keys(rest).length > 0) {
@@ -336,13 +336,13 @@ export function dndzone(node, options) {
 
         config.dragDisabled = dragDisabled;
 
-        config.activeStyle = activeStyle;
+        config.dropTargetStyle = dropTargetStyle;
 
         if (isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
             if (dropFromOthersDisabled) {
-                styleInActiveDropZones([node], dz => dzToConfig.get(dz).activeStyle);
+                styleInActiveDropZones([node], dz => dzToConfig.get(dz).dropTargetStyle);
             } else {
-                styleActiveDropZones([node], dz => dzToConfig.get(dz).activeStyle);
+                styleActiveDropZones([node], dz => dzToConfig.get(dz).dropTargetStyle);
             }
         }
         config.dropFromOthersDisabled = dropFromOthersDisabled;

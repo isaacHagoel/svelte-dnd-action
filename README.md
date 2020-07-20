@@ -85,12 +85,15 @@ npm install --save-dev svelte-dnd-action
 
 #### Input:
 An options-object with the following attributes:
-- `items`: Array. The data array that is used to produce the list with the draggable items (the same thing you run your #each block on)
-- `flipDurationMs`: Optional. Number. The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations.
-- `type`: Optional. String. dnd-zones that share the same type can have elements from one dragged into another. By default all dnd-zones have the same type. 
-- `dragDisabled`: Optional. Boolean. Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly.
-- `dropFromOthersDisabled`: Optional. Boolean. Setting it to true will make it impossible to drop elements from other dnd-zones of the same type. Can be useful if you want to limit the max number of items for example. You can change it at any time, and the zone will adjust on the fly.   
-- `dropTargetStyle`: Optional. Object. An object of styles to apply to the dnd-zone when items can be dragged in to it. Note: the styles override any inline styles applied to the dnd-zone. When the styles are removed, any original inline styles will be lost.
+| Name                     | Type           | Required?                                                                     | Default Value                                     | Description                                                                                                                                                                                                                                   |
+| ------------------------ | -------------- | ----------------------------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `items`                  | Array<Object>  | Each object in the array **has to have** an `id` property with a unique value | -                                                 | The data array that is used to produce the list with the draggable items (the same thing you run your #each block on)                                                                                                                         |
+| `flipDurationMs`         | Number         | No                                                                            | `0`                                               | The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations                                                              |
+| `type`                   | String         | No                                                                            | Internal                                          | dnd-zones that share the same type can have elements from one dragged into another. By default, all dnd-zones have the same type                                                                                                              |
+| `dragDisabled`           | Boolean        | No                                                                            | `false`                                           | Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly                                                                                           |
+| `dropFromOthersDisabled` | Boolean        | No                                                                            | `false`                                           | Setting it to true will make it impossible to drop elements from other dnd-zones of the same type. Can be useful if you want to limit the max number of items for example. You can change it at any time, and the zone will adjust on the fly |
+| `dropTargetStyle`        | Object<String> | No                                                                            | `{outline: 'rgba(255, 255, 102, 0.7) solid 2px'}` | An object of styles to apply to the dnd-zone when items can be dragged in to it. Note: the styles override any inline styles applied to the dnd-zone. When the styles are removed, any original inline styles will be lost                    |
+
 
 #### Output:
 The action dispatches two custom events:
@@ -102,7 +105,7 @@ You have to listen for both events and update the list of items in order for thi
 ### Rules/ assumptions to keep in mind
 * Only one element can be dragged in any given time
 * The data that represents items within dnd-zones **of the same type** is expected to have the same shape (as in a data object that represents an item in one container can be added to another without conversion).
-* Item ids (#each keys) are unique in all dnd containers of the same type. EVERY DRAGGABLE MUST HAVE AN ID PROPERTY CALLED `id`.
+* Item ids (#each keys) are unique in all dnd containers of the same type. EVERY DRAGGABLE ITEM (passed in through `items`) MUST HAVE AN ID PROPERTY CALLED `id`.
 * The items in the list that is passed-in are in the same order as the children of the container (i.e the items are rendered in an #each block).
 * The host component should refresh the items that are passed in to the custom-action when receiving consider and finalize events.
 * It is okay to add a temporary item to the items list in any of the dnd-zones while an element is dragged around.

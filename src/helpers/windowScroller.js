@@ -9,7 +9,8 @@ let mousePosition;
  * @param {{clientX: number, clientY: number}} e
  */
 export function updateMousePosition(e) {
-    mousePosition = {x: e.clientX, y: e.clientY};
+    const c = e.touches? e.touches[0] : e;
+    mousePosition = {x: c.clientX, y: c.clientY};
 }
 const {scrollIfNeeded, resetScrolling} = makeScroller();
 let next;
@@ -27,6 +28,7 @@ function loop() {
 export function armWindowScroller() {
     console.debug('arming window scroller');
     window.addEventListener('mousemove', updateMousePosition);
+    window.addEventListener('touchmove', updateMousePosition);
     loop();
 }
 
@@ -36,6 +38,7 @@ export function armWindowScroller() {
 export function disarmWindowScroller() {
     console.debug('disarming window scroller');
     window.removeEventListener('mousemove', updateMousePosition);
+    window.removeEventListener('touchmove', updateMousePosition);
     mousePosition = undefined;
     window.clearTimeout(next);
     resetScrolling();

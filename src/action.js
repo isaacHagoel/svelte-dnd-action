@@ -11,6 +11,7 @@ import {
     hideOriginalDragTarget
 } from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
+const ITEM_ID_KEY = "id";
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
@@ -289,12 +290,18 @@ export function dndzone(node, options) {
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after Svelte removes it
-        window.setTimeout(() => {
-            document.body.appendChild(draggedEl);
-            watchDraggedElement();
-            hideOriginalDragTarget(originalDragTarget);
-            document.body.appendChild(originalDragTarget);
-        }, 20);
+        function keepOriginalElementInDom() {
+            const {items: itemsNow} = config;
+            if (!itemsNow[originIndex] || draggedElData[ITEM_ID_KEY] !== itemsNow[originIndex][ITEM_ID_KEY]) {
+                document.body.appendChild(draggedEl);
+                watchDraggedElement();
+                hideOriginalDragTarget(originalDragTarget);
+                document.body.appendChild(originalDragTarget);
+            } else {
+                window.requestAnimationFrame(keepOriginalElementInDom);
+            }
+        }
+        window.requestAnimationFrame(keepOriginalElementInDom);
 
         styleActiveDropZones(
             Array.from(typeToDropZones.get(config.type))

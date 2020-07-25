@@ -67,7 +67,7 @@ function watchDraggedElement() {
     window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
     const observationIntervalMs = Math.max(MIN_OBSERVATION_INTERVAL_MS, ...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
-    observe(draggedEl, dropZones, observationIntervalMs);
+    observe(draggedEl, dropZones, observationIntervalMs * 1.07);
 }
 function unWatchDraggedElement() {
     console.debug('unwatching dragged element');
@@ -292,7 +292,7 @@ export function dndzone(node, options) {
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after Svelte removes it
         function keepOriginalElementInDom() {
             const {items: itemsNow} = config;
-            if (!itemsNow[originIndex] || draggedElData[ITEM_ID_KEY] !== itemsNow[originIndex][ITEM_ID_KEY]) {
+            if (!draggedEl.parentElement && (!itemsNow[originIndex] || draggedElData[ITEM_ID_KEY] !== itemsNow[originIndex][ITEM_ID_KEY])) {
                 document.body.appendChild(draggedEl);
                 watchDraggedElement();
                 hideOriginalDragTarget(originalDragTarget);

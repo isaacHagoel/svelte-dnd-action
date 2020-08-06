@@ -258,12 +258,16 @@ export function dndzone(node, options) {
         e.preventDefault();
         const c = e.touches? e.touches[0] : e;
         currentMousePosition = {x: c.clientX, y: c.clientY};
-        if(Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
+        if (Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
             removeMaybeListeners();
             handleDragStart(originalDragTarget);
         }
     }
     function handleMouseDown(e) {
+        if (isWorkingOnPreviousDrag) {
+            console.debug('cannot start a new drag before finalizing previous one');
+            return;
+        }
         e.stopPropagation();
         const c = e.touches? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y:c.clientY};
@@ -274,10 +278,6 @@ export function dndzone(node, options) {
 
     function handleDragStart() {
         console.debug('drag start', originalDragTarget, {config});
-        if (isWorkingOnPreviousDrag) {
-            console.debug('cannot start a new drag before finalizing previous one');
-            return;
-        }
         isWorkingOnPreviousDrag = true;
 
         // initialising globals

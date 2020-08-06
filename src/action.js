@@ -33,9 +33,11 @@ let currentMousePosition;
 let isWorkingOnPreviousDrag = false;
 
 // a map from type to a set of drop-zones
-let typeToDropZones = new Map();
+const typeToDropZones = new Map();
 // important - this is needed because otherwise the config that would be used for everyone is the config of the element that created the event listeners
-let dzToConfig = new Map();
+const dzToConfig = new Map();
+// this is needed in order to be able to cleanup old listeners and avoid stale closures issues (as the listener is defined within each zone)
+const elToMouseDownListener = new WeakMap();
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
@@ -362,11 +364,12 @@ export function dndzone(node, options) {
                 styleShadowEl(draggableEl);
                 continue;
             }
-            draggableEl.removeEventListener('mousedown', handleMouseDown);
-            draggableEl.removeEventListener('touchstart', handleMouseDown);
+            draggableEl.removeEventListener('mousedown', elToMouseDownListener.get(draggableEl));
+            draggableEl.removeEventListener('touchstart', elToMouseDownListener.get(draggableEl));
             if (!dragDisabled) {
                 draggableEl.addEventListener('mousedown', handleMouseDown);
                 draggableEl.addEventListener('touchstart', handleMouseDown);
+                elToMouseDownListener.set(draggableEl, handleMouseDown);
             }
             // updating the idx
             elToIdx.set(draggableEl, idx);

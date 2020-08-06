@@ -30,7 +30,7 @@
     "dist"
   ],
   "description": "*An awesome drag and drop library for Svelte 3 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "dependencies": {
     "acorn": "^7.1.1",
     "builtin-modules": "^3.1.0",

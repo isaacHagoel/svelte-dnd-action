@@ -11,6 +11,8 @@ import {
     hideOriginalDragTarget
 } from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
+import { toString} from "./helpers/util";
+
 const ITEM_ID_KEY = "id";
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -94,7 +96,7 @@ function handleDraggedEntered(e) {
     }
     // this deals with another svelte related race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(i => i.id !== shadowElData.id)
-    console.debug(`dragged entered items ${JSON.stringify(items)}`);
+    console.debug(`dragged entered items ${toString(items)}`);
     const {index, isProximityBased} = e.detail.indexObj;
     shadowElIdx = (isProximityBased && index === e.currentTarget.children.length - 1)? index + 1 : index;
     shadowElDropZone = e.currentTarget;
@@ -232,7 +234,7 @@ export function dndzone(node, options) {
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
     };
-    console.debug("dndzone good to go", {node, options, config});
+    console.debug(`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node});
     let elToIdx = new Map();
 
     function addMaybeListeners() {
@@ -277,7 +279,7 @@ export function dndzone(node, options) {
     }
 
     function handleDragStart() {
-        console.debug('drag start', originalDragTarget, {config});
+        console.debug(`drag start config: ${toString(config)}`, originalDragTarget);
         isWorkingOnPreviousDrag = true;
 
         // initialising globals
@@ -341,7 +343,7 @@ export function dndzone(node, options) {
         config.type = newType;
         registerDropZone(node, newType);
 
-        config.items = items;
+        config.items = [...items];
 
         config.dragDisabled = dragDisabled;
 
@@ -379,7 +381,7 @@ export function dndzone(node, options) {
 
     return ({
         update: (newOptions) => {
-            console.debug("dndzone will update", newOptions);
+            console.debug(`dndzone will update newOptions: ${toString(newOptions)}`);
             configure(newOptions);
         },
         destroy: () => {

@@ -6,6 +6,7 @@ import {dispatchDraggedElementEnteredContainer,
         dispatchDraggedElementIsOverIndex} 
     from './dispatcher';
 import {makeScroller} from "./scroller";
+import { getDepth } from "./util";
 
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
@@ -25,6 +26,8 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
     let lastIndexFound;
     let lastIsDraggedInADropZone = false;
     let lastCentrePositionOfDragged;
+    // We are sorting to make sure that in case of nested zones of the same type the one "on top" is considered first
+    const dropZonesFromDeepToShallow = Array.from(dropZones).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
 
     /**
      * The main function in this module. Tracks where everything is/ should be a take the actions
@@ -48,7 +51,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         lastCentrePositionOfDragged = currentCenterOfDragged;
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false
-        for (const dz of dropZones) {
+        for (const dz of dropZonesFromDeepToShallow) {
             const indexObj = findWouldBeIndex(draggedEl, dz);
             if (indexObj === null) {
                // it is not inside

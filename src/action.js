@@ -11,7 +11,7 @@ import {
     hideOriginalDragTarget
 } from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
-import { toString} from "./helpers/util";
+import { toString } from "./helpers/util";
 
 const ITEM_ID_KEY = "id";
 const DEFAULT_DROP_ZONE_TYPE = '--any--';

@@ -292,7 +292,7 @@ export function dndzone(node, options) {
         shadowElData = {...draggedElData, isDndShadowItem: true};
 
         // creating the draggable element
-        draggedEl = createDraggedElementFrom(originalDragTarget);
+        draggedEl = createDraggedElementFrom(originalDragTarget, config.transformDraggedElement, currentIdx);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after Svelte removes it
         function keepOriginalElementInDom() {
             const {items: itemsNow} = config;
@@ -365,7 +365,7 @@ export function dndzone(node, options) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
-                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, config.transformDraggedElement);
+                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
                 styleShadowEl(draggableEl);
                 continue;
             }

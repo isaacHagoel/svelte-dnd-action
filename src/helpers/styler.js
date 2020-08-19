@@ -11,9 +11,12 @@ function trs(property) {
 /**
  * clones the given element and applies proper styles and transitions to the dragged element
  * @param {HTMLElement} originalElement
+ * @param {function} transformDraggedElement - hook to modify the dragged element before the element is styled.
+ * @param {number} index of the item in being dragged.
  * @return {Node} - the cloned, styled element
+ *
  */
-export function createDraggedElementFrom(originalElement) {
+export function createDraggedElementFrom(originalElement, transformDraggedElement, index) {
     const rect = originalElement.getBoundingClientRect();
     const draggedEl = originalElement.cloneNode(true);
     draggedEl.id = `svelte-dnd-action-dragged-el`;
@@ -31,6 +34,11 @@ export function createDraggedElementFrom(originalElement) {
     window.setTimeout(() => draggedEl.style.transition +=`, ${trs('top')}, ${trs('left')}`,0);
     draggedEl.style.zIndex = '9999';
     draggedEl.style.cursor = 'grabbing';
+
+    if(transformDraggedElement) {
+        transformDraggedElement(draggedEl, index);
+    }
+
     return draggedEl;
 }
 
@@ -48,9 +56,8 @@ export function moveDraggedElementToWasDroppedState(draggedEl) {
  * @param {HTMLElement} copyFromEl - the element the dragged element should look like, typically the shadow element
  * @param {number} currentMouseX
  * @param {number} currentMouseY
- * @param {function} transformDraggedElement - hook to modify the dragged element before the morph is complete.
  */
-export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY,  transformDraggedElement) {
+export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY) {
     const newRect = copyFromEl.getBoundingClientRect();
     const draggedElRect = draggedEl.getBoundingClientRect();
     const widthChange = newRect.width - draggedElRect.width;
@@ -64,10 +71,6 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
         draggedEl.style.width = `${newRect.width}px`;
         draggedEl.style.left = `${parseFloat(draggedEl.style.left) - relativeDistanceOfMousePointerFromDraggedSides.left * widthChange}px`;
         draggedEl.style.top = `${parseFloat(draggedEl.style.top) - relativeDistanceOfMousePointerFromDraggedSides.top * heightChange}px`;
-    }
-
-    if(transformDraggedElement) {
-        transformDraggedElement(draggedEl);
     }
 
     /// other properties

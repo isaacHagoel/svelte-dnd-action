@@ -331,6 +331,7 @@ export function dndzone(node, options) {
         dragDisabled = false,
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
+        transformDraggedElement,
          ...rest
      }) {
         if (Object.keys(rest).length > 0) {
@@ -349,6 +350,8 @@ export function dndzone(node, options) {
 
         config.dropTargetStyle = dropTargetStyle;
 
+        config.transformDraggedElement = transformDraggedElement;
+
         if (isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
             if (dropFromOthersDisabled) {
                 styleInActiveDropZones([node], dz => dzToConfig.get(dz).dropTargetStyle);
@@ -362,7 +365,7 @@ export function dndzone(node, options) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
-                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
+                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, config.transformDraggedElement);
                 styleShadowEl(draggableEl);
                 continue;
             }

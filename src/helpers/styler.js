@@ -11,12 +11,10 @@ function trs(property) {
 /**
  * clones the given element and applies proper styles and transitions to the dragged element
  * @param {HTMLElement} originalElement
- * @param {function} transformDraggedElement - hook to modify the dragged element before the element is styled.
- * @param {number} index of the item in being dragged.
  * @return {Node} - the cloned, styled element
  *
  */
-export function createDraggedElementFrom(originalElement, transformDraggedElement, index) {
+export function createDraggedElementFrom(originalElement) {
     const rect = originalElement.getBoundingClientRect();
     const draggedEl = originalElement.cloneNode(true);
     draggedEl.id = `svelte-dnd-action-dragged-el`;
@@ -35,10 +33,6 @@ export function createDraggedElementFrom(originalElement, transformDraggedElemen
     draggedEl.style.zIndex = '9999';
     draggedEl.style.cursor = 'grabbing';
 
-    if(transformDraggedElement) {
-        transformDraggedElement(draggedEl, index);
-    }
-
     return draggedEl;
 }
 
@@ -56,8 +50,10 @@ export function moveDraggedElementToWasDroppedState(draggedEl) {
  * @param {HTMLElement} copyFromEl - the element the dragged element should look like, typically the shadow element
  * @param {number} currentMouseX
  * @param {number} currentMouseY
+ * @param {function} transformDraggedElement - function to transform the dragged element when it enters the dropzone.
+ * @param {object} draggedElData - the data of the dragged element from the items array.
  */
-export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY) {
+export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY, transformDraggedElement, draggedElData) {
     const newRect = copyFromEl.getBoundingClientRect();
     const draggedElRect = draggedEl.getBoundingClientRect();
     const widthChange = newRect.width - draggedElRect.width;
@@ -77,10 +73,15 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
     const computedStyle = window.getComputedStyle(copyFromEl);
     Array.from(computedStyle)
         .filter(s => s.startsWith('background') || s.startsWith('padding') || s.startsWith('font') || s.startsWith('text') || s.startsWith('align') ||
-        s.startsWith('justify') || s.startsWith('display') || s.startsWith('flex') || s.startsWith('border') || s === 'opacity' || s === 'color')
+            s.startsWith('justify') || s.startsWith('display') || s.startsWith('flex') || s.startsWith('border') || s === 'opacity' || s === 'color')
         .forEach(s =>
             draggedEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s))
         );
+
+    if(transformDraggedElement) {
+        transformDraggedElement(draggedEl, draggedElData);
+    }
+
 }
 
 /**

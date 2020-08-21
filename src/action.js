@@ -48,7 +48,7 @@ function registerDropZone(dropZoneEl, type) {
         typeToDropZones.set(type, new Set());
     }
     if (!typeToDropZones.get(type).has(dropZoneEl)) {
-        typeToDropZones.get(type).add(dropZoneEl); 
+        typeToDropZones.get(type).add(dropZoneEl);
     }
 }
 function unregisterDropZone(dropZoneEl, type) {
@@ -365,7 +365,7 @@ export function dndzone(node, options) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
-                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
+                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, config.transformDraggedElement, draggedElData);
                 styleShadowEl(draggableEl);
                 continue;
             }

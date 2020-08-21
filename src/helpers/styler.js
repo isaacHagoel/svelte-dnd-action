@@ -12,7 +12,6 @@ function trs(property) {
  * clones the given element and applies proper styles and transitions to the dragged element
  * @param {HTMLElement} originalElement
  * @return {Node} - the cloned, styled element
- *
  */
 export function createDraggedElementFrom(originalElement) {
     const rect = originalElement.getBoundingClientRect();

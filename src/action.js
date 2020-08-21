@@ -292,7 +292,7 @@ export function dndzone(node, options) {
         shadowElData = {...draggedElData, isDndShadowItem: true};
 
         // creating the draggable element
-        draggedEl = createDraggedElementFrom(originalDragTarget, config.transformDraggedElement, currentIdx);
+        draggedEl = createDraggedElementFrom(originalDragTarget);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after Svelte removes it
         function keepOriginalElementInDom() {
             const {items: itemsNow} = config;

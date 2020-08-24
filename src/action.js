@@ -233,6 +233,7 @@ export function dndzone(node, options) {
         dragDisabled: false,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
+        transformDraggedElement : () => {}
     };
     console.debug(`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node});
     let elToIdx = new Map();
@@ -309,7 +310,7 @@ export function dndzone(node, options) {
 
         styleActiveDropZones(
             Array.from(typeToDropZones.get(config.type))
-            .filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
+                .filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
             dz => dzToConfig.get(dz).dropTargetStyle,
         );
 
@@ -325,15 +326,15 @@ export function dndzone(node, options) {
     }
 
     function configure({
-        items = [],
-        flipDurationMs:dropAnimationDurationMs = 0,
-        type:newType = DEFAULT_DROP_ZONE_TYPE,
-        dragDisabled = false,
-        dropFromOthersDisabled = false,
-        dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
-        transformDraggedElement,
-         ...rest
-     }) {
+                           items = [],
+                           flipDurationMs:dropAnimationDurationMs = 0,
+                           type:newType = DEFAULT_DROP_ZONE_TYPE,
+                           dragDisabled = false,
+                           dropFromOthersDisabled = false,
+                           dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
+                           transformDraggedElement = () => {},
+                           ...rest
+                       }) {
         if (Object.keys(rest).length > 0) {
             console.warn(`dndzone will ignore unknown options`, rest);
         }
@@ -365,7 +366,7 @@ export function dndzone(node, options) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (config.items[idx].hasOwnProperty('isDndShadowItem')) {
-                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, config.transformDraggedElement, draggedElData);
+                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () => config.transformDraggedElement(draggedEl, draggedElData, idx));
                 styleShadowEl(draggableEl);
                 continue;
             }

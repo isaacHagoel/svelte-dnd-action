@@ -31,6 +31,7 @@ export function createDraggedElementFrom(originalElement) {
     window.setTimeout(() => draggedEl.style.transition +=`, ${trs('top')}, ${trs('left')}`,0);
     draggedEl.style.zIndex = '9999';
     draggedEl.style.cursor = 'grabbing';
+
     return draggedEl;
 }
 
@@ -48,8 +49,9 @@ export function moveDraggedElementToWasDroppedState(draggedEl) {
  * @param {HTMLElement} copyFromEl - the element the dragged element should look like, typically the shadow element
  * @param {number} currentMouseX
  * @param {number} currentMouseY
+ * @param {function} transformDraggedElement - function to transform the dragged element, does nothing by default.
  */
-export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY) {
+export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY, transformDraggedElement) {
     const newRect = copyFromEl.getBoundingClientRect();
     const draggedElRect = draggedEl.getBoundingClientRect();
     const widthChange = newRect.width - draggedElRect.width;
@@ -69,10 +71,12 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
     const computedStyle = window.getComputedStyle(copyFromEl);
     Array.from(computedStyle)
         .filter(s => s.startsWith('background') || s.startsWith('padding') || s.startsWith('font') || s.startsWith('text') || s.startsWith('align') ||
-        s.startsWith('justify') || s.startsWith('display') || s.startsWith('flex') || s.startsWith('border') || s === 'opacity' || s === 'color')
+            s.startsWith('justify') || s.startsWith('display') || s.startsWith('flex') || s.startsWith('border') || s === 'opacity' || s === 'color')
         .forEach(s =>
             draggedEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s))
         );
+
+    transformDraggedElement();
 }
 
 /**

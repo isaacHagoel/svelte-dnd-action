@@ -76,7 +76,7 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
             draggedEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s))
         );
 
-    transformDraggedElement(draggedEl);
+    transformDraggedElement();
 }
 
 /**

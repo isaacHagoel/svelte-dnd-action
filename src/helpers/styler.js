@@ -134,7 +134,7 @@ export function styleActiveDropZones(dropZones, getStyles = () => {}) {
  * @param {Array<HTMLElement>} dropZones
  * @param {Function} getStyles - maps a dropzone to a styles object
  */
-export function styleInActiveDropZones(dropZones, getStyles = () => {}) {
+export function styleInactiveDropZones(dropZones, getStyles = () => {}) {
     dropZones.forEach(dz => {
         const styles = getStyles(dz)
         Object.keys(styles).forEach(style => {

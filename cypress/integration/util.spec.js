@@ -1,4 +1,4 @@
-import { getDepth } from "../../src/helpers/util";
+import {areObjectsShallowEqual, getDepth} from "../../src/helpers/util";
 
 describe("util", () => {
     describe("getDepth", () => {
@@ -16,5 +16,26 @@ describe("util", () => {
            expect(getDepth(section)).to.equal(2);
            expect(getDepth(div2)).to.equal(3);
         });
+    });
+    describe("areObjectsShallowEqual", () => {
+        it("equal when both empty", () => {
+            expect(areObjectsShallowEqual({}, {})).to.equal(true);
+        });
+        it ("simple objects equal ", () => {
+            expect(areObjectsShallowEqual({a:1, b:2, c: "lala"}, {b:2, c: "lala", a:1})).to.equal(true);
+        });
+        it("not equal with additional entries", () => {
+            expect(areObjectsShallowEqual({a:1, b:2, c:3}, {b:2, a:1})).to.equal(false);
+            expect(areObjectsShallowEqual({a:1, b:2}, {b:2, a:1, c:3})).to.equal(false);
+        });
+        it("not equal same key different value", () => {
+            expect(areObjectsShallowEqual({a:1}, {a:9})).to.equal(false);
+        });
+        it("not equal at all", () => {
+            expect(areObjectsShallowEqual({a:1, z:"lala"}, {b:9, h:7})).to.equal(false);
+        });
+
+
+
     });
 });

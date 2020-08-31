@@ -7,11 +7,11 @@ import {
     styleDraggable,
     styleShadowEl,
     styleActiveDropZones,
-    styleInActiveDropZones,
+    styleInactiveDropZones,
     hideOriginalDragTarget
 } from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
-import { toString } from "./helpers/util";
+import {areObjectsShallowEqual, toString} from "./helpers/util";
 
 const ITEM_ID_KEY = "id";
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
@@ -33,6 +33,7 @@ let shadowElDropZone;
 let dragStartMousePosition;
 let currentMousePosition;
 let isWorkingOnPreviousDrag = false;
+let finalizingPreviousDrag = false;
 
 // a map from type to a set of drop-zones
 const typeToDropZones = new Map();
@@ -139,6 +140,7 @@ function handleMouseMove(e) {
 
 function handleDrop() {
     console.debug('dropped');
+    finalizingPreviousDrag = true;
     // cleanup
     window.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('touchmove', handleMouseMove);
@@ -149,7 +151,7 @@ function handleDrop() {
     if (!!shadowElDropZone) { // it was dropped in a drop-zone
         console.debug('dropped in dz', shadowElDropZone);
         let {items, type} = dzToConfig.get(shadowElDropZone);
-        styleInActiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
+        styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
         items = items.map(item => item.hasOwnProperty('isDndShadowItem')? draggedElData : item);
         function finalizeWithinZone() {
             dispatchFinalizeEvent(shadowElDropZone, items);
@@ -165,7 +167,7 @@ function handleDrop() {
     else { // it needs to return to its place
         console.debug('no dz available');
         let {items, type} = dzToConfig.get(originDropZone);
-        styleInActiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
+        styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
         items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
         shadowElIdx = originIndex;
@@ -210,6 +212,7 @@ function cleanupPostDrop() {
     dragStartMousePosition = undefined;
     currentMousePosition = undefined;
     isWorkingOnPreviousDrag = false;
+    finalizingPreviousDrag = false;
 }
 
 /**
@@ -346,21 +349,26 @@ export function dndzone(node, options) {
         registerDropZone(node, newType);
 
         config.items = [...items];
-
         config.dragDisabled = dragDisabled;
-
-        config.dropTargetStyle = dropTargetStyle;
-
         config.transformDraggedElement = transformDraggedElement;
 
+        // realtime update for dropTargetStyle
+        if (isWorkingOnPreviousDrag && !finalizingPreviousDrag && !areObjectsShallowEqual(dropTargetStyle, config.dropTargetStyle)) {
+            styleInactiveDropZones([node], () => config.dropTargetStyle);
+            styleActiveDropZones([node], () => dropTargetStyle);
+        }
+        config.dropTargetStyle = dropTargetStyle;
+
+        // realtime update for dropFromOthersDisabled
         if (isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
             if (dropFromOthersDisabled) {
-                styleInActiveDropZones([node], dz => dzToConfig.get(dz).dropTargetStyle);
+                styleInactiveDropZones([node], dz => dzToConfig.get(dz).dropTargetStyle);
             } else {
                 styleActiveDropZones([node], dz => dzToConfig.get(dz).dropTargetStyle);
             }
         }
         config.dropFromOthersDisabled = dropFromOthersDisabled;
+
         dzToConfig.set(node, config);
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];

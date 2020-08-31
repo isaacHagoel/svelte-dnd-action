@@ -23,3 +23,21 @@ function _getDepth(node, countSoFar = 0) {
     }
     return _getDepth(node.parentElement, countSoFar + 1);
 }
+
+/**
+ * A simple util to shallow compare objects quickly, it doesn't validate the arguments so pass objects in
+ * @param {Object} objA
+ * @param {Object} objB
+ * @return {boolean} - true if objA and objB are shallow equal
+ */
+export function areObjectsShallowEqual(objA, objB) {
+    if (Object.keys(objA).length !== Object.keys(objB).length) {
+        return false;
+    }
+    for (const keyA in objA) {
+        if(!objB.hasOwnProperty(keyA) || objB[keyA] !== objA[keyA]) {
+            return false;
+        }
+    }
+    return true;
+}

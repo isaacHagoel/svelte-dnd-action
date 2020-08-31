@@ -13,7 +13,7 @@ The library is working well as far as I can tell, but I have not used it in prod
 - Supports horizontal, vertical or any other type of container (it doesn't care much about the shape)
 - Supports nested dnd-zones (draggable containers with other draggable elements inside)
 - Rich animations (can be opted out of)
-- Touch support (beta)
+- Touch support
 - Define what can be dropped where (dnd-zones optionally have a "type")
 - Scroll dnd-zones and/or the window horizontally or vertically by placing the dragged element next to the edge
 - Performant and small footprint (no external dependencies, no fluff code)  

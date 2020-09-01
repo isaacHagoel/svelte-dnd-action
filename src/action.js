@@ -270,6 +270,11 @@ export function dndzone(node, options) {
         }
     }
     function handleMouseDown(e) {
+        // prevents responding to any button but left click which equals 0 (which is falsy)
+        if (e.button) {
+            console.debug(`ignoring none left click button: ${e.button}`);
+            return;
+        }
         if (isWorkingOnPreviousDrag) {
             console.debug('cannot start a new drag before finalizing previous one');
             return;

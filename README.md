@@ -99,9 +99,18 @@ An options-object with the following attributes:
 
 The action dispatches two custom events:
 - `consider` - dispatched whenever the dragged element needs to make room for itself in a new position in the items list and when it leaves. The host (your component) is expected to update the items list (you can keep a copy of the original list if you need to)
-- `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position. The expectation is the same - update the list of items.
-In both cases the payload (within e.detail) is the same: an object with a single attribute: `items`, that contains the updated items list.
+- `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position. 
+
+The expectation is the same - update the list of items.
+In both cases the payload (within e.detail) is the same: an object with two attributes: `items` and `info`.
+- `items`: contains the updated items list.
+- `info`: This one can be used to achieve very advanced custom behaviours (ex: copy on drag). In most cases, don't worry about it. It is an object with the following properties: 
+   * `trigger`: will be one of the exported list of TRIGGERS (Please import if you plan to use): [DRAG_STARTED, DRAGGED_ENTERED, DRAGGED_OVER_INDEX, DRAGGED_LEFT, DROPPED_INTO_ZONE, DROPPED_INTO_ANOTHER, DROPPED_OUTSIDE_OF_ANY]
+   * `id`: the item id of the dragged element  
+
 You have to listen for both events and update the list of items in order for this library to work correctly.
+
+For advanced usecases you might also need to import SHADOW_ITEM_MARKER_PROPERTY_NAME, which marks the place holder element that is temporarily added to the list the dragged element hovers over. I haven't seen a usecase that required it yet, but you might be the first :)
 
 ### Rules/ assumptions to keep in mind
 * Only one element can be dragged in any given time

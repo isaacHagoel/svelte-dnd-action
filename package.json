@@ -1,21 +1,17 @@
 {
   "name": "svelte-dnd-action",
   "svelte": "src/index.js",
-  "module": "dist/index.mjs",
-  "main": "dist/index.js",
   "scripts": {
-    "build": "rollup -c",
-    "prepublishOnly": "npm run build",
     "test": "cypress run"
   },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
-    "@rollup/plugin-node-resolve": "^6.0.0",
     "babel-jest": "^26.0.1",
-    "cypress": "^4.5.0",
-    "rollup": "^1.20.0",
-    "rollup-plugin-svelte": "^5.0.0",
+    "cypress": "^4.5.0"
+  },
+  "peerDependencies": {
     "svelte": "^3.0.0"
   },
   "keywords": [
@@ -30,18 +26,7 @@
     "dist"
   ],
   "description": "*An awesome drag and drop library for Svelte 3 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
-  "version": "0.4.0",
-  "dependencies": {
-    "acorn": "^7.1.1",
-    "builtin-modules": "^3.1.0",
-    "estree-walker": "^0.6.1",
-    "is-module": "^1.0.0",
-    "path-parse": "^1.0.6",
-    "require-relative": "^0.8.7",
-    "resolve": "^1.15.1",
-    "rollup-pluginutils": "^2.8.2",
-    "sourcemap-codec": "^1.4.8"
-  },
+  "version": "0.4.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"

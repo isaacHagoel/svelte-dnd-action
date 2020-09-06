@@ -103,7 +103,7 @@ The action dispatches two custom events:
 In both cases the payload (within e.detail) is the same: an object with a two attributes: `items` and `info`.
 - `items`: contains the updated items list.
 - `info`: This one can be used to achieve very advanced custom behaviours (ex: copy on drag). In most cases, don't worry about it. It is an object with the following properties: 
-   * `trigger`: will be one of the exported list of TRIGGERS (ex: dragStarted). Please import if you plan to use.
+   * `trigger`: will be one of the exported list of TRIGGERS (Please import if you plan to use): [DRAG_STARTED, DRAGGED_ENTERED, DRAGGED_OVER_INDEX, DRAGGED_LEFT, DROPPED_INTO_ZONE, DROPPED_INTO_ANOTHER, DROPPED_OUTSIDE_OF_ANY]
    * `id`: the item id of the dragged element  
 
 You have to listen for both events and update the list of items in order for this library to work correctly.

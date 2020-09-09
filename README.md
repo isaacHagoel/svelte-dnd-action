@@ -16,6 +16,7 @@ The library is working well as far as I can tell, but I have not used it in prod
 - Touch support
 - Define what can be dropped where (dnd-zones optionally have a "type")
 - Scroll dnd-zones and/or the window horizontally or vertically by placing the dragged element next to the edge
+- Supports advanced use-cases such as various flavours of copy-on-drag and custom drag handles (see examples below)
 - Performant and small footprint (no external dependencies, no fluff code)  
 
 ### Installation
@@ -120,6 +121,24 @@ For advanced usecases you might also need to import SHADOW_ITEM_MARKER_PROPERTY_
 * The host component should refresh the items that are passed in to the custom-action when receiving consider and finalize events.
 * FYI, the library assumes it is okay to add a temporary item to the items list in any of the dnd-zones while an element is dragged around.
 * If you want dragged items to be able to scroll the container, make sure the scroll-container (the element with overflow:scroll) is the dnd-zone (the element decorated with this custom action)
+* Svelte's built-in transitions might not play nice with this library. Luckily, it is an easy issue to work around. There are examples below.
+
+### Examples
+* [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3.24.1)
+* [Super basic, single list, with animation](https://svelte.dev/repl/3d544791e5c24fd4aa1eb983d749f776?version=3.24.1) 
+* [Multiple dndzones, multiple types](https://svelte.dev/repl/4d23eb3b9e184b90b58f0867010ad258?version=3.24.1)
+* [Board (nested zones and multiple types), scrolling containers, scrolling page](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3.22.2)
+* [Selectively enable/disable drag/drop](https://svelte.dev/repl/44c9229556f3456e9883c10fc0aa0ee9?version=3)
+* [Custom active dropzone styling](https://svelte.dev/repl/4ceecc5bae54490b811bd62d4d613e59?version=3.24.1) 
+* [Customizing the dragged element](https://svelte.dev/repl/438fca28bb1f4eb1b34eff9dc6a728dc?version=3)
+
+* [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.24.1)
+* [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3.24.1), courtesy of @gleuch
+* [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
+
+* [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
+* [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)
+
 
 ### Contributing
 There is still quite a lot to do. If you'd like to contribute please get in touch (raise an issue or comment on an existing one).

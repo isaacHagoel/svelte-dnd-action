@@ -1,12 +1,12 @@
-# SVELTE DND ACTION
-This is an implementation of Trello-like drag and drop for Svelte using a custom action.
+# SVELTE DND ACTION ![Dependencies](https://david-dm.org/isaacHagoel/svelte-dnd-action.svg) [![Known Vulnerabilities](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action/badge.svg?targetFile=package.json)](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action?targetFile=package.json) [![MadeWithSvelte.com shield](https://madewithsvelte.com/storage/repo-shields/2465-shield.svg)](https://madewithsvelte.com/p/svelte-dnd-action/shield-link)
+This is an implementation of Trello-like drag and drop for Svelte using a custom action. See features list below.
 
 ![dnd_demo2](https://user-images.githubusercontent.com/20507787/81682367-267eb780-9498-11ea-8dbc-5c9582033522.gif)
 
 [Play with this example in the REPL](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3.22.2).
 
 ### Current Status
-The library is working well as far as I can tell, but I have not used it in production yet. 
+The library is working well as far as I can tell, but I have not used it in production yet. It is being actively maintained.
 
 ### Features
 - Awesome drag and drop with minimal fuss 
@@ -140,7 +140,7 @@ For advanced usecases you might also need to import SHADOW_ITEM_MARKER_PROPERTY_
 * [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)
 
 
-### Contributing
+### Contributing [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
 There is still quite a lot to do. If you'd like to contribute please get in touch (raise an issue or comment on an existing one).
 Ideally, be specific about which area you'd like to help with.
 Thank you for reading :)

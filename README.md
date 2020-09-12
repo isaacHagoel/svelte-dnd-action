@@ -1,4 +1,4 @@
-# SVELTE DND ACTION ![Dependencies](https://david-dm.org/isaacHagoel/svelte-dnd-action.svg) [![Known Vulnerabilities](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action/badge.svg?targetFile=package.json)](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action?targetFile=package.json) [![MadeWithSvelte.com shield](https://madewithsvelte.com/storage/repo-shields/2465-shield.svg)](https://madewithsvelte.com/p/svelte-dnd-action/shield-link)
+# SVELTE DND ACTION ![Dependencies](https://david-dm.org/isaacHagoel/svelte-dnd-action.svg) [![Known Vulnerabilities](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action/badge.svg?targetFile=package.json)](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action?targetFile=package.json) 
 This is an implementation of Trello-like drag and drop for Svelte using a custom action. See features list below.
 
 ![dnd_demo2](https://user-images.githubusercontent.com/20507787/81682367-267eb780-9498-11ea-8dbc-5c9582033522.gif)

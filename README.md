@@ -140,7 +140,7 @@ For advanced usecases you might also need to import SHADOW_ITEM_MARKER_PROPERTY_
 * [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)
 
 
-### Contributing [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
+### Contributing [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/isaacHagoel/svelte-dnd-action/issues)
 There is still quite a lot to do. If you'd like to contribute please get in touch (raise an issue or comment on an existing one).
 Ideally, be specific about which area you'd like to help with.
 Thank you for reading :)

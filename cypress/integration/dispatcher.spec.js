@@ -1,21 +1,28 @@
+import {TRIGGERS} from "../../src";
 import {dispatchFinalizeEvent, dispatchConsiderEvent} from "../../src/helpers/dispatcher";
 
 describe("dispatcher", () => {
     let divEl = document.createElement('div');
     let items;
+    let info;
     beforeEach(() => {
         items = [];
+        info = {};
     });
     it("honors contract - finalize", () => {
-        divEl.addEventListener('finalize', (e) => {items = e.detail.items});
+        divEl.addEventListener('finalize', (e) => {items = e.detail.items; info = e.detail.info});
         const myItems = [1,2];
-        dispatchFinalizeEvent(divEl, myItems);
+        const myInfo = {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: "someId"}
+        dispatchFinalizeEvent(divEl, myItems, myInfo);
         expect(items).to.deep.equal(myItems);
+        expect(info).to.deep.equal(myInfo);
     });
     it("honors contract - consider", () => {
-        divEl.addEventListener('consider', (e) => {items = e.detail.items});
+        divEl.addEventListener('consider', (e) => {items = e.detail.items; info = e.detail.info});
         const myItems = [3,4];
-        dispatchFinalizeEvent(divEl, myItems);
+        const myInfo = {trigger: TRIGGERS.DRAGGED_ENTERED, id: "someId"};
+        dispatchConsiderEvent(divEl, myItems, myInfo);
         expect(items).to.deep.equal(myItems);
+        expect(info).to.deep.equal(myInfo);
     });
 });

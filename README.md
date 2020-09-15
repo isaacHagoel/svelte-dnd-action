@@ -88,7 +88,7 @@ npm install --save-dev svelte-dnd-action
 An options-object with the following attributes:
 | Name                      | Type           | Required?                                                    | Default Value                                     | Description                                                  |
 | ------------------------- | -------------- | ------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
-| `items`                   | Array<Object>  | Yes. Each object in the array **has to have** an `id` property with a unique value (within all dnd-zones of the same type) | N/A                                               | The data array that is used to produce the list with the draggable items (the same thing you run your #each block on) |
+| `items`                   | Array<Object>  | Yes. Each object in the array **has to have** an `id` property (key name can be overridden globally) with a unique value (within all dnd-zones of the same type) | N/A                                               | The data array that is used to produce the list with the draggable items (the same thing you run your #each block on) |
 | `flipDurationMs`          | Number         | No                                                           | `0`                                               | The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations |
 | `type`                    | String         | No                                                           | Internal                                          | dnd-zones that share the same type can have elements from one dragged into another. By default, all dnd-zones have the same type |
 | `dragDisabled`            | Boolean        | No                                                           | `false`                                           | Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly |
@@ -116,12 +116,22 @@ For advanced usecases you might also need to import SHADOW_ITEM_MARKER_PROPERTY_
 ### Rules/ assumptions to keep in mind
 * Only one element can be dragged in any given time
 * The data that represents items within dnd-zones **of the same type** is expected to have the same shape (as in a data object that represents an item in one container can be added to another without conversion).
-* Item ids (#each keys) are unique in all dnd containers of the same type. EVERY DRAGGABLE ITEM (passed in through `items`) MUST HAVE AN ID PROPERTY CALLED `id`.
+* Item ids (#each keys) are unique in all dnd containers of the same type. EVERY DRAGGABLE ITEM (passed in through `items`) MUST HAVE AN ID PROPERTY CALLED `id`. You can override it globally if you'd like to use a different key (see below)
 * The items in the list that is passed-in are in the same order as the children of the container (i.e the items are rendered in an #each block).
 * The host component should refresh the items that are passed in to the custom-action when receiving consider and finalize events.
 * FYI, the library assumes it is okay to add a temporary item to the items list in any of the dnd-zones while an element is dragged around.
 * If you want dragged items to be able to scroll the container, make sure the scroll-container (the element with overflow:scroll) is the dnd-zone (the element decorated with this custom action)
 * Svelte's built-in transitions might not play nice with this library. Luckily, it is an easy issue to work around. There are examples below.
+
+### Overriding the item id key name
+Sometimes it is useful to use a different key for your items instead of `id`, for example when working with PouchDB which expects `_id`. It can save some annoying conversions back and forth.
+In such cases you can import and call `overrideItemIdKeyNameBeforeInitialisingDndZones`. This function accepts one parameter of type `string` which is the new id key name.
+For example:
+```javascript
+import {overrideItemIdKeyNameBeforeInitialisingDndZones} from 'svelte-dnd-action';
+overrideItemIdKeyNameBeforeInitialisingDndZones('_id');
+``` 
+It applies globally (as in, all of your items everywhere are expected to have a unique identifier with this name). It can only be called when there are no rendered dndzones (I recommend calling it within the top-level <script> tag, ex: in the App component).
 
 ### Examples
 * [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3.24.1)

@@ -14,7 +14,7 @@ import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUM
 import {areObjectsShallowEqual, toString} from "./helpers/util";
 
 export const SHADOW_ITEM_MARKER_PROPERTY_NAME = 'isDndShadowItem';
-const ITEM_ID_KEY = "id";
+
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
@@ -42,6 +42,25 @@ const typeToDropZones = new Map();
 const dzToConfig = new Map();
 // this is needed in order to be able to cleanup old listeners and avoid stale closures issues (as the listener is defined within each zone)
 const elToMouseDownListener = new WeakMap();
+
+let ITEM_ID_KEY = "id";
+
+/**
+ * Allows using another key instead of "id" in the items data. This is global and applies to all dndzones.
+ * Has to be called when there are no rendered dndzones whatsoever.
+ * @param {String} newKeyName
+ * @throws {Error} if it was called when there are rendered dndzones or if it is given the wrong type (not a string)
+ */
+export function overrideItemIdKeyNameBeforeInitialisingDndZones(newKeyName) {
+    if (dzToConfig.size > 0) {
+        throw new Error("can only override the id key before initialising any dndzone");
+    }
+    if (typeof newKeyName !== "string") {
+        throw new Error("item id key has to be a string");
+    }
+    console.debug("overriding item id key name", newKeyName)
+    ITEM_ID_KEY = newKeyName;
+}
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
@@ -97,13 +116,13 @@ function handleDraggedEntered(e) {
         return;
     }
     // this deals with another svelte related race condition. in rare occasions (super rapid operations) the list hasn't updated yet
-    items = items.filter(i => i.id !== shadowElData.id)
+    items = items.filter(i => i[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY])
     console.debug(`dragged entered items ${toString(items)}`);
     const {index, isProximityBased} = e.detail.indexObj;
     shadowElIdx = (isProximityBased && index === e.currentTarget.children.length - 1)? index + 1 : index;
     shadowElDropZone = e.currentTarget;
     items.splice( shadowElIdx, 0, shadowElData);
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData.id});
+    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData[ITEM_ID_KEY]});
 }
 function handleDraggedLeft(e) {
     console.debug('dragged left', e.currentTarget, e.detail);
@@ -115,7 +134,7 @@ function handleDraggedLeft(e) {
     items.splice(shadowElIdx, 1);
     shadowElIdx = undefined;
     shadowElDropZone = undefined;
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData.id});
+    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY]});
 }
 function handleDraggedIsOverIndex(e) {
     console.debug('dragged is over index', e.currentTarget, e.detail);
@@ -128,7 +147,7 @@ function handleDraggedIsOverIndex(e) {
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     shadowElIdx = index;
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData.id});
+    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY]});
 }
 
 /* global mouse/touch-events handlers */
@@ -155,10 +174,10 @@ function handleDrop() {
         styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
         items = items.map(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)? draggedElData : item);
         function finalizeWithinZone() {
-            dispatchFinalizeEvent(shadowElDropZone, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: draggedElData.id});
+            dispatchFinalizeEvent(shadowElDropZone, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: draggedElData[ITEM_ID_KEY]});
             if (shadowElDropZone !== originDropZone) {
                 // letting the origin drop zone know the element was permanently taken away
-                dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: draggedElData.id});
+                dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: draggedElData[ITEM_ID_KEY]});
             }
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
@@ -172,10 +191,10 @@ function handleDrop() {
         items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
         shadowElIdx = originIndex;
-        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData.id});
+        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY]});
         function finalizeBackToOrigin() {
             items.splice(originIndex, 1, draggedElData);
-            dispatchFinalizeEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData.id});
+            dispatchFinalizeEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY]});
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
         }
@@ -335,7 +354,7 @@ export function dndzone(node, options) {
 
         // removing the original element by removing its data entry
         items.splice(currentIdx, 1);
-        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData.id});
+        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY]});
 
         // handing over to global handlers - starting to watch the element
         window.addEventListener('mousemove', handleMouseMove, {passive: false});

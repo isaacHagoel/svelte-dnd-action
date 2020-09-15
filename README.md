@@ -128,6 +128,7 @@ Sometimes it is useful to use a different key for your items instead of `id`, fo
 In such cases you can import and call `overrideItemIdKeyNameBeforeInitialisingDndZones`. This function accepts one parameter of type string which is the new id key name.
 For example:
 ```javascript
+import {overrideItemIdKeyNameBeforeInitialisingDndZones} from 'svelte-dnd-action';
 overrideItemIdKeyNameBeforeInitialisingDndZones('_id');
 ``` 
 It applies globally (as in, all of your items everywhere are expected to have a unique identifier with this name). It can only be called when there are no rendered dndzones (I recommend calling it at the top-level <script> tag).

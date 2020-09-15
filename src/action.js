@@ -260,8 +260,8 @@ export const TRIGGERS = {
  */
 export function dndzone(node, options) {
     const config =  {
-        items: [],
-        type: undefined,
+        items: undefined,
+        type: DEFAULT_DROP_ZONE_TYPE,
         flipDurationMs: 0,
         dragDisabled: false,
         dropFromOthersDisabled: false,
@@ -364,9 +364,9 @@ export function dndzone(node, options) {
     }
 
     function configure({
-                           items = [],
+                           items = undefined,
                            flipDurationMs:dropAnimationDurationMs = 0,
-                           type:newType = DEFAULT_DROP_ZONE_TYPE,
+                           type: newType = DEFAULT_DROP_ZONE_TYPE,
                            dragDisabled = false,
                            dropFromOthersDisabled = false,
                            dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
@@ -375,6 +375,13 @@ export function dndzone(node, options) {
                        }) {
         if (Object.keys(rest).length > 0) {
             console.warn(`dndzone will ignore unknown options`, rest);
+        }
+        if (!items) {
+            throw new Error("no 'items' key provided to dndzone");
+        }
+        const itemWithMissingId = items.find(item => !item.hasOwnProperty(ITEM_ID_KEY));
+        if (itemWithMissingId) {
+            throw new Error(`missing '${ITEM_ID_KEY}' property for item ${toString(itemWithMissingId)}`);
         }
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {

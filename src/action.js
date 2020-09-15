@@ -46,8 +46,8 @@ const elToMouseDownListener = new WeakMap();
 let ITEM_ID_KEY = "id";
 
 /**
- * Allows using another key instead of "id" in the items data. This is global and applies to all dndzones
- * Has to be called when there are no rendered dndzones whatsoever
+ * Allows using another key instead of "id" in the items data. This is global and applies to all dndzones.
+ * Has to be called when there are no rendered dndzones whatsoever.
  * @param {String} newKeyName
  * @throws {Error} if it was called when there are rendered dndzones or if it is given the wrong type (not a string)
  */

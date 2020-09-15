@@ -124,14 +124,14 @@ For advanced usecases you might also need to import SHADOW_ITEM_MARKER_PROPERTY_
 * Svelte's built-in transitions might not play nice with this library. Luckily, it is an easy issue to work around. There are examples below.
 
 ### Overriding the item id key name
-Sometimes it is useful to use a different key for your items instead of `id`, for example when working with PouchDB which expects `_id` it can save some annying conversions back and forth.
-In such cases you can import and call `overrideItemIdKeyNameBeforeInitialisingDndZones`. This function accepts one parameter of type string which is the new id key name.
+Sometimes it is useful to use a different key for your items instead of `id`, for example when working with PouchDB which expects `_id`. It can save some annoying conversions back and forth.
+In such cases you can import and call `overrideItemIdKeyNameBeforeInitialisingDndZones`. This function accepts one parameter of type `string` which is the new id key name.
 For example:
 ```javascript
 import {overrideItemIdKeyNameBeforeInitialisingDndZones} from 'svelte-dnd-action';
 overrideItemIdKeyNameBeforeInitialisingDndZones('_id');
 ``` 
-It applies globally (as in, all of your items everywhere are expected to have a unique identifier with this name). It can only be called when there are no rendered dndzones (I recommend calling it at the top-level <script> tag).
+It applies globally (as in, all of your items everywhere are expected to have a unique identifier with this name). It can only be called when there are no rendered dndzones (I recommend calling it within the top-level <script> tag, ex: in the App component).
 
 ### Examples
 * [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3.24.1)

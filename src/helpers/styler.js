@@ -16,6 +16,7 @@ function trs(property) {
 export function createDraggedElementFrom(originalElement) {
     const rect = originalElement.getBoundingClientRect();
     const draggedEl = originalElement.cloneNode(true);
+    copyStylesFromTo(originalElement, draggedEl);
     draggedEl.id = `svelte-dnd-action-dragged-el`;
     draggedEl.name = `svelte-dnd-action-dragged-el`;
     draggedEl.style.position = "fixed";
@@ -68,15 +69,23 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
     }
 
     /// other properties
+    copyStylesFromTo(copyFromEl, draggedEl);
+    transformDraggedElement();
+}
+
+/**
+ *
+ * @param {HTMLElement} copyFromEl
+ * @param {HTMLElement} copyToEl
+ */
+function copyStylesFromTo(copyFromEl, copyToEl) {
     const computedStyle = window.getComputedStyle(copyFromEl);
     Array.from(computedStyle)
         .filter(s => s.startsWith('background') || s.startsWith('padding') || s.startsWith('font') || s.startsWith('text') || s.startsWith('align') ||
             s.startsWith('justify') || s.startsWith('display') || s.startsWith('flex') || s.startsWith('border') || s === 'opacity' || s === 'color')
         .forEach(s =>
-            draggedEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s))
+            copyToEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s))
         );
-
-    transformDraggedElement();
 }
 
 /**

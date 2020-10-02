@@ -24,7 +24,7 @@ const ALERT_DIV_ID = 'svelte-dnd-action-aria-alert';
 let alertsDiv = document.createElement('div');
 (function initAlertsDiv() {
     alertsDiv.id = ALERT_DIV_ID;
-    alertsDiv.style.display = '';
+    alertsDiv.tabIndex = -1;
     alertsDiv.style.position = 'fixed';
     alertsDiv.style.bottom = '0';
     alertsDiv.style.left = '0';

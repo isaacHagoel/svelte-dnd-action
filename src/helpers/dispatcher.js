@@ -6,6 +6,7 @@ const CONSIDER_EVENT_NAME = 'consider';
  * @typedef {Object} Info
  * @property {string} trigger
  * @property {string} id
+ * @property {string} source
  * @param {Node} el
  * @param {Array} items
  * @param {Info} info

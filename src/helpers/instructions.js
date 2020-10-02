@@ -1,5 +1,4 @@
 const INSTRUCTION_IDs = {
-    // TODO - add all
     DND_ZONE_ACTIVE: 'dnd-zone-active',
     DND_ZONE_DRAG_DISABLED: 'dnd-zone-drag-disabled'
 }
@@ -15,7 +14,6 @@ function instructionToHiddenDiv(id, txt) {
     const div = document.createElement('div');
     div.id = id;
     div.innerHTML = `<p>${txt}</p>`;
-    // TODO - maybe reuse the func in styler
     div.style.display = 'none';
     div.style.position = 'fixed';
     div.style.zIndex = '-5';
@@ -23,13 +21,20 @@ function instructionToHiddenDiv(id, txt) {
 }
 
 const ALERT_DIV_ID = 'svelte-dnd-action-aria-alert';
-const alertsDiv = instructionToHiddenDiv(ALERT_DIV_ID, '');
-alertsDiv.style.opacity = '0';
-alertsDiv.style.display = '';
-alertsDiv.style.height = '0';
-alertsDiv.style.width = '1px'
-
+let alertsDiv = document.createElement('div');
+(function initAlertsDiv() {
+    alertsDiv.id = ALERT_DIV_ID;
+    alertsDiv.style.display = '';
+    alertsDiv.style.position = 'fixed';
+    alertsDiv.style.bottom = '0';
+    alertsDiv.style.left = '0';
+    alertsDiv.style.zIndex = '-5';
+    alertsDiv.style.opacity = '0';
+    alertsDiv.style.height = '0';
+    alertsDiv.style.width = '1px'
+})();
 document.body.prepend(alertsDiv);
+
 export function tellUser(txt) {
     alertsDiv.innerHTML = `<p>${txt}</p>`;
     alertsDiv.setAttribute("role", "alert");

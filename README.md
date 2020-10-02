@@ -1,5 +1,6 @@
 # SVELTE DND ACTION [![Known Vulnerabilities](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action/badge.svg?targetFile=package.json)](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action?targetFile=package.json) 
-This is an implementation of Trello-like drag and drop for Svelte using a custom action. See features list below.
+This is an implementation of feature-complete drag and drop for Svelte using a custom action. It supports almost every imaginable drag and drop use-case and is fully accessible. 
+See full features list below.
 
 ![dnd_demo2](https://user-images.githubusercontent.com/20507787/81682367-267eb780-9498-11ea-8dbc-5c9582033522.gif)
 
@@ -11,13 +12,14 @@ The library is working well as far as I can tell, but I have not used it in prod
 ### Features
 - Awesome drag and drop with minimal fuss 
 - Supports horizontal, vertical or any other type of container (it doesn't care much about the shape)
-- Supports nested dnd-zones (draggable containers with other draggable elements inside)
+- Supports nested dnd-zones (draggable containers with other draggable elements inside, think Trello)
 - Rich animations (can be opted out of)
 - Touch support
 - Define what can be dropped where (dnd-zones optionally have a "type")
 - Scroll dnd-zones and/or the window horizontally or vertically by placing the dragged element next to the edge
 - Supports advanced use-cases such as various flavours of copy-on-drag and custom drag handles (see examples below)
 - Performant and small footprint (no external dependencies, no fluff code)  
+- Fully accessible (alpha) - keyboard support, aria attributes and assistive instructions for screen readers  
 
 ### Installation
 **Pre-requisites**: svelte-3
@@ -108,10 +110,37 @@ In both cases the payload (within e.detail) is the same: an object with two attr
 - `info`: This one can be used to achieve very advanced custom behaviours (ex: copy on drag). In most cases, don't worry about it. It is an object with the following properties: 
    * `trigger`: will be one of the exported list of TRIGGERS (Please import if you plan to use): [DRAG_STARTED, DRAGGED_ENTERED, DRAGGED_OVER_INDEX, DRAGGED_LEFT, DROPPED_INTO_ZONE, DROPPED_INTO_ANOTHER, DROPPED_OUTSIDE_OF_ANY]
    * `id`: the item id of the dragged element  
+   * `source`: will be one of the exported list of SOURCES (Please import if you plan to use): [POINTER, KEYBOARD]
 
 You have to listen for both events and update the list of items in order for this library to work correctly.
 
 For advanced usecases you might also need to import SHADOW_ITEM_MARKER_PROPERTY_NAME, which marks the place holder element that is temporarily added to the list the dragged element hovers over. I haven't seen a usecase that required it yet, but you might be the first :)
+
+### Accessibility (alpha)
+If you want screen-readers to tell the user which item is being dragged and which container it interacts with make, **please add `aria-label` on the container and on every draggable item**. The library will take care of the rest.
+For example:
+```html
+<h2>{listName}</h2>
+<section aria-label="{listName}" use:dndzone={{items, flipDurationMs}} on:consider={handleDndConsider} on:finalize={handleDndFinalize}>
+	{#each items as item(item.id)}
+		<div aria-label="{item.name}" animate:flip="{{duration: flipDurationMs}}">
+				{item.name}
+		</div>
+	{/each}
+</section>
+```
+If you don't provide the aria-labels everything will still work, but the messages to the user will be less informative.
+*Note*: in general you probably want to use semantic-html (ex: `ol` and `li` elements rather than `section` and `div`) but the library is screen readers friendly regardless (or at least that's the goal :)).
+
+#### Keyboard support
+- Tab into a dnd container to get a description and instructions
+- Tab into an item and press the *space*/*enter* key to enter dragging-mode. The reader will tell the user a drag has started. 
+- Use the arrow keys while in dragging-mode to change its position in the list (down and right are the same, up and left are the same). The reader will tell the user about position changes.
+- Tab to another dnd container while in dragging-mode in order to move the item to it (the item will be moved to it when it gets focus). The reader will tell the user that item was added to the new list.
+- Press *space*/*enter* key while focused on an item, or the *escape* key anywhere to get out of dragging mode. The reader will tell the user that they are no longer dragging.  
+- Clicking on another item while in drag mode will make it the drag target. Clicking outside of any draggable will exit dragging-mode (and tell the user)
+- Mouse drag and drop can be preformed independently of keyboard dragging (as in an item can be dragged with the mouse while in or out of keyboard initiated dragging-mode)
+- Keyboard drag uses the same `consider` (only on drag start) and `finalize` (every time the item is moved) events but only has a subset of the `TRIGGERS`. The same handlers should work fine for both.  
 
 ### Rules/ assumptions to keep in mind
 * Only one element can be dragged in any given time

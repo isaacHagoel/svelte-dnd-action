@@ -9,6 +9,10 @@ export const TRIGGERS = {
     DROPPED_INTO_ANOTHER: "droppedIntoAnother",
     DROPPED_OUTSIDE_OF_ANY: "droppedOutsideOfAny"
 };
+export const SOURCES = {
+    POINTER: "pointer",
+    KEYBOARD: "keyboard"
+};
 
 export const SHADOW_ITEM_MARKER_PROPERTY_NAME = 'isDndShadowItem';
 export let ITEM_ID_KEY = "id";

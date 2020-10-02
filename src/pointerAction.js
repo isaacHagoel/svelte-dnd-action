@@ -3,7 +3,7 @@ import {
     ITEM_ID_KEY,
     TRIGGERS,
     incrementActiveDropZoneCount,
-    decrementActiveDropZoneCount
+    decrementActiveDropZoneCount, SOURCES
 } from './constants'
 import { observe, unobserve } from './helpers/observer';
 import { armWindowScroller, disarmWindowScroller} from "./helpers/windowScroller";
@@ -110,7 +110,7 @@ function handleDraggedEntered(e) {
     shadowElIdx = (isProximityBased && index === e.currentTarget.children.length - 1)? index + 1 : index;
     shadowElDropZone = e.currentTarget;
     items.splice( shadowElIdx, 0, shadowElData);
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData[ITEM_ID_KEY]});
+    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 function handleDraggedLeft(e) {
     console.debug('dragged left', e.currentTarget, e.detail);
@@ -122,7 +122,7 @@ function handleDraggedLeft(e) {
     items.splice(shadowElIdx, 1);
     shadowElIdx = undefined;
     shadowElDropZone = undefined;
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY]});
+    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 function handleDraggedIsOverIndex(e) {
     console.debug('dragged is over index', e.currentTarget, e.detail);
@@ -135,7 +135,7 @@ function handleDraggedIsOverIndex(e) {
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     shadowElIdx = index;
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY]});
+    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 
 /* global mouse/touch-events handlers */
@@ -162,10 +162,10 @@ function handleDrop() {
         styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
         items = items.map(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)? draggedElData : item);
         function finalizeWithinZone() {
-            dispatchFinalizeEvent(shadowElDropZone, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: draggedElData[ITEM_ID_KEY]});
+            dispatchFinalizeEvent(shadowElDropZone, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
             if (shadowElDropZone !== originDropZone) {
                 // letting the origin drop zone know the element was permanently taken away
-                dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: draggedElData[ITEM_ID_KEY]});
+                dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
             }
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
@@ -179,10 +179,10 @@ function handleDrop() {
         items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
         shadowElIdx = originIndex;
-        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY]});
+        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
         function finalizeBackToOrigin() {
             items.splice(originIndex, 1, draggedElData);
-            dispatchFinalizeEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY]});
+            dispatchFinalizeEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
         }
@@ -332,7 +332,7 @@ export function dndzone(node, options) {
 
         // removing the original element by removing its data entry
         items.splice(currentIdx, 1);
-        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY]});
+        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 
         // handing over to global handlers - starting to watch the element
         window.addEventListener('mousemove', handleMouseMove, {passive: false});
@@ -413,11 +413,11 @@ export function dndzone(node, options) {
 
     return ({
         update: (newOptions) => {
-            console.debug(`dndzone will update newOptions: ${toString(newOptions)}`);
+            console.debug(`pointer dndzone will update newOptions: ${toString(newOptions)}`);
             configure(newOptions);
         },
         destroy: () => {
-            console.debug("dndzone will destroy");
+            console.debug("pointer dndzone will destroy");
             unregisterDropZone(node, config.type);
             dzToConfig.delete(node);
         }

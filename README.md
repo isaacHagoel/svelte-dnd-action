@@ -135,10 +135,10 @@ If you don't provide the aria-labels everything will still work, but the message
 
 ##### Keyboard support
 - Tab into a dnd container to get a description and instructions
-- Tab into an item and press the *space*/*enter* key to enter dragging-mode. The reader will tell the user a drag has started. 
-- Use the arrow keys while in dragging-mode to change the item's position in the list (down and right are the same, up and left are the same). The reader will tell the user about position changes.
+- Tab into an item and press the *Space*/*Enter* key to enter dragging-mode. The reader will tell the user a drag has started. 
+- Use the *arrow keys* while in dragging-mode to change the item's position in the list (down and right are the same, up and left are the same). The reader will tell the user about position changes.
 - Tab to another dnd container while in dragging-mode in order to move the item to it (the item will be moved to it when it gets focus). The reader will tell the user that item was added to the new list.
-- Press *space*/*enter* key while focused on an item, or the *escape* key anywhere to exit dragging mode. The reader will tell the user that they are no longer dragging.  
+- Press *Space*/*Enter* key while focused on an item, or the *Escape* key anywhere to exit dragging mode. The reader will tell the user that they are no longer dragging.  
 - Clicking on another item while in drag mode will make it the new drag target. Clicking outside of any draggable will exit dragging-mode (and tell the user)
 - Mouse drag and drop can be preformed independently of keyboard dragging (as in an item can be dragged with the mouse while in or out of keyboard initiated dragging-mode)
 - Keyboard drag uses the same `consider` (only on drag start) and `finalize` (every time the item is moved) events but only has a subset of the `TRIGGERS`. The same handlers should work fine for both.  

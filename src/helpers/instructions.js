@@ -24,18 +24,25 @@ const ALERT_DIV_ID = 'svelte-dnd-action-aria-alert';
 let alertsDiv = document.createElement('div');
 (function initAlertsDiv() {
     alertsDiv.id = ALERT_DIV_ID;
-    alertsDiv.tabIndex = -1;
+    // tab index -1 makes the alert be read twice on chrome for some reason
+    //alertsDiv.tabIndex = -1;
     alertsDiv.style.position = 'fixed';
     alertsDiv.style.bottom = '0';
     alertsDiv.style.left = '0';
     alertsDiv.style.zIndex = '-5';
     alertsDiv.style.opacity = '0';
     alertsDiv.style.height = '0';
-    alertsDiv.style.width = '1px'
+    alertsDiv.style.width = '0';
+    alertsDiv.setAttribute("role", "alert");
 })();
 document.body.prepend(alertsDiv);
 
 export function tellUser(txt) {
-    alertsDiv.innerHTML = `<p>${txt}</p>`;
-    alertsDiv.setAttribute("role", "alert");
+    alertsDiv.innerHTML = '';
+    const alertText = document.createTextNode(txt);
+    alertsDiv.appendChild(alertText);
+    // this is needed for Safari
+    alertsDiv.style.display = 'none';
+    alertsDiv.style.display = 'inline';
+    // TODO - figure out why firefox doesn't read the alerts
 }

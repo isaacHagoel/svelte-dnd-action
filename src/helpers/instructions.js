@@ -44,5 +44,4 @@ export function tellUser(txt) {
     // this is needed for Safari
     alertsDiv.style.display = 'none';
     alertsDiv.style.display = 'inline';
-    // TODO - figure out why firefox doesn't read the alerts
 }

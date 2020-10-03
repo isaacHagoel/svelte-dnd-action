@@ -226,7 +226,7 @@ function cleanupPostDrop() {
 export function dndzone(node, options) {
     const config =  {
         items: undefined,
-        type: DEFAULT_DROP_ZONE_TYPE,
+        type: undefined,
         flipDurationMs: 0,
         dragDisabled: false,
         dropFromOthersDisabled: false,

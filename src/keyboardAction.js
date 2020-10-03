@@ -117,7 +117,7 @@ function handleDrop() {
 export function dndzone(node, options) {
     const config =  {
         items: undefined,
-        type: DEFAULT_DROP_ZONE_TYPE,
+        type: undefined,
         dragDisabled: false,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE

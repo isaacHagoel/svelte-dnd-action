@@ -302,6 +302,8 @@ export function dndzone(node, options) {
             const {items: itemsNow} = config;
             if (!draggedEl.parentElement && (!itemsNow[originIndex] || draggedElData[ITEM_ID_KEY] !== itemsNow[originIndex][ITEM_ID_KEY])) {
                 document.body.appendChild(draggedEl);
+                // to prevent the outline from disappearing
+                draggedEl.focus();
                 watchDraggedElement();
                 hideOriginalDragTarget(originalDragTarget);
                 document.body.appendChild(originalDragTarget);

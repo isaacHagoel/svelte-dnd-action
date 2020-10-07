@@ -33,7 +33,6 @@ let draggedElData;
 let draggedElType;
 let originDropZone;
 let originIndex;
-let shadowElIdx;
 let shadowElData;
 let shadowElDropZone;
 let dragStartMousePosition;
@@ -107,7 +106,7 @@ function handleDraggedEntered(e) {
     items = items.filter(i => i[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY])
     console.debug(`dragged entered items ${toString(items)}`);
     const {index, isProximityBased} = e.detail.indexObj;
-    shadowElIdx = (isProximityBased && index === e.currentTarget.children.length - 1)? index + 1 : index;
+    const shadowElIdx = (isProximityBased && index === e.currentTarget.children.length - 1)? index + 1 : index;
     shadowElDropZone = e.currentTarget;
     items.splice( shadowElIdx, 0, shadowElData);
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
@@ -119,8 +118,8 @@ function handleDraggedLeft(e) {
         console.debug('drop is currently disabled');
         return;
     }
+    const shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
     items.splice(shadowElIdx, 1);
-    shadowElIdx = undefined;
     shadowElDropZone = undefined;
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
@@ -132,9 +131,9 @@ function handleDraggedIsOverIndex(e) {
         return;
     }
     const {index} = e.detail.indexObj;
+    const shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
-    shadowElIdx = index;
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 
@@ -160,6 +159,7 @@ function handleDrop() {
         console.debug('dropped in dz', shadowElDropZone);
         let {items, type} = dzToConfig.get(shadowElDropZone);
         styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
+        const shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
         items = items.map(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)? draggedElData : item);
         function finalizeWithinZone() {
             dispatchFinalizeEvent(shadowElDropZone, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
@@ -170,7 +170,7 @@ function handleDrop() {
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
         }
-        animateDraggedToFinalPosition(finalizeWithinZone);
+        animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
     }
     else { // it needs to return to its place
         console.debug('no dz available');
@@ -178,20 +178,19 @@ function handleDrop() {
         styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
         items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
-        shadowElIdx = originIndex;
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
         function finalizeBackToOrigin() {
             items.splice(originIndex, 1, draggedElData);
             dispatchFinalizeEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
-            shadowElDropZone.children[shadowElIdx].style.visibility = '';
+            shadowElDropZone.children[originIndex].style.visibility = '';
             cleanupPostDrop();
         }
-        window.setTimeout(() => animateDraggedToFinalPosition(finalizeBackToOrigin), 0);
+        window.setTimeout(() => animateDraggedToFinalPosition(originIndex, finalizeBackToOrigin), 0);
     }
 }
 
 // helper function for handleDrop
-function animateDraggedToFinalPosition(callback) {
+function animateDraggedToFinalPosition(shadowElIdx, callback) {
     const shadowElRect = shadowElDropZone.children[shadowElIdx].getBoundingClientRect();
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
@@ -215,7 +214,6 @@ function cleanupPostDrop() {
     originDropZone = undefined;
     originIndex = undefined;
     shadowElData = undefined;
-    shadowElIdx = undefined;
     shadowElDropZone = undefined;
     dragStartMousePosition = undefined;
     currentMousePosition = undefined;

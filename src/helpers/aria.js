@@ -25,7 +25,7 @@ function instructionToHiddenDiv(id, txt) {
     return div;
 }
 
-const ALERT_DIV_ID = 'svelte-dnd-action-aria-alert';
+const ALERT_DIV_ID = 'dnd-action-aria-alert';
 let alertsDiv = document.createElement('div');
 (function initAlertsDiv() {
     alertsDiv.id = ALERT_DIV_ID;

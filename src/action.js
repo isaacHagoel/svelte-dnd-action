@@ -4,7 +4,7 @@ import {ITEM_ID_KEY} from "./constants";
 import {toString} from "./helpers/util";
 
 /**
- * A Svelte custom action to turn any container to a dnd zone and all of its direct children to draggables
+ * A custom action to turn any container to a dnd zone and all of its direct children to draggables
  * Supports mouse, touch and keyboard interactions.
  * Dispatches two events that the container is expected to react to by modifying its list of items,
  * which will then feed back in to this action via the update function

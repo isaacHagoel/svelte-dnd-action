@@ -102,7 +102,7 @@ function handleDraggedEntered(e) {
         console.debug('drop is currently disabled');
         return;
     }
-    // this deals with another svelte related race condition. in rare occasions (super rapid operations) the list hasn't updated yet
+    // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(i => i[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY])
     console.debug(`dragged entered items ${toString(items)}`);
     const {index, isProximityBased} = e.detail.indexObj;
@@ -159,7 +159,9 @@ function handleDrop() {
         console.debug('dropped in dz', shadowElDropZone);
         let {items, type} = dzToConfig.get(shadowElDropZone);
         styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
-        const shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
+        let shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
+        // the handler might remove the shadow element, ex: dragula like copy on drag
+        if (shadowElIdx === -1) shadowElIdx = originIndex;
         items = items.map(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)? draggedElData : item);
         function finalizeWithinZone() {
             dispatchFinalizeEvent(shadowElDropZone, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
@@ -180,8 +182,9 @@ function handleDrop() {
         shadowElDropZone = originDropZone;
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
         function finalizeBackToOrigin() {
-            items.splice(originIndex, 1, draggedElData);
-            dispatchFinalizeEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
+            const finalItems = [...items];
+            finalItems.splice(originIndex, 1, draggedElData);
+            dispatchFinalizeEvent(originDropZone, finalItems, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
             shadowElDropZone.children[originIndex].style.visibility = '';
             cleanupPostDrop();
         }
@@ -295,7 +298,7 @@ export function dndzone(node, options) {
 
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget);
-        // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after Svelte removes it
+        // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
             const {items: itemsNow} = config;
             if (!draggedEl.parentElement && (!itemsNow[originIndex] || draggedElData[ITEM_ID_KEY] !== itemsNow[originIndex][ITEM_ID_KEY])) {

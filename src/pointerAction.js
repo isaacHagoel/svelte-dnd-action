@@ -336,18 +336,7 @@ export function dndzone(node, options) {
                            dropFromOthersDisabled = false,
                            dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
                            transformDraggedElement = () => {},
-                           ...rest
                        }) {
-        if (Object.keys(rest).length > 0) {
-            console.warn(`dndzone will ignore unknown options`, rest);
-        }
-        if (!items) {
-            throw new Error("no 'items' key provided to dndzone");
-        }
-        const itemWithMissingId = items.find(item => !item.hasOwnProperty(ITEM_ID_KEY));
-        if (itemWithMissingId) {
-            throw new Error(`missing '${ITEM_ID_KEY}' property for item ${toString(itemWithMissingId)}`);
-        }
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);

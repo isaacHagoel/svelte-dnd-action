@@ -1,5 +1,7 @@
 import {dndzone as pointerDndZone} from "./pointerAction";
 import {dndzone as keyboardDndZone} from "./keyboardAction";
+import {ITEM_ID_KEY} from "./constants";
+import {toString} from "./helpers/util";
 
 /**
  * A Svelte custom action to turn any container to a dnd zone and all of its direct children to draggables
@@ -20,10 +22,12 @@ import {dndzone as keyboardDndZone} from "./keyboardAction";
  * @return {{update: function, destroy: function}}
  */
 export function dndzone(node, options) {
+    validateOptions(options);
     const pointerZone = pointerDndZone(node, options);
     const keyboardZone = keyboardDndZone(node, options);
     return {
         update: newOptions => {
+            validateOptions(newOptions);
             pointerZone.update(newOptions);
             keyboardZone.update(newOptions);
         },
@@ -31,5 +35,29 @@ export function dndzone(node, options) {
             pointerZone.destroy();
             keyboardZone.destroy();
         }
+    }
+}
+
+function validateOptions(options) {
+    const {
+        items,
+        flipDurationMs,
+        type,
+        dragDisabled,
+        dropFromOthersDisabled,
+        dropTargetStyle,
+        transformDraggedElement,
+        autoAriaDisabled,
+        ...rest
+    } = options;
+    if (Object.keys(rest).length > 0) {
+        console.warn(`dndzone will ignore unknown options`, rest);
+    }
+    if (!items) {
+        throw new Error("no 'items' key provided to dndzone");
+    }
+    const itemWithMissingId = items.find(item => !item.hasOwnProperty(ITEM_ID_KEY));
+    if (itemWithMissingId) {
+        throw new Error(`missing '${ITEM_ID_KEY}' property for item ${toString(itemWithMissingId)}`);
     }
 }

@@ -3,30 +3,36 @@ import {dndzone as keyboardDndZone} from "./keyboardAction";
 import {ITEM_ID_KEY} from "./constants";
 import {toString} from "./helpers/util";
 
+export interface Item {
+    [id:string]: string | undefined;
+}
+
+export interface Options {
+    items: Item[]; // the list of items that was used to generate the children of the given node (the list used in the #each block)
+    type?: string; // the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, default to a base type
+    flipDurationMs?: number; // if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
+    dragDisabled?: boolean;
+    dropFromOthersDisabled?: boolean;
+    dropTargetStyle?: object;
+    transformDraggedElement?: Function;
+    autoAriaDisabled?: unknown;
+}
+
 /**
  * A custom action to turn any container to a dnd zone and all of its direct children to draggables
  * Supports mouse, touch and keyboard interactions.
  * Dispatches two events that the container is expected to react to by modifying its list of items,
  * which will then feed back in to this action via the update function
- *
- * @typedef {Object} Options
- * @property {Array} items - the list of items that was used to generate the children of the given node (the list used in the #each block
- * @property {string} [type] - the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, default to a base type
- * @property {number} [flipDurationMs] - if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
- * @property {boolean} [dragDisabled]
- * @property {boolean} [dropFromOthersDisabled]
- * @property {Object} [dragTargetStyle]
- * @property {Function} [transformDraggedElement]
- * @param {HTMLElement} node - the element to enhance
- * @param {Options} options
- * @return {{update: function, destroy: function}}
  */
-export function dndzone(node, options) {
+export function dndzone(
+    node: HTMLElement, // the element to enhance
+    options: Options,
+): { update: (options: Options) => void; destroy: () => void } {
     validateOptions(options);
     const pointerZone = pointerDndZone(node, options);
     const keyboardZone = keyboardDndZone(node, options);
     return {
-        update: newOptions => {
+        update: (newOptions: Options) => {
             validateOptions(newOptions);
             pointerZone.update(newOptions);
             keyboardZone.update(newOptions);
@@ -38,7 +44,7 @@ export function dndzone(node, options) {
     }
 }
 
-function validateOptions(options) {
+function validateOptions(options: Options): void {
     const {
         items,
         flipDurationMs,

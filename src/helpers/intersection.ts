@@ -1,9 +1,19 @@
+export interface Rect {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+}
+
+export interface Point {
+    x: number;
+    y: number;
+}
+
 /**
  * Gets the absolute bounding rect (accounts for the window's scroll position)
- * @param {HTMLElement }el
- * @return {{top: number, left: number, bottom: number, right: number}}
  */
-export function getAbsoluteRect(el) {
+export function getAbsoluteRect(el: Element): Rect {
     const rect = el.getBoundingClientRect();
     return ({
         top: rect.top + window.scrollY,
@@ -15,39 +25,19 @@ export function getAbsoluteRect(el) {
 
 /**
  * finds the center :)
- * @typedef {Object} Rect
- * @property {number} top
- * @property {number} bottom
- * @property {number} left
- * @property {number} right
- * @param {Rect} rect
- * @return {{x: number, y: number}}
  */
-export function findCenter(rect) {
+export function findCenter(rect: Rect): Point {
     return ({
         x: (rect.left + rect.right) /2,
         y: (rect.top + rect.bottom) /2
     });    
 }
 
-/**
- * @typedef {Object} Point
- * @property {number} x
- * @property {number} y
- * @param {Point} pointA
- * @param {Point} pointB
- * @return {number}
- */
-function calcDistance(pointA, pointB) {
+function calcDistance(pointA: Point, pointB: Point): number {
     return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) +  Math.pow(pointA.y - pointB.y, 2));
 }
 
-/**
- * @param {Point} point
- * @param {Rect} rect
- * @return {boolean|boolean}
- */
-function isPointInsideRect(point, rect) {
+function isPointInsideRect(point: Point, rect: Rect): boolean {
     return (
         (point.y <= rect.bottom && point.y >= rect.top)
         &&
@@ -57,51 +47,37 @@ function isPointInsideRect(point, rect) {
 
 /**
  * find the absolute coordinates of the center of a dom element
- * @param el {HTMLElement}
- * @returns {{x: number, y: number}}
  */
-export function findCenterOfElement(el) {
+export function findCenterOfElement(el: Element): Point {
     return findCenter( getAbsoluteRect(el));
 }
 
-/**
- * @param {HTMLElement} elA
- * @param {HTMLElement} elB
- * @return {boolean}
- */
-export function isCenterOfAInsideB(elA, elB) {
+export function isCenterOfAInsideB(elA: Element, elB: Element): boolean {
     const centerOfA = findCenterOfElement(elA);
     const rectOfB = getAbsoluteRect(elB);
     return isPointInsideRect(centerOfA, rectOfB);
 }
 
-/**
- * @param {HTMLElement|ChildNode} elA
- * @param {HTMLElement|ChildNode} elB
- * @return {number}
- */
-export function calcDistanceBetweenCenters(elA, elB) {
+export function calcDistanceBetweenCenters(elA: Element, elB: Element): number {
     const centerOfA = findCenterOfElement(elA);
     const centerOfB = findCenterOfElement(elB);
     return calcDistance(centerOfA, centerOfB);
 }
 
 /**
- * @param {HTMLElement} el - the element to check
- * @returns {boolean} - true if the element in its entirety is off screen including the scrollable area (the normal dom events look at the mouse rather than the element)
+ * returns true if the element in its entirety is off screen including the scrollable area (the normal dom events look at the mouse rather than the element)
  */
-export function isElementOffDocument(el) {
+export function isElementOffDocument(
+    el: HTMLElement // the element to check
+): boolean {
     const rect = getAbsoluteRect(el);
     return rect.right < 0 || rect.left > document.documentElement.scrollWidth || rect.bottom < 0 || rect.top > document.documentElement.scrollHeight;
 }
 
 /**
  * If the point is inside the element returns its distances from the sides, otherwise returns null
- * @param {Point} point
- * @param {HTMLElement} el
- * @return {null|{top: number, left: number, bottom: number, right: number}}
  */
-export function calcInnerDistancesBetweenPointAndSidesOfElement(point, el) {
+export function calcInnerDistancesBetweenPointAndSidesOfElement(point: Point, el: HTMLElement): Rect | null {
     const rect = getAbsoluteRect(el);
     if (!isPointInsideRect(point, rect)) {
         return null;

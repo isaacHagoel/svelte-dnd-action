@@ -1,17 +1,17 @@
+import { Item } from "../action";
+import { TRIGGERS } from "../constants";
+
 // external events
 const FINALIZE_EVENT_NAME = 'finalize';
 const CONSIDER_EVENT_NAME = 'consider';
 
-/**
- * @typedef {Object} Info
- * @property {string} trigger
- * @property {string} id
- * @property {string} source
- * @param {Node} el
- * @param {Array} items
- * @param {Info} info
- */
-export function dispatchFinalizeEvent(el, items, info) {
+export interface Info {
+    trigger: TRIGGERS;
+    id: string;
+    source: string;
+}
+
+export function dispatchFinalizeEvent(el: Node, items: Item[], info: Info) {
     el.dispatchEvent(new CustomEvent(FINALIZE_EVENT_NAME, {
         detail: {items, info}
     }));
@@ -19,20 +19,17 @@ export function dispatchFinalizeEvent(el, items, info) {
 
 /**
  * Dispatches a consider event
- * @param {Node} el
- * @param {Array} items
- * @param {Info} info
  */
-export function dispatchConsiderEvent(el, items, info) {
+export function dispatchConsiderEvent(el: Node, items: Item[], info: Info) {
     el.dispatchEvent(new CustomEvent(CONSIDER_EVENT_NAME, {
         detail: {items, info}
     }));
 }
 
 // internal events
-export const DRAGGED_ENTERED_EVENT_NAME = 'draggedEntered';
-export const DRAGGED_LEFT_EVENT_NAME = 'draggedLeft';
-export const DRAGGED_OVER_INDEX_EVENT_NAME = 'draggedOverIndex';
+export const DRAGGED_ENTERED_EVENT_NAME = TRIGGERS.DRAGGED_ENTERED;
+export const DRAGGED_LEFT_EVENT_NAME = TRIGGERS.DRAGGED_LEFT;
+export const DRAGGED_OVER_INDEX_EVENT_NAME = TRIGGERS.DRAGGED_OVER_INDEX;
 export const DRAGGED_LEFT_DOCUMENT_EVENT_NAME = 'draggedLeftDocument';
 export function dispatchDraggedElementEnteredContainer(containerEl, indexObj, draggedEl) {
     containerEl.dispatchEvent(new CustomEvent(DRAGGED_ENTERED_EVENT_NAME, {

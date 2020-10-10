@@ -1,17 +1,16 @@
-import {DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME} from "./helpers/dispatcher";
 
-export const TRIGGERS = {
-    DRAG_STARTED: "dragStarted",
-    DRAGGED_ENTERED: DRAGGED_ENTERED_EVENT_NAME,
-    DRAGGED_OVER_INDEX: DRAGGED_OVER_INDEX_EVENT_NAME,
-    DRAGGED_LEFT: DRAGGED_LEFT_EVENT_NAME,
-    DROPPED_INTO_ZONE: "droppedIntoZone",
-    DROPPED_INTO_ANOTHER: "droppedIntoAnother",
-    DROPPED_OUTSIDE_OF_ANY: "droppedOutsideOfAny"
+export enum TRIGGERS {
+    DRAG_STARTED = "dragStarted",
+    DRAGGED_ENTERED = "draggedEntered",
+    DRAGGED_OVER_INDEX = "draggedOverIndex",
+    DRAGGED_LEFT = "draggedLeft",
+    DROPPED_INTO_ZONE = "droppedIntoZone",
+    DROPPED_INTO_ANOTHER = "droppedIntoAnother",
+    DROPPED_OUTSIDE_OF_ANY = "droppedOutsideOfAny"
 };
-export const SOURCES = {
-    POINTER: "pointer",
-    KEYBOARD: "keyboard"
+export enum SOURCES {
+    POINTER = "pointer",
+    KEYBOARD = "keyboard"
 };
 
 export const SHADOW_ITEM_MARKER_PROPERTY_NAME = 'isDndShadowItem';
@@ -31,7 +30,7 @@ export function decrementActiveDropZoneCount() {
  * @param {String} newKeyName
  * @throws {Error} if it was called when there are rendered dndzones or if it is given the wrong type (not a string)
  */
-export function overrideItemIdKeyNameBeforeInitialisingDndZones(newKeyName) {
+export function overrideItemIdKeyNameBeforeInitialisingDndZones(newKeyName: string) {
     if (activeDndZoneCount > 0) {
         throw new Error("can only override the id key before initialising any dndzone");
     }

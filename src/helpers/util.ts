@@ -1,17 +1,12 @@
-/**
- * @param {Object} object
- * @return {string}
- */
-export function toString(object) {
+export function toString(object: object): string {
     return JSON.stringify(object, null, 2);
 }
 
 /**
  * Finds the depth of the given node in the DOM tree
- * @param {HTMLElement} node
- * @return {number} - the depth of the node
+ * returns the depth of the node
  */
-export function getDepth(node){
+export function getDepth(node: HTMLElement): number {
     if (!node) {
         throw new Error("cannot get depth of a falsy node");
     }
@@ -26,11 +21,8 @@ function _getDepth(node, countSoFar = 0) {
 
 /**
  * A simple util to shallow compare objects quickly, it doesn't validate the arguments so pass objects in
- * @param {Object} objA
- * @param {Object} objB
- * @return {boolean} - true if objA and objB are shallow equal
  */
-export function areObjectsShallowEqual(objA, objB) {
+export function areObjectsShallowEqual(objA: object, objB: object): boolean {
     if (Object.keys(objA).length !== Object.keys(objB).length) {
         return false;
     }

@@ -6,6 +6,11 @@ const ID_TO_INSTRUCTION = {
     [INSTRUCTION_IDs.DND_ZONE_ACTIVE]: "Tab to one the items and press space-bar or enter to start dragging it",
     [INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED]: "This is a disabled drag and drop list"
 }
+
+/**
+ * Initializes the static aria instructions so they can be attached to zones
+ * @return {{DND_ZONE_ACTIVE: string, DND_ZONE_DRAG_DISABLED: string}}
+ */
 export function createInstructions() {
     Object.entries(ID_TO_INSTRUCTION).forEach(([id, txt]) =>  document.body.prepend(instructionToHiddenDiv(id, txt)));
     return {...INSTRUCTION_IDs};
@@ -37,7 +42,11 @@ let alertsDiv = document.createElement('div');
 })();
 document.body.prepend(alertsDiv);
 
-export function tellUser(txt) {
+/**
+ * Will make the screen reader alert the provided text to the user
+ * @param {string} txt
+ */
+export function alertToScreenReader(txt) {
     alertsDiv.innerHTML = '';
     const alertText = document.createTextNode(txt);
     alertsDiv.appendChild(alertText);

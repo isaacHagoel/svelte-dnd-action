@@ -3,6 +3,7 @@ import {styleActiveDropZones, styleInactiveDropZones} from "./helpers/styler";
 import {dispatchConsiderEvent, dispatchFinalizeEvent} from "./helpers/dispatcher";
 import {createInstructions, alertToScreenReader} from "./helpers/aria";
 import {toString} from "./helpers/util";
+import { Options } from "./action";
 
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const DEFAULT_DROP_TARGET_STYLE = {
@@ -16,7 +17,8 @@ let focusedDzLabel = "";
 let focusedItem;
 let focusedItemId;
 let focusedItemLabel = "";
-const allDragTargets = new WeakSet();
+// @ts-expect-error
+const allDragTargets = new WeakSet<Element | null>();
 const elToKeyDownListeners = new WeakMap();
 const elToFocusListeners = new WeakMap();
 const dzToHandles = new Map();
@@ -77,7 +79,7 @@ function handleZoneFocus(e) {
     }
 
 }
-function globalKeyDownHandler(e) {
+function globalKeyDownHandler(e: KeyboardEvent) {
     if (!isDragging) return;
     switch(e.key) {
         case("Escape"): {
@@ -107,6 +109,7 @@ function handleDrop() {
         alertToScreenReader(`Stopped dragging item ${focusedItemLabel}`);
     }
     if (allDragTargets.has(document.activeElement)) {
+        // @ts-expect-error
         document.activeElement.blur();
     }
     styleInactiveDropZones(typeToDropZones.get(draggedItemType), dz => dzToConfig.get(dz).dropTargetStyle);
@@ -120,8 +123,9 @@ function handleDrop() {
     triggerAllDzsUpdate();
 }
 //////
-export function dndzone(node, options) {
-    const config =  {
+export function dndzone(node: HTMLElement, options: Options) {
+    // @ts-expect-error
+    const config : Record<keyof Options, any> = {
         items: undefined,
         type: undefined,
         dragDisabled: false,
@@ -199,6 +203,7 @@ export function dndzone(node, options) {
         draggedItemType = config.type;
         isDragging = true;
         styleActiveDropZones(
+            // @ts-expect-error
             Array.from(typeToDropZones.get(config.type))
                 .filter(dz => dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled),
             dz => dzToConfig.get(dz).dropTargetStyle,
@@ -229,13 +234,14 @@ export function dndzone(node, options) {
                         dropFromOthersDisabled = false,
                         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
                         autoAriaDisabled = false
-                    }) {
+                    }: Options) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.dropFromOthersDisabled = dropFromOthersDisabled;
         config.dropTargetStyle = dropTargetStyle;
         config.autoAriaDisabled = autoAriaDisabled;
         if (!autoAriaDisabled) {
+            // @ts-expect-error
             node.setAttribute("aria-disabled", dragDisabled);
             node.setAttribute("role", "list");
             node.setAttribute("aria-describedby", dragDisabled? INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED : INSTRUCTION_IDs.DND_ZONE_ACTIVE);
@@ -251,7 +257,7 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
 
         for(let i=0; i < node.children.length ; i++) {
-            const draggableEl = node.children[i];
+            const draggableEl = node.children[i] as HTMLElement;
             allDragTargets.add(draggableEl);
             draggableEl.tabIndex = (isDragging) ? -1 : 0;
             if (!autoAriaDisabled) {

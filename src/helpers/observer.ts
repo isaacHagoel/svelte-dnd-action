@@ -16,11 +16,8 @@ let next;
 
 /**
  * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
- * @param {Set<HTMLElement>} dropZones 
- * @param {HTMLElement} draggedEl 
- * @param {number} [intervalMs = INTERVAL_MS]
  */
-export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
+export function observe(draggedEl: HTMLElement, dropZones: Set<HTMLElement>, intervalMs: number = INTERVAL_MS): void {
     // initialization
     let lastDropZoneFound;
     let lastIndexFound;
@@ -88,7 +85,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
 }
 
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
-export function unobserve() {
+export function unobserve(): void {
     console.debug("unobserving");
     clearTimeout(next);
     resetScrolling();

@@ -1,9 +1,14 @@
 import {
-    calcInnerDistancesBetweenPointAndSidesOfElement,
+    calcInnerDistancesBetweenPointAndSidesOfElement, Point,
 } from "./intersection";
 const SCROLL_ZONE_PX = 25;
 
-export function makeScroller() {
+interface Scroller {
+    scrollIfNeeded: (pointer: Point, elementToScroll: HTMLElement | null) => boolean;
+    resetScrolling: () => void;
+}
+
+export function makeScroller(): Scroller {
     let scrollingInfo;
     function resetScrolling() {
         scrollingInfo = {directionObj: undefined, stepPx: 0};
@@ -17,16 +22,16 @@ export function makeScroller() {
             window.requestAnimationFrame(() => scrollContainer(containerEl));
         }
     }
-    function calcScrollStepPx(distancePx) {
+    function calcScrollStepPx(distancePx: number) {
         return SCROLL_ZONE_PX - distancePx;
     }
 
     /**
      * If the pointer is next to the sides of the element to scroll, will trigger scrolling
      * Can be called repeatedly with updated pointer and elementToScroll values without issues
-     * @return {boolean} - true if scrolling was needed
+     * returns true if scrolling was needed
      */
-    function scrollIfNeeded(pointer, elementToScroll) {
+    function scrollIfNeeded(pointer: Point, elementToScroll: Element | null): boolean {
         if (!elementToScroll) {
             return false;
         }

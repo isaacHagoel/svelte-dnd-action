@@ -77,7 +77,7 @@ export function isElementOffDocument(
 /**
  * If the point is inside the element returns its distances from the sides, otherwise returns null
  */
-export function calcInnerDistancesBetweenPointAndSidesOfElement(point: Point, el: HTMLElement): Rect | null {
+export function calcInnerDistancesBetweenPointAndSidesOfElement(point: Point, el: Element): Rect | null {
     const rect = getAbsoluteRect(el);
     if (!isPointInsideRect(point, rect)) {
         return null;

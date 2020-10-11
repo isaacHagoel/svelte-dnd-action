@@ -19,6 +19,7 @@ import {
 } from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 import {areObjectsShallowEqual, toString} from "./helpers/util";
+import { Options } from './action';
 
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -91,6 +92,7 @@ function unWatchDraggedElement() {
         dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
     window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
+    // @ts-expect-error
     unobserve(draggedEl, dropZones);
 }
 
@@ -138,8 +140,9 @@ function handleDraggedIsOverIndex(e) {
 }
 
 /* global mouse/touch-events handlers */
-function handleMouseMove(e) {
+function handleMouseMove(e: MouseEvent | TouchEvent) {
     e.preventDefault();
+    // @ts-expect-error TODO: {'touches' in e} instead of {e.touches}
     const c = e.touches? e.touches[0] : e;
     currentMousePosition = {x: c.clientX, y: c.clientY};
     draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${currentMousePosition.y - dragStartMousePosition.y}px, 0)`;
@@ -224,15 +227,16 @@ function cleanupPostDrop() {
     finalizingPreviousDrag = false;
 }
 
-export function dndzone(node, options) {
-    const config =  {
+export function dndzone(node: HTMLElement, options: Options) {
+    // @ts-expect-error
+    const config: Record<keyof Options, any> =  {
         items: undefined,
         type: undefined,
         flipDurationMs: 0,
         dragDisabled: false,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
-        transformDraggedElement : () => {}
+        transformDraggedElement : () => {},
     };
     console.debug(`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node});
     let elToIdx = new Map();
@@ -256,18 +260,22 @@ export function dndzone(node, options) {
         currentMousePosition = undefined;
     }
 
-    function handleMouseMoveMaybeDragStart(e) {
+    function handleMouseMoveMaybeDragStart(e: MouseEvent | TouchEvent) {
         e.preventDefault();
+        // @ts-expect-error TODO: {'touches' in e} instead of {e.touches}
         const c = e.touches? e.touches[0] : e;
         currentMousePosition = {x: c.clientX, y: c.clientY};
         if (Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
             removeMaybeListeners();
+            // @ts-expect-error
             handleDragStart(originalDragTarget);
         }
     }
-    function handleMouseDown(e) {
+    function handleMouseDown(e: MouseEvent | TouchEvent) {
         // prevents responding to any button but left click which equals 0 (which is falsy)
+        // @ts-expect-error
         if (e.button) {
+            // @ts-expect-error
             console.debug(`ignoring none left click button: ${e.button}`);
             return;
         }
@@ -276,6 +284,7 @@ export function dndzone(node, options) {
             return;
         }
         e.stopPropagation();
+        // @ts-expect-error TODO: {'touches' in e} instead of {e.touches}
         const c = e.touches? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y:c.clientY};
         currentMousePosition = {...dragStartMousePosition};
@@ -315,6 +324,7 @@ export function dndzone(node, options) {
         window.requestAnimationFrame(keepOriginalElementInDom);
 
         styleActiveDropZones(
+            // @ts-expect-error
             Array.from(typeToDropZones.get(config.type))
                 .filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
             dz => dzToConfig.get(dz).dropTargetStyle,
@@ -332,6 +342,7 @@ export function dndzone(node, options) {
     }
 
     function configure({
+                           // @ts-expect-error
                            items = undefined,
                            flipDurationMs:dropAnimationDurationMs = 0,
                            type: newType = DEFAULT_DROP_ZONE_TYPE,
@@ -339,7 +350,8 @@ export function dndzone(node, options) {
                            dropFromOthersDisabled = false,
                            dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
                            transformDraggedElement = () => {},
-                       }) {
+                       }: Options) {
+        // @ts-expect-error
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
@@ -370,7 +382,7 @@ export function dndzone(node, options) {
 
         dzToConfig.set(node, config);
         for (let idx = 0; idx < node.children.length; idx++) {
-            const draggableEl = node.children[idx];
+            const draggableEl = node.children[idx] as HTMLElement;
             styleDraggable(draggableEl, dragDisabled);
             if (config.items[idx].hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)) {
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () => config.transformDraggedElement(draggedEl, draggedElData, idx));

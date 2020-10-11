@@ -3,9 +3,13 @@ import {dndzone as keyboardDndZone} from "./keyboardAction";
 import {ITEM_ID_KEY} from "./constants";
 import {toString} from "./helpers/util";
 
-export interface Item {
-    [id:string]: string | undefined;
-}
+export type Item = object;
+
+export type TransformDraggedElementFunction = (
+    element, // the dragged element.
+    data, // the data of the item from the items array
+    index, // the index the dragged element will become in the new dnd-zone.
+) => void;
 
 export interface Options {
     items: Item[]; // the list of items that was used to generate the children of the given node (the list used in the #each block)
@@ -14,8 +18,8 @@ export interface Options {
     dragDisabled?: boolean;
     dropFromOthersDisabled?: boolean;
     dropTargetStyle?: object;
-    transformDraggedElement?: Function;
-    autoAriaDisabled?: unknown;
+    transformDraggedElement?: TransformDraggedElementFunction;
+    autoAriaDisabled?: boolean;
 }
 
 /**
@@ -44,7 +48,7 @@ export function dndzone(
     }
 }
 
-function validateOptions(options: Options): void {
+function validateOptions(options: Options) {
     const {
         items,
         flipDurationMs,

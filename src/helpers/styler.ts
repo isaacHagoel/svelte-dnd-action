@@ -117,7 +117,7 @@ export function styleShadowEl(shadowEl: HTMLElement): void {
     shadowEl.style.visibility = "hidden";
 }
 
-type GetStylesFunction = (dropZone?: HTMLElement) => object | void;
+type GetStylesFunction = (dropZone?: HTMLElement) => Record<string, any> | void;
 
 /**
  * will mark the given dropzones as visually active
@@ -130,6 +130,7 @@ export function styleActiveDropZones(
         const styles = getStyles(dz)
         // @ts-expect-error
         Object.keys(styles).forEach(style => {
+            // @ts-expect-error
             dz.style[style] = styles[style];
         });
     });
@@ -139,14 +140,14 @@ export function styleActiveDropZones(
  * will remove the 'active' styling from given dropzones
  */
 export function styleInactiveDropZones(
-    dropZones: HTMLElement[],
-    // TODO: review return type from getStyles
+    dropZones: Set<HTMLElement> | HTMLElement[],
     getStyles: GetStylesFunction = () => {}, // maps a dropzone to a styles object
 ): void {
-    dropZones.forEach(dz => {
+    dropZones.forEach((dz: HTMLElement) => {
         const styles = getStyles(dz)
         // @ts-expect-error
-        Object.keys(styles).forEach(style => {
+        Object.keys(styles).forEach((style) => {
+            // @ts-expect-error
             dz.style[style] = '';
         });
     });

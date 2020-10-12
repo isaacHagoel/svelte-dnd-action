@@ -1,6 +1,6 @@
 import { isCenterOfAInsideB, calcDistanceBetweenCenters } from './intersection';
 
-interface Index {
+export interface Index {
     index: number; // the would be index
     isProximityBased: boolean; // false if the element is actually over the index, true if it is not over it but this index is the closest
 }
@@ -36,9 +36,5 @@ export function findWouldBeIndex(floatingAboveEl: HTMLElement, collectionBelowEl
             indexOfMin = i;
         }
     }
-    return {
-        // @ts-expect-error (can be undefined)
-        index: indexOfMin,
-        isProximityBased: true
-    };
+    return {index: indexOfMin, isProximityBased: true};
 }

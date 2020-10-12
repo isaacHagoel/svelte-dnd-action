@@ -1,4 +1,4 @@
-export function toString(object: object): string {
+export function toString(object: Record<string, any>): string {
     return JSON.stringify(object, null, 2);
 }
 
@@ -12,7 +12,7 @@ export function getDepth(node: HTMLElement): number {
     }
     return _getDepth(node, 0);
 }
-function _getDepth(node, countSoFar = 0) {
+function _getDepth(node: Element, countSoFar = 0): number {
     if (!node.parentElement) {
         return countSoFar - 1;
     }
@@ -22,7 +22,7 @@ function _getDepth(node, countSoFar = 0) {
 /**
  * A simple util to shallow compare objects quickly, it doesn't validate the arguments so pass objects in
  */
-export function areObjectsShallowEqual(objA: object, objB: object): boolean {
+export function areObjectsShallowEqual(objA: Record<string, any>, objB: Record<string, any>): boolean {
     if (Object.keys(objA).length !== Object.keys(objB).length) {
         return false;
     }

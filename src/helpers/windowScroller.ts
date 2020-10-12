@@ -1,7 +1,8 @@
+import { Point } from "./intersection";
 import {makeScroller} from "./scroller";
 
 const INTERVAL_MS = 300;
-let mousePosition;
+let mousePosition: Point;
 
 /**
  * Do not use this! it is visible for testing only until we get over the issue Cypress not triggering the mousemove listeners
@@ -13,7 +14,7 @@ export function updateMousePosition(e: MouseEvent | TouchEvent): void {
     mousePosition = {x: c.clientX, y: c.clientY};
 }
 const {scrollIfNeeded, resetScrolling} = makeScroller();
-let next;
+let next: number;
 
 function loop() {
     if (mousePosition) {

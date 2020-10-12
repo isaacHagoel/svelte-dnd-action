@@ -3,7 +3,7 @@ import {dndzone as keyboardDndZone} from "./keyboardAction";
 import {ITEM_ID_KEY} from "./constants";
 import {toString} from "./helpers/util";
 
-export type Item = object;
+export type Item = Record<string, any>;
 
 export type TransformDraggedElementFunction = (
     element: Element, // the dragged element.
@@ -17,7 +17,7 @@ export interface Options {
     flipDurationMs?: number; // if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
     dragDisabled?: boolean;
     dropFromOthersDisabled?: boolean;
-    dropTargetStyle?: object;
+    dropTargetStyle?: Record<string, any>;
     transformDraggedElement?: TransformDraggedElementFunction;
     autoAriaDisabled?: boolean;
 }

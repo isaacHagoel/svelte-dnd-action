@@ -9,13 +9,13 @@ interface Scroller {
 }
 
 export function makeScroller(): Scroller {
-    let scrollingInfo;
+    let scrollingInfo: { directionObj: Point | undefined; stepPx: number };
     function resetScrolling() {
         scrollingInfo = {directionObj: undefined, stepPx: 0};
     }
     resetScrolling();
     // directionObj {x: 0|1|-1, y:0|1|-1} - 1 means down in y and right in x
-    function scrollContainer(containerEl) {
+    function scrollContainer(containerEl: Element) {
         const {directionObj, stepPx} = scrollingInfo;
         if(directionObj) {
             containerEl.scrollBy(directionObj.x * stepPx, directionObj.y * stepPx);

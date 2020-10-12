@@ -116,7 +116,7 @@ In both cases the payload (within e.detail) is the same: an object with two attr
 
 You have to listen for both events and update the list of items in order for this library to work correctly.
 
-For advanced usecases (ex: [custom styling for the placeholder element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)) you might also need to import SHADOW_ITEM_MARKER_PROPERTY_NAME, which marks the place holder element that is temporarily added to the list the dragged element hovers over.
+For advanced usecases (ex: [custom styling for the placeholder element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)) you might also need to import SHADOW_ITEM_MARKER_PROPERTY_NAME, which marks the placeholder element that is temporarily added to the list the dragged element hovers over.
 
 ### Accessibility (alpha)
 If you want screen-readers to tell the user which item is being dragged and which container it interacts with, **please add `aria-label` on the container and on every draggable item**. The library will take care of the rest.

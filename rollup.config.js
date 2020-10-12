@@ -1,4 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
 import babel from 'rollup-plugin-babel'
 import pkg from './package.json';
 
@@ -8,12 +9,13 @@ const name = pkg.name
     .replace(/-\w/g, m => m[1].toUpperCase());
 
 export default {
-    input: 'src/index.js',
+    input: 'src/index.ts',
     output: [
         { file: pkg.module, 'format': 'es' },
         { file: pkg.main, 'format': 'umd', name }
     ],
     plugins: [
+        typescript(),
         babel({
             presets: [
                 ["@babel/preset-env", {

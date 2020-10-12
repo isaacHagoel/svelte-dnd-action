@@ -110,7 +110,7 @@ The expectation is the same - update the list of items.
 In both cases the payload (within e.detail) is the same: an object with two attributes: `items` and `info`.
 - `items`: contains the updated items list.
 - `info`: This one can be used to achieve very advanced custom behaviours (ex: copy on drag). In most cases, don't worry about it. It is an object with the following properties: 
-   * `trigger`: will be one of the exported list of TRIGGERS (Please import if you plan to use): [DRAG_STARTED, DRAGGED_ENTERED, DRAGGED_OVER_INDEX, DRAGGED_LEFT, DROPPED_INTO_ZONE, DROPPED_INTO_ANOTHER, DROPPED_OUTSIDE_OF_ANY]
+   * `trigger`: will be one of the exported list of TRIGGERS (Please import if you plan to use): [DRAG_STARTED, DRAGGED_ENTERED, DRAGGED_OVER_INDEX, DRAGGED_LEFT, DROPPED_INTO_ZONE, DROPPED_INTO_ANOTHER, DROPPED_OUTSIDE_OF_ANY, DRAG_STOPPED]. Most triggers apply to both pointer and keyboard, but some are only relevant for pointer (dragged_entered, dragged_over_index and dragged_left), and some only for keyboard (drag_stopped) 
    * `id`: the item id of the dragged element  
    * `source`: will be one of the exported list of SOURCES (Please import if you plan to use): [POINTER, KEYBOARD]
 
@@ -143,7 +143,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 - Press *Space*/*Enter* key while focused on an item, or the *Escape* key anywhere to exit dragging mode. The reader will tell the user that they are no longer dragging.  
 - Clicking on another item while in drag mode will make it the new drag target. Clicking outside of any draggable will exit dragging-mode (and tell the user)
 - Mouse drag and drop can be preformed independently of keyboard dragging (as in an item can be dragged with the mouse while in or out of keyboard initiated dragging-mode)
-- Keyboard drag uses the same `consider` (only on drag start) and `finalize` (every time the item is moved) events but only has a subset of the `TRIGGERS`. The same handlers should work fine for both.  
+- Keyboard drag uses the same `consider` (only on drag start) and `finalize` (every time the item is moved) events but share only some of the `TRIGGERS`. The same handlers should work fine for both.  
 
 ### Rules/ assumptions to keep in mind
 * Only one element can be dragged in any given time

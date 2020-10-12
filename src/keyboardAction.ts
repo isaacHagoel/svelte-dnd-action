@@ -103,7 +103,7 @@ function triggerAllDzsUpdate() {
     dzToHandles.forEach(({update}, dz) => update(dzToConfig.get(dz)));
 }
 
-function handleDrop() {
+function handleDrop(dispatchConsider = true) {
     console.debug("drop");
     if (!dzToConfig.get(focusedDz).autoAriaDisabled) {
         alertToScreenReader(`Stopped dragging item ${focusedItemLabel}`);
@@ -111,6 +111,9 @@ function handleDrop() {
     if (allDragTargets.has(document.activeElement)) {
         // @ts-expect-error
         document.activeElement.blur();
+    }
+    if (dispatchConsider) {
+        dispatchConsiderEvent(focusedDz, dzToConfig.get(focusedDz).items, {trigger: TRIGGERS.DRAG_STOPPED, id: focusedItemId, source: SOURCES.KEYBOARD});
     }
     styleInactiveDropZones(typeToDropZones.get(draggedItemType), dz => dzToConfig.get(dz).dropTargetStyle);
     focusedItem = null;
@@ -215,7 +218,7 @@ export function dndzone(node: HTMLElement, options: Options) {
     function handleClick(e) {
         if(!isDragging) return;
         if (e.currentTarget === focusedItem) return;
-        handleDrop();
+        handleDrop(false);
         handleDragStart(e);
     }
     function setCurrentFocusedItem(draggableEl) {

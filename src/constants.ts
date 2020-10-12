@@ -6,7 +6,8 @@ export enum TRIGGERS {
     DRAGGED_LEFT = "draggedLeft",
     DROPPED_INTO_ZONE = "droppedIntoZone",
     DROPPED_INTO_ANOTHER = "droppedIntoAnother",
-    DROPPED_OUTSIDE_OF_ANY = "droppedOutsideOfAny"
+    DROPPED_OUTSIDE_OF_ANY = "droppedOutsideOfAny",
+    DRAG_STOPPED = "dragStopped",
 };
 export enum SOURCES {
     POINTER = "pointer",

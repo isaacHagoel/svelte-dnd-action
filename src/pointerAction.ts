@@ -61,7 +61,7 @@ function registerDropZone(dropZoneEl: HTMLElement, type: string) {
     }
 }
 function unregisterDropZone(dropZoneEl: HTMLElement, type: string) {
-    typeToDropZones.get(type)!.delete(dropZoneEl);
+    typeToDropZones.get(type).delete(dropZoneEl);
     decrementActiveDropZoneCount();
     if (typeToDropZones.get(type).size === 0) {
         typeToDropZones.delete(type);
@@ -147,7 +147,7 @@ function handleMouseMove(e: MouseEvent | TouchEvent) {
     // @ts-expect-error TODO: {'touches' in e} instead of {e.touches}
     const c = e.touches? e.touches[0] : e;
     currentMousePosition = {x: c.clientX, y: c.clientY};
-    draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition!.x}px, ${currentMousePosition.y - dragStartMousePosition!.y}px, 0)`;
+    draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${currentMousePosition.y - dragStartMousePosition.y}px, 0)`;
 }
 
 function handleDrop() {
@@ -270,7 +270,7 @@ export function dndzone(node: HTMLElement, options: Options) {
         // @ts-expect-error TODO: {'touches' in e} instead of {e.touches}
         const c = e.touches? e.touches[0] : e;
         currentMousePosition = {x: c.clientX, y: c.clientY};
-        if (Math.abs(currentMousePosition.x - dragStartMousePosition!.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition!.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
+        if (Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
             removeMaybeListeners();
             // @ts-expect-error
             handleDragStart(originalDragTarget);

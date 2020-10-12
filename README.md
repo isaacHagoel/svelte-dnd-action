@@ -116,7 +116,7 @@ In both cases the payload (within e.detail) is the same: an object with two attr
 
 You have to listen for both events and update the list of items in order for this library to work correctly.
 
-For advanced usecases you might also need to import SHADOW_ITEM_MARKER_PROPERTY_NAME, which marks the place holder element that is temporarily added to the list the dragged element hovers over. I haven't seen a usecase that required it yet, but you might be the first :)
+For advanced usecases (ex: [custom styling for the placeholder element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)) you might also need to import SHADOW_ITEM_MARKER_PROPERTY_NAME, which marks the place holder element that is temporarily added to the list the dragged element hovers over.
 
 ### Accessibility (alpha)
 If you want screen-readers to tell the user which item is being dragged and which container it interacts with, **please add `aria-label` on the container and on every draggable item**. The library will take care of the rest.
@@ -133,7 +133,7 @@ For example:
 ```
 If you don't provide the aria-labels everything will still work, but the messages to the user will be less informative.
 *Note*: in general you probably want to use semantic-html (ex: `ol` and `li` elements rather than `section` and `div`) but the library is screen readers friendly regardless (or at least that's the goal :)).
-If you want to implement your own custom screen-reader alerts, roles and instructions, you can use the `autoAriaDisabled` options and wire everything up yourself using markup and the `consider` and `finalize` handlers (see unsortable list example below). 
+If you want to implement your own custom screen-reader alerts, roles and instructions, you can use the `autoAriaDisabled` options and wire everything up yourself using markup and the `consider` and `finalize` handlers (for example: [unsortable list](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)). 
 
 ##### Keyboard support
 - Tab into a dnd container to get a description and instructions
@@ -173,6 +173,7 @@ It applies globally (as in, all of your items everywhere are expected to have a 
 * [Selectively enable/disable drag/drop](https://svelte.dev/repl/44c9229556f3456e9883c10fc0aa0ee9?version=3)
 * [Custom active dropzone styling](https://svelte.dev/repl/4ceecc5bae54490b811bd62d4d613e59?version=3.24.1) 
 * [Customizing the dragged element](https://svelte.dev/repl/438fca28bb1f4eb1b34eff9dc6a728dc?version=3)
+* [Customizing the placeholder(shadow) element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)
 
 * [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.24.1)
 * [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3.24.1), courtesy of @gleuch

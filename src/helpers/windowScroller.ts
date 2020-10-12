@@ -9,7 +9,7 @@ let mousePosition: Point;
  * // TODO - make private (remove export)
  */
 export function updateMousePosition(e: MouseEvent | TouchEvent): void {
-    // @ts-expect-error
+    // @ts-expect-error TODO: {'touches' in e} instead of {e.touches}
     const c = e.touches? e.touches[0] : e;
     mousePosition = {x: c.clientX, y: c.clientY};
 }

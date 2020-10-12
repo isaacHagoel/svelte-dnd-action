@@ -278,7 +278,7 @@ export function dndzone(node: HTMLElement, options: Options) {
     }
     function handleMouseDown(e: MouseEvent | TouchEvent) {
         // prevents responding to any button but left click which equals 0 (which is falsy)
-        // @ts-expect-error
+        // @ts-expect-error TODO: {'button' in e} instead of {e.button}
         if (e.button) {
             // @ts-expect-error
             console.debug(`ignoring none left click button: ${e.button}`);

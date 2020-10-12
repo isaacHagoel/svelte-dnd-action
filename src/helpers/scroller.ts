@@ -4,7 +4,7 @@ import {
 const SCROLL_ZONE_PX = 25;
 
 interface Scroller {
-    scrollIfNeeded: (pointer: Point, elementToScroll: HTMLElement | null) => boolean;
+    scrollIfNeeded: (pointer: Point, elementToScroll: Element | null) => boolean;
     resetScrolling: () => void;
 }
 

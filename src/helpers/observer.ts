@@ -1,5 +1,5 @@
 import {findWouldBeIndex} from './listUtil';
-import {findCenterOfElement, isElementOffDocument} from "./intersection";
+import {findCenterOfElement, isElementOffDocument, Point} from "./intersection";
 import {dispatchDraggedElementEnteredContainer, 
         dispatchDraggedElementLeftContainer,
         dispatchDraggedLeftDocument,
@@ -11,7 +11,7 @@ import { getDepth } from "./util";
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
 const {scrollIfNeeded, resetScrolling} = makeScroller();
-let next;
+let next: number;
 
 
 /**
@@ -19,10 +19,10 @@ let next;
  */
 export function observe(draggedEl: HTMLElement, dropZones: Set<HTMLElement>, intervalMs: number = INTERVAL_MS): void {
     // initialization
-    let lastDropZoneFound;
-    let lastIndexFound;
+    let lastDropZoneFound: Element;
+    let lastIndexFound: number | undefined;
     let lastIsDraggedInADropZone = false;
-    let lastCentrePositionOfDragged;
+    let lastCentrePositionOfDragged: Point | undefined;
     // We are sorting to make sure that in case of nested zones of the same type the one "on top" is considered first
     const dropZonesFromDeepToShallow = Array.from(dropZones).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
 

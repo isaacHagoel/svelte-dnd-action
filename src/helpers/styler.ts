@@ -71,7 +71,6 @@ export function morphDraggedElementToBeLike(
 
     /// other properties
     copyStylesFromTo(copyFromEl, draggedEl);
-    // @ts-expect-error
     transformDraggedElement();
 }
 

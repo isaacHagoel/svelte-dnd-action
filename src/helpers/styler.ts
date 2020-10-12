@@ -18,7 +18,7 @@ export function createDraggedElementFrom(originalElement: HTMLElement): HTMLElem
     const draggedEl = originalElement.cloneNode(true) as typeof originalElement;
     copyStylesFromTo(originalElement, draggedEl);
     draggedEl.id = `dnd-action-dragged-el`;
-    //@ts-expect-error
+    // @ts-expect-error use setAttribute instead
     draggedEl.name = `dnd-action-dragged-el`;
     draggedEl.style.position = "fixed";
     draggedEl.style.top = `${rect.top}px`;

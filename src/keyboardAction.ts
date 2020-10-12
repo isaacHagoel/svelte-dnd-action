@@ -11,7 +11,7 @@ const DEFAULT_DROP_TARGET_STYLE = {
 };
 
 interface Handles {
-    update: (newOptions: Partial<Options>) => void;
+    update: (newOptions: Config) => void;
     destroy: () => void;
 }
 
@@ -241,7 +241,7 @@ export function dndzone(node: HTMLElement, options: Options) {
                         dropFromOthersDisabled = false,
                         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
                         autoAriaDisabled = false
-                    }: Partial<Options>) {
+                    }: Config) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.dropFromOthersDisabled = dropFromOthersDisabled;
@@ -289,7 +289,7 @@ export function dndzone(node: HTMLElement, options: Options) {
     configure(options);
 
     const handles: Handles = {
-        update: (newOptions: Partial<Options>) => {
+        update: (newOptions: Config) => {
             console.debug(`keyboard dndzone will update newOptions: ${toString(newOptions)}`);
             configure(newOptions);
         },

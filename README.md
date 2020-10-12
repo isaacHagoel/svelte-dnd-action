@@ -133,7 +133,7 @@ For example:
 ```
 If you don't provide the aria-labels everything will still work, but the messages to the user will be less informative.
 *Note*: in general you probably want to use semantic-html (ex: `ol` and `li` elements rather than `section` and `div`) but the library is screen readers friendly regardless (or at least that's the goal :)).
-If you want to implement your own custom screen-reader alerts, roles and instructions, you can use the `autoAriaDisabled` options and wire everything up yourself using markup and the `consider` and `finalize` handlers (example coming soon). 
+If you want to implement your own custom screen-reader alerts, roles and instructions, you can use the `autoAriaDisabled` options and wire everything up yourself using markup and the `consider` and `finalize` handlers (see unsortable list example below). 
 
 ##### Keyboard support
 - Tab into a dnd container to get a description and instructions
@@ -176,6 +176,7 @@ It applies globally (as in, all of your items everywhere are expected to have a 
 
 * [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.24.1)
 * [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3.24.1), courtesy of @gleuch
+* [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)
 * [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
 
 * [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)

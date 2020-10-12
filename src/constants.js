@@ -7,7 +7,8 @@ export const TRIGGERS = {
     DRAGGED_LEFT: DRAGGED_LEFT_EVENT_NAME,
     DROPPED_INTO_ZONE: "droppedIntoZone",
     DROPPED_INTO_ANOTHER: "droppedIntoAnother",
-    DROPPED_OUTSIDE_OF_ANY: "droppedOutsideOfAny"
+    DROPPED_OUTSIDE_OF_ANY: "droppedOutsideOfAny",
+    DRAG_STOPPED: "dragStopped"
 };
 export const SOURCES = {
     POINTER: "pointer",

@@ -19,7 +19,8 @@ import {
 } from "./helpers/styler";
 import { DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_LEFT_DOCUMENT_EVENT_NAME, DRAGGED_OVER_INDEX_EVENT_NAME, dispatchConsiderEvent, dispatchFinalizeEvent } from './helpers/dispatcher';
 import {areObjectsShallowEqual, toString} from "./helpers/util";
-import { Options } from './action';
+import type { Options, Item, TransformDraggedElementFunction } from './action';
+import { Point } from './helpers/intersection';
 
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -28,28 +29,28 @@ const DEFAULT_DROP_TARGET_STYLE = {
     outline: 'rgba(255, 255, 102, 0.7) solid 2px',
 };
 
-let originalDragTarget;
-let draggedEl;
-let draggedElData;
-let draggedElType;
-let originDropZone;
-let originIndex;
-let shadowElData;
-let shadowElDropZone;
-let dragStartMousePosition;
-let currentMousePosition;
+let originalDragTarget: HTMLElement | undefined;
+let draggedEl: HTMLElement | undefined;
+let draggedElData: Item | undefined;
+let draggedElType: string | undefined;
+let originDropZone: HTMLElement | undefined;
+let originIndex: number | undefined;
+let shadowElData: Item | undefined;
+let shadowElDropZone: Element | undefined;
+let dragStartMousePosition: Point | undefined;
+let currentMousePosition: Point | undefined;
 let isWorkingOnPreviousDrag = false;
 let finalizingPreviousDrag = false;
 
 // a map from type to a set of drop-zones
-const typeToDropZones = new Map();
+const typeToDropZones = new Map<string | undefined, Set<HTMLElement>>();
 // important - this is needed because otherwise the config that would be used for everyone is the config of the element that created the event listeners
-const dzToConfig = new Map();
+const dzToConfig = new Map<Element | undefined, Config>();
 // this is needed in order to be able to cleanup old listeners and avoid stale closures issues (as the listener is defined within each zone)
 const elToMouseDownListener = new WeakMap();
 
 /* drop-zones registration management */
-function registerDropZone(dropZoneEl, type) {
+function registerDropZone(dropZoneEl: HTMLElement, type: string) {
     console.debug('registering drop-zone if absent')
     if (!typeToDropZones.has(type)) {
         typeToDropZones.set(type, new Set());
@@ -59,8 +60,8 @@ function registerDropZone(dropZoneEl, type) {
         incrementActiveDropZoneCount();
     }
 }
-function unregisterDropZone(dropZoneEl, type) {
-    typeToDropZones.get(type).delete(dropZoneEl);
+function unregisterDropZone(dropZoneEl: HTMLElement, type: string) {
+    typeToDropZones.get(type)!.delete(dropZoneEl);
     decrementActiveDropZoneCount();
     if (typeToDropZones.get(type).size === 0) {
         typeToDropZones.delete(type);
@@ -71,7 +72,7 @@ function unregisterDropZone(dropZoneEl, type) {
 function watchDraggedElement() {
     console.debug('watching dragged element');
     armWindowScroller();
-    const dropZones = typeToDropZones.get(draggedElType);
+    const dropZones = typeToDropZones.get(draggedElType)!;
     for (const dz of dropZones) {
         dz.addEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
         dz.addEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
@@ -79,7 +80,8 @@ function watchDraggedElement() {
     }
     window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
-    const observationIntervalMs = Math.max(MIN_OBSERVATION_INTERVAL_MS, ...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
+    const observationIntervalMs = Math.max(MIN_OBSERVATION_INTERVAL_MS,...Array.from(
+        dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
     observe(draggedEl, dropZones, observationIntervalMs * 1.07);
 }
 function unWatchDraggedElement() {
@@ -97,9 +99,9 @@ function unWatchDraggedElement() {
 }
 
 /* custom drag-events handlers */
-function handleDraggedEntered(e) {
-    console.debug('dragged entered', e.currentTarget, e.detail);
-    let {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+function handleDraggedEntered(e: Event) {
+    console.debug('dragged entered', e.currentTarget, (e as CustomEvent).detail);
+    let {items, dropFromOthersDisabled} = dzToConfig.get((e.currentTarget as HTMLElement));
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         console.debug('drop is currently disabled');
         return;
@@ -107,15 +109,15 @@ function handleDraggedEntered(e) {
     // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(i => i[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY])
     console.debug(`dragged entered items ${toString(items)}`);
-    const {index, isProximityBased} = e.detail.indexObj;
-    const shadowElIdx = (isProximityBased && index === e.currentTarget.children.length - 1)? index + 1 : index;
-    shadowElDropZone = e.currentTarget;
+    const {index, isProximityBased} = (e as CustomEvent).detail.indexObj;
+    const shadowElIdx = (isProximityBased && index === (e.currentTarget as HTMLElement).children.length - 1)? index + 1 : index;
+    shadowElDropZone = e.currentTarget as HTMLElement;
     items.splice( shadowElIdx, 0, shadowElData);
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
+    dispatchConsiderEvent(e.currentTarget as HTMLElement, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
-function handleDraggedLeft(e) {
-    console.debug('dragged left', e.currentTarget, e.detail);
-    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+function handleDraggedLeft(e: Event) {
+    console.debug('dragged left', e.currentTarget, (e as CustomEvent).detail);
+    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget as HTMLElement);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         console.debug('drop is currently disabled');
         return;
@@ -123,20 +125,20 @@ function handleDraggedLeft(e) {
     const shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
     items.splice(shadowElIdx, 1);
     shadowElDropZone = undefined;
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
+    dispatchConsiderEvent(e.currentTarget as HTMLElement, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
-function handleDraggedIsOverIndex(e) {
-    console.debug('dragged is over index', e.currentTarget, e.detail);
-    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+function handleDraggedIsOverIndex(e: Event) {
+    console.debug('dragged is over index', e.currentTarget, (e as CustomEvent).detail);
+    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget as Element);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         console.debug('drop is currently disabled');
         return;
     }
-    const {index} = e.detail.indexObj;
+    const {index} = (e as CustomEvent).detail.indexObj;
     const shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
+    dispatchConsiderEvent(e.currentTarget as Element, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 
 /* global mouse/touch-events handlers */
@@ -145,7 +147,7 @@ function handleMouseMove(e: MouseEvent | TouchEvent) {
     // @ts-expect-error TODO: {'touches' in e} instead of {e.touches}
     const c = e.touches? e.touches[0] : e;
     currentMousePosition = {x: c.clientX, y: c.clientY};
-    draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${currentMousePosition.y - dragStartMousePosition.y}px, 0)`;
+    draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition!.x}px, ${currentMousePosition.y - dragStartMousePosition!.y}px, 0)`;
 }
 
 function handleDrop() {
@@ -172,7 +174,7 @@ function handleDrop() {
                 // letting the origin drop zone know the element was permanently taken away
                 dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
             }
-            shadowElDropZone.children[shadowElIdx].style.visibility = '';
+            (shadowElDropZone.children[shadowElIdx] as HTMLElement).style.visibility = '';
             cleanupPostDrop();
         }
         animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
@@ -188,7 +190,7 @@ function handleDrop() {
             const finalItems = [...items];
             finalItems.splice(originIndex, 1, draggedElData);
             dispatchFinalizeEvent(originDropZone, finalItems, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
-            shadowElDropZone.children[originIndex].style.visibility = '';
+            (shadowElDropZone.children[originIndex] as HTMLElement).style.visibility = '';
             cleanupPostDrop();
         }
         window.setTimeout(() => animateDraggedToFinalPosition(originIndex, finalizeBackToOrigin), 0);
@@ -196,7 +198,7 @@ function handleDrop() {
 }
 
 // helper function for handleDrop
-function animateDraggedToFinalPosition(shadowElIdx, callback) {
+function animateDraggedToFinalPosition(shadowElIdx: number, callback: () => void) {
     const shadowElRect = shadowElDropZone.children[shadowElIdx].getBoundingClientRect();
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
@@ -227,9 +229,12 @@ function cleanupPostDrop() {
     finalizingPreviousDrag = false;
 }
 
+type Config = Partial<Options> & {
+    dropAnimationDurationMs?: number;
+}
+
 export function dndzone(node: HTMLElement, options: Options) {
-    // @ts-expect-error
-    const config: Record<keyof Options, any> =  {
+    const config: Config =  {
         items: undefined,
         type: undefined,
         flipDurationMs: 0,
@@ -239,7 +244,7 @@ export function dndzone(node: HTMLElement, options: Options) {
         transformDraggedElement : () => {},
     };
     console.debug(`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node});
-    let elToIdx = new Map();
+    let elToIdx = new Map<HTMLElement, number>();
 
     function addMaybeListeners() {
         window.addEventListener('mousemove', handleMouseMoveMaybeDragStart, {passive: false});
@@ -265,7 +270,7 @@ export function dndzone(node: HTMLElement, options: Options) {
         // @ts-expect-error TODO: {'touches' in e} instead of {e.touches}
         const c = e.touches? e.touches[0] : e;
         currentMousePosition = {x: c.clientX, y: c.clientY};
-        if (Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
+        if (Math.abs(currentMousePosition.x - dragStartMousePosition!.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition!.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
             removeMaybeListeners();
             // @ts-expect-error
             handleDragStart(originalDragTarget);
@@ -288,7 +293,7 @@ export function dndzone(node: HTMLElement, options: Options) {
         const c = e.touches? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y:c.clientY};
         currentMousePosition = {...dragStartMousePosition};
-        originalDragTarget = e.currentTarget;
+        originalDragTarget = e.currentTarget as HTMLElement;
         addMaybeListeners();
     }
 
@@ -324,7 +329,6 @@ export function dndzone(node: HTMLElement, options: Options) {
         window.requestAnimationFrame(keepOriginalElementInDom);
 
         styleActiveDropZones(
-            // @ts-expect-error
             Array.from(typeToDropZones.get(config.type))
                 .filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
             dz => dzToConfig.get(dz).dropTargetStyle,
@@ -342,7 +346,6 @@ export function dndzone(node: HTMLElement, options: Options) {
     }
 
     function configure({
-                           // @ts-expect-error
                            items = undefined,
                            flipDurationMs:dropAnimationDurationMs = 0,
                            type: newType = DEFAULT_DROP_ZONE_TYPE,
@@ -351,7 +354,6 @@ export function dndzone(node: HTMLElement, options: Options) {
                            dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
                            transformDraggedElement = () => {},
                        }: Options) {
-        // @ts-expect-error
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
@@ -403,7 +405,7 @@ export function dndzone(node: HTMLElement, options: Options) {
     configure(options);
 
     return ({
-        update: (newOptions) => {
+        update: (newOptions: Options) => {
             console.debug(`pointer dndzone will update newOptions: ${toString(newOptions)}`);
             configure(newOptions);
         },

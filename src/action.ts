@@ -6,9 +6,9 @@ import {toString} from "./helpers/util";
 export type Item = object;
 
 export type TransformDraggedElementFunction = (
-    element, // the dragged element.
-    data, // the data of the item from the items array
-    index, // the index the dragged element will become in the new dnd-zone.
+    element: Element, // the dragged element.
+    data: Item, // the data of the item from the items array
+    index: number, // the index the dragged element will become in the new dnd-zone.
 ) => void;
 
 export interface Options {

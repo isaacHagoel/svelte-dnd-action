@@ -11,7 +11,7 @@ import { getDepth } from "./util";
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
 const {scrollIfNeeded, resetScrolling} = makeScroller();
-let next: number;
+let next: number | undefined;
 
 
 /**
@@ -19,7 +19,7 @@ let next: number;
  */
 export function observe(draggedEl: HTMLElement, dropZones: Set<HTMLElement>, intervalMs: number = INTERVAL_MS): void {
     // initialization
-    let lastDropZoneFound: Element;
+    let lastDropZoneFound: Element | undefined;
     let lastIndexFound: number | undefined;
     let lastIsDraggedInADropZone = false;
     let lastCentrePositionOfDragged: Point | undefined;

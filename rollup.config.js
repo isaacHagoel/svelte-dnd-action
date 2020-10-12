@@ -8,6 +8,8 @@ const name = pkg.name
     .replace(/^\w/, m => m.toUpperCase())
     .replace(/-\w/g, m => m[1].toUpperCase());
 
+const extensions = ['.js', '.jsx', '.es6', '.es', '.mjs', '.ts', '.tsx'];
+
 export default {
     input: 'src/index.ts',
     output: [
@@ -15,12 +17,12 @@ export default {
         { file: pkg.main, 'format': 'umd', name }
     ],
     plugins: [
-        typescript(),
+        // typescript(),
         babel({
+            extensions,
             presets: [
-                ["@babel/preset-env", {
-                    modules: false
-                }]
+                "@babel/preset-typescript",
+                "@babel/preset-env",
             ]
         }),
         resolve()

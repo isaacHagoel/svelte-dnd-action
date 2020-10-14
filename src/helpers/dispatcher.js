@@ -8,7 +8,7 @@ const CONSIDER_EVENT_NAME = 'consider';
  * @property {string} id
  * @property {string} source
  * @param {Node} el
- * @param {Array} items
+ * @param {Array<object>} items
  * @param {Info} info
  */
 export function dispatchFinalizeEvent(el, items, info) {

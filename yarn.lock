@@ -3241,6 +3241,13 @@ rollup-plugin-babel@^4.3.2:
     "@babel/helper-module-imports" "^7.0.0"
     rollup-pluginutils "^2.8.1"
 
+rollup-plugin-dts@^1.4.13:
+  version "1.4.13"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-dts/-/rollup-plugin-dts-1.4.13.tgz#4f086e84f4fdcc1f49160799ebc66f6b09db292b"
+  integrity sha512-7mxoQ6PcmCkBE5ZhrjGDL4k42XLy8BkSqpiRi1MipwiGs+7lwi4mQkp2afX+OzzLjJp/TGM8llfe8uayIUhPEw==
+  optionalDependencies:
+    "@babel/code-frame" "^7.10.4"
+
 rollup-pluginutils@^2.8.1:
   version "2.8.2"
   resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.8.2.tgz#72f2af0748b592364dbd3389e600e5a9444a351e"
@@ -3622,6 +3629,11 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
+
+typescript@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.0.3.tgz#153bbd468ef07725c1df9c77e8b453f8d36abba5"
+  integrity sha512-tEu6DGxGgRJPb/mVPIZ48e69xCn2yRmCgYmDugAVwmJ6o+0u1RI18eO7E7WBTLYLaEVVOhwQmcdhQHweux/WPg==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"

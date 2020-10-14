@@ -1,4 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve';
+import dts from "rollup-plugin-dts";
 import babel from 'rollup-plugin-babel'
 import pkg from './package.json';
 
@@ -7,7 +8,7 @@ const name = pkg.name
     .replace(/^\w/, m => m.toUpperCase())
     .replace(/-\w/g, m => m[1].toUpperCase());
 
-export default {
+export default [{
     input: 'src/index.js',
     output: [
         { file: pkg.module, 'format': 'es' },
@@ -23,4 +24,8 @@ export default {
         }),
         resolve()
     ]
-};
+}, {
+    input: "./types/index.d.ts",
+    output: [{ file: "dist/index.d.ts", format: "es" }],
+    plugins: [dts()],
+}];

@@ -4,6 +4,7 @@
 *.iml
 node_modules
 /dist/
+/types/
 cypress/videos
 cypress/screenshots
 

@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "cypress run",
+    "tscheck": "tsc --noEmit",
     "build": "rollup -c",
     "prepublishOnly": "npm run build"
   },

@@ -12,12 +12,13 @@ const extensions = ['.js', '.jsx', '.es6', '.es', '.mjs', '.ts', '.tsx'];
 
 export default {
     input: 'src/index.ts',
-    output: [
+    /* output: [
         { file: pkg.module, 'format': 'es' },
         { file: pkg.main, 'format': 'umd', name }
-    ],
+    ],*/
+    output: { dir: './built'},
     plugins: [
-        // typescript(),
+        typescript({"emitDeclarationOnly": true}),
         babel({
             extensions,
             presets: [

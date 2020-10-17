@@ -18,7 +18,6 @@ export function createDraggedElementFrom(originalElement) {
     const draggedEl = originalElement.cloneNode(true);
     copyStylesFromTo(originalElement, draggedEl);
     draggedEl.id = `dnd-action-dragged-el`;
-    draggedEl.name = `dnd-action-dragged-el`;
     draggedEl.style.position = "fixed";
     draggedEl.style.top = `${rect.top}px`;
     draggedEl.style.left = `${rect.left}px`;

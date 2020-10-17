@@ -253,14 +253,14 @@ export function dndzone(node, options) {
         registerDropZone(node, newType);
         dzToConfig.set(node, config);
 
-        for(let i=0; i < node.children.length ; i++) {
+        for (let i = 0; i < node.children.length ; i++) {
             const draggableEl = node.children[i];
             allDragTargets.add(draggableEl);
             draggableEl.tabIndex = (isDragging) ? -1 : 0;
             if (!autoAriaDisabled) {
                 draggableEl.setAttribute("role", "listitem");
             }
-            draggableEl.removeEventListener("keyDown", elToKeyDownListeners.get(draggableEl));
+            draggableEl.removeEventListener("keydown", elToKeyDownListeners.get(draggableEl));
             draggableEl.removeEventListener("click", elToFocusListeners.get(draggableEl));
             if (!dragDisabled) {
                 draggableEl.addEventListener("keydown", handleKeyDown);

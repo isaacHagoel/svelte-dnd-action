@@ -372,7 +372,7 @@ export function dndzone(node, options) {
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
-            if (config.items[idx].hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)) {
+            if (config?.items[idx]?.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)) {
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () => config.transformDraggedElement(draggedEl, draggedElData, idx));
                 styleShadowEl(draggableEl);
                 continue;

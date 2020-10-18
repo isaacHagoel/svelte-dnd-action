@@ -42,3 +42,5 @@ export function overrideItemIdKeyNameBeforeInitialisingDndZones(newKeyName) {
     console.debug("overriding item id key name", newKeyName)
     ITEM_ID_KEY = newKeyName;
 }
+
+export const isOnServer =  (typeof window === 'undefined');

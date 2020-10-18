@@ -1,7 +1,13 @@
-import {decrementActiveDropZoneCount, incrementActiveDropZoneCount, ITEM_ID_KEY, SOURCES, TRIGGERS} from "./constants";
+import {
+    decrementActiveDropZoneCount,
+    incrementActiveDropZoneCount,
+    ITEM_ID_KEY,
+    SOURCES,
+    TRIGGERS
+} from "./constants";
 import {styleActiveDropZones, styleInactiveDropZones} from "./helpers/styler";
 import {dispatchConsiderEvent, dispatchFinalizeEvent} from "./helpers/dispatcher";
-import {createInstructions, alertToScreenReader} from "./helpers/aria";
+import {initAria, alertToScreenReader} from "./helpers/aria";
 import {toString} from "./helpers/util";
 
 const DEFAULT_DROP_ZONE_TYPE = '--any--';
@@ -28,11 +34,16 @@ const typeToDropZones = new Map();
 * maybe keep focus on the last dragged item upon drop?
  */
 
-const INSTRUCTION_IDs = createInstructions();
+const INSTRUCTION_IDs = initAria();
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
-    console.debug('registering drop-zone if absent')
+    console.debug('registering drop-zone if absent');
+    if (typeToDropZones.size === 0) {
+      console.debug("adding global keydown and click handlers");
+      window.addEventListener("keydown", globalKeyDownHandler);
+      window.addEventListener('click', globalClickHandler);
+    }
     if (!typeToDropZones.has(type)) {
         typeToDropZones.set(type, new Set());
     }
@@ -42,10 +53,34 @@ function registerDropZone(dropZoneEl, type) {
     }
 }
 function unregisterDropZone(dropZoneEl, type) {
+    console.debug('unregistering drop-zone');
     typeToDropZones.get(type).delete(dropZoneEl);
     decrementActiveDropZoneCount();
     if (typeToDropZones.get(type).size === 0) {
         typeToDropZones.delete(type);
+    }
+    if (typeToDropZones.size === 0) {
+        console.debug("removing global keydown and click handlers");
+        window.removeEventListener("keydown", globalKeyDownHandler);
+        window.removeEventListener('click', globalClickHandler);
+    }
+}
+
+function globalKeyDownHandler(e) {
+    if (!isDragging) return;
+    switch(e.key) {
+        case("Escape"): {
+            handleDrop();
+            break;
+        }
+    }
+}
+
+function globalClickHandler() {
+    if (!isDragging) return ;
+    if (!allDragTargets.has(document.activeElement)) {
+        console.debug("clicked outside of any draggable");
+        handleDrop();
     }
 }
 
@@ -77,25 +112,6 @@ function handleZoneFocus(e) {
     }
 
 }
-function globalKeyDownHandler(e) {
-    if (!isDragging) return;
-    switch(e.key) {
-        case("Escape"): {
-            handleDrop();
-            break;
-        }
-    }
-}
-window.addEventListener("keydown", globalKeyDownHandler);
-
-function globalClickHandler() {
-    if (!isDragging) return ;
-    if (!allDragTargets.has(document.activeElement)) {
-        console.debug("clicked outside of any draggable");
-        handleDrop();
-    }
-}
-window.addEventListener('click', globalClickHandler);
 
 function triggerAllDzsUpdate() {
     dzToHandles.forEach(({update}, dz) => update(dzToConfig.get(dz)));

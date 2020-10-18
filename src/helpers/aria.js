@@ -1,3 +1,5 @@
+import {isOnServer} from "../constants";
+
 const INSTRUCTION_IDs = {
     DND_ZONE_ACTIVE: 'dnd-zone-active',
     DND_ZONE_DRAG_DISABLED: 'dnd-zone-drag-disabled'
@@ -7,11 +9,33 @@ const ID_TO_INSTRUCTION = {
     [INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED]: "This is a disabled drag and drop list"
 }
 
+const ALERT_DIV_ID = 'dnd-action-aria-alert';
+let alertsDiv;
 /**
  * Initializes the static aria instructions so they can be attached to zones
- * @return {{DND_ZONE_ACTIVE: string, DND_ZONE_DRAG_DISABLED: string}}
+ * @return {{DND_ZONE_ACTIVE: string, DND_ZONE_DRAG_DISABLED: string} | null} - the IDs for static aria instruction (to be used via aria-describedby) or null on the server
  */
-export function createInstructions() {
+export function initAria() {
+    if (isOnServer) return null;
+
+    // setting the dynamic alerts
+    alertsDiv = document.createElement('div');
+    (function initAlertsDiv() {
+        alertsDiv.id = ALERT_DIV_ID;
+        // tab index -1 makes the alert be read twice on chrome for some reason
+        //alertsDiv.tabIndex = -1;
+        alertsDiv.style.position = 'fixed';
+        alertsDiv.style.bottom = '0';
+        alertsDiv.style.left = '0';
+        alertsDiv.style.zIndex = '-5';
+        alertsDiv.style.opacity = '0';
+        alertsDiv.style.height = '0';
+        alertsDiv.style.width = '0';
+        alertsDiv.setAttribute("role", "alert");
+    })();
+    document.body.prepend(alertsDiv);
+
+    // setting the instructions
     Object.entries(ID_TO_INSTRUCTION).forEach(([id, txt]) =>  document.body.prepend(instructionToHiddenDiv(id, txt)));
     return {...INSTRUCTION_IDs};
 }
@@ -24,23 +48,6 @@ function instructionToHiddenDiv(id, txt) {
     div.style.zIndex = '-5';
     return div;
 }
-
-const ALERT_DIV_ID = 'dnd-action-aria-alert';
-let alertsDiv = document.createElement('div');
-(function initAlertsDiv() {
-    alertsDiv.id = ALERT_DIV_ID;
-    // tab index -1 makes the alert be read twice on chrome for some reason
-    //alertsDiv.tabIndex = -1;
-    alertsDiv.style.position = 'fixed';
-    alertsDiv.style.bottom = '0';
-    alertsDiv.style.left = '0';
-    alertsDiv.style.zIndex = '-5';
-    alertsDiv.style.opacity = '0';
-    alertsDiv.style.height = '0';
-    alertsDiv.style.width = '0';
-    alertsDiv.setAttribute("role", "alert");
-})();
-document.body.prepend(alertsDiv);
 
 /**
  * Will make the screen reader alert the provided text to the user

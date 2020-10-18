@@ -81,7 +81,7 @@ function copyStylesFromTo(copyFromEl, copyToEl) {
     const computedStyle = window.getComputedStyle(copyFromEl);
     Array.from(computedStyle)
         .filter(s => s.startsWith('background') || s.startsWith('padding') || s.startsWith('font') || s.startsWith('text') || s.startsWith('align') ||
-            s.startsWith('justify') || s.startsWith('display') || s.startsWith('flex') || s.startsWith('border') || s === 'opacity' || s === 'color')
+            s.startsWith('justify') || s.startsWith('display') || s.startsWith('flex') || s.startsWith('border') || s === 'opacity' || s === 'color' || s === 'list-style-type')
         .forEach(s =>
             copyToEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s))
         );

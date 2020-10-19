@@ -35,7 +35,7 @@ export function areObjectsShallowEqual(objA, objB) {
         return false;
     }
     for (const keyA in objA) {
-        if(!objB.hasOwnProperty(keyA) || objB[keyA] !== objA[keyA]) {
+        if(!{}.hasOwnProperty.call(objB, keyA) || objB[keyA] !== objA[keyA]) {
             return false;
         }
     }

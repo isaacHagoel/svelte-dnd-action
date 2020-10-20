@@ -1,5 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve';
 import babel from 'rollup-plugin-babel'
+import copy from 'rollup-plugin-copy';
 import pkg from './package.json';
 
 const name = pkg.name
@@ -21,6 +22,11 @@ export default {
                 }]
             ]
         }),
-        resolve()
+        resolve(),
+        copy({
+            targets: [
+                { src: 'typings/index.d.ts', dest: 'dist/' }
+            ]
+        })
     ]
 };

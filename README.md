@@ -195,7 +195,7 @@ declare namespace svelte.JSX {
 }
 ```
 You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't already: "include": ["src/**/*", "global.d.ts"].
-Then you will be able to use the library with type safety as follows (Typescript gurus out there, improvements are welcome :smile):
+Then you will be able to use the library with type safety as follows (Typescript gurus out there, improvements are welcome :smile:):
 ```html
 <style>
 	section {

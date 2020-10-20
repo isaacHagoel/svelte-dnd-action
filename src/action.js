@@ -15,7 +15,7 @@ import {toString} from "./helpers/util";
  * @property {number} [flipDurationMs] - if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
  * @property {boolean} [dragDisabled]
  * @property {boolean} [dropFromOthersDisabled]
- * @property {Object} [dragTargetStyle]
+ * @property {Object} [dropTargetStyle]
  * @property {Function} [transformDraggedElement]
  * @param {HTMLElement} node - the element to enhance
  * @param {Options} options
@@ -41,13 +41,6 @@ export function dndzone(node, options) {
 function validateOptions(options) {
     const {
         items,
-        flipDurationMs,
-        type,
-        dragDisabled,
-        dropFromOthersDisabled,
-        dropTargetStyle,
-        transformDraggedElement,
-        autoAriaDisabled,
         ...rest
     } = options;
     if (Object.keys(rest).length > 0) {
@@ -56,7 +49,7 @@ function validateOptions(options) {
     if (!items) {
         throw new Error("no 'items' key provided to dndzone");
     }
-    const itemWithMissingId = items.find(item => !item.hasOwnProperty(ITEM_ID_KEY));
+    const itemWithMissingId = items.find(item => !{}.hasOwnProperty.call(item, ITEM_ID_KEY));
     if (itemWithMissingId) {
         throw new Error(`missing '${ITEM_ID_KEY}' property for item ${toString(itemWithMissingId)}`);
     }

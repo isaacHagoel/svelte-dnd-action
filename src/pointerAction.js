@@ -91,7 +91,7 @@ function unWatchDraggedElement() {
         dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
     window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
-    unobserve(draggedEl, dropZones);
+    unobserve();
 }
 
 /* custom drag-events handlers */
@@ -118,7 +118,7 @@ function handleDraggedLeft(e) {
         console.debug('drop is currently disabled');
         return;
     }
-    const shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
+    const shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
     items.splice(shadowElIdx, 1);
     shadowElDropZone = undefined;
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
@@ -131,13 +131,13 @@ function handleDraggedIsOverIndex(e) {
         return;
     }
     const {index} = e.detail.indexObj;
-    const shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
+    const shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
     items.splice(shadowElIdx, 1);
     items.splice( index, 0, shadowElData);
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 
-/* global mouse/touch-events handlers */
+// Global mouse/touch-events handlers
 function handleMouseMove(e) {
     e.preventDefault();
     const c = e.touches? e.touches[0] : e;
@@ -155,15 +155,16 @@ function handleDrop() {
     window.removeEventListener('touchend', handleDrop);
     unWatchDraggedElement();
     moveDraggedElementToWasDroppedState(draggedEl);
-    if (!!shadowElDropZone) { // it was dropped in a drop-zone
+    let finalizeFunction;
+    if (shadowElDropZone) { // it was dropped in a drop-zone
         console.debug('dropped in dz', shadowElDropZone);
         let {items, type} = dzToConfig.get(shadowElDropZone);
         styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
-        let shadowElIdx = items.findIndex(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME));
+        let shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
         // the handler might remove the shadow element, ex: dragula like copy on drag
         if (shadowElIdx === -1) shadowElIdx = originIndex;
-        items = items.map(item => item.hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)? draggedElData : item);
-        function finalizeWithinZone() {
+        items = items.map(item => item[SHADOW_ITEM_MARKER_PROPERTY_NAME]? draggedElData : item);
+        finalizeFunction = function finalizeWithinZone() {
             dispatchFinalizeEvent(shadowElDropZone, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
             if (shadowElDropZone !== originDropZone) {
                 // letting the origin drop zone know the element was permanently taken away
@@ -172,7 +173,7 @@ function handleDrop() {
             shadowElDropZone.children[shadowElIdx].style.visibility = '';
             cleanupPostDrop();
         }
-        animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+        animateDraggedToFinalPosition(shadowElIdx, finalizeFunction);
     }
     else { // it needs to return to its place
         console.debug('no dz available');
@@ -181,14 +182,14 @@ function handleDrop() {
         items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
-        function finalizeBackToOrigin() {
+        finalizeFunction = function finalizeBackToOrigin() {
             const finalItems = [...items];
             finalItems.splice(originIndex, 1, draggedElData);
             dispatchFinalizeEvent(originDropZone, finalItems, {trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
             shadowElDropZone.children[originIndex].style.visibility = '';
             cleanupPostDrop();
         }
-        window.setTimeout(() => animateDraggedToFinalPosition(originIndex, finalizeBackToOrigin), 0);
+        window.setTimeout(() => animateDraggedToFinalPosition(originIndex, finalizeFunction), 0);
     }
 }
 
@@ -262,7 +263,7 @@ export function dndzone(node, options) {
         currentMousePosition = {x: c.clientX, y: c.clientY};
         if (Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX || Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX) {
             removeMaybeListeners();
-            handleDragStart(originalDragTarget);
+            handleDragStart();
         }
     }
     function handleMouseDown(e) {
@@ -372,7 +373,7 @@ export function dndzone(node, options) {
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
-            if (config.items[idx].hasOwnProperty(SHADOW_ITEM_MARKER_PROPERTY_NAME)) {
+            if (config.items[idx][SHADOW_ITEM_MARKER_PROPERTY_NAME]) {
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () => config.transformDraggedElement(draggedEl, draggedElData, idx));
                 styleShadowEl(draggableEl);
                 continue;

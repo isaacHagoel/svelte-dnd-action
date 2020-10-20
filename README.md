@@ -183,6 +183,58 @@ It applies globally (as in, all of your items everywhere are expected to have a 
 * [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
 * [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)
 
+### Typescript
+If you are using Typescript, you will need to add the following block to your `global.d.ts` (at least until [this svelte issue](https://github.com/sveltejs/language-tools/issues/431) is resolved):
+```typescript
+declare type DndEvent = import('svelte-dnd-action').DndEvent;
+declare namespace svelte.JSX {
+    interface HTMLAttributes<T> {
+        onconsider?:  (event: CustomEvent<DndEvent> & { target: EventTarget & T }) => void;
+        onfinalize?:  (event: CustomeEvent<DndEvent> & { target: EventTarget & T }) => void;
+    }
+}
+```
+You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't already: "include": ["src/**/*", "global.d.ts"].
+Then you will be able to use the library with type safety as follows (Typescript gurus out there, improvements are welcome :smile):
+```html
+<style>
+	section {
+		width: 12em;
+		padding: 1em;
+		height: 7.5em;
+	}
+	div {
+		height: 1.5em;
+		width: 10em;
+		text-align: center;
+		border: 1px solid black;
+		margin: 0.2em;
+		padding: 0.3em;
+	}
+</style>
+<script lang="ts">
+    import {dndzone} from 'svelte-dnd-action';
+	import {flip} from 'svelte/animate';
+	
+	const flipDurationMs = 200;
+	function handleSort(e: CustomEvent<DndEvent>) {
+        items = e.detail.items as {id: number, title:string}[];
+	}
+	
+	let items = [
+		{id:1, title: 'I'},
+		{id:2, title: 'Am'},
+		{id:3, title: 'Yoda'}
+	];
+</script>
+<section use:dndzone={{items, flipDurationMs}} on:consider={handleSort} on:finalize={handleSort}>
+	{#each items as item(item.id)}
+		<div animate:flip={{duration:flipDurationMs}}>
+			{item.title}	
+		</div>
+	{/each}
+</section>
+```
 
 ### Contributing [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/isaacHagoel/svelte-dnd-action/issues)
 There is still quite a lot to do. If you'd like to contribute please get in touch (raise an issue or comment on an existing one).

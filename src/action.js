@@ -39,10 +39,19 @@ export function dndzone(node, options) {
 }
 
 function validateOptions(options) {
+    /*eslint-disable*/
     const {
         items,
+        flipDurationMs,
+        type,
+        dragDisabled,
+        dropFromOthersDisabled,
+        dropTargetStyle,
+        transformDraggedElement,
+        autoAriaDisabled,
         ...rest
     } = options;
+    /*eslint-enable*/
     if (Object.keys(rest).length > 0) {
         console.warn(`dndzone will ignore unknown options`, rest);
     }

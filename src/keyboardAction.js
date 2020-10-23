@@ -159,6 +159,10 @@ export function dndzone(node, options) {
         switch(e.key) {
             case("Enter"):
             case(" "): {
+                // we don't want to affect nested input elements
+                if (e.target.value !== undefined && !allDragTargets.has(e.target)) {
+                    return;
+                }
                 e.preventDefault(); // preventing scrolling on spacebar
                 e.stopPropagation();
                 if (isDragging) {
@@ -259,15 +263,15 @@ export function dndzone(node, options) {
             node.setAttribute("role", "list");
             node.setAttribute("aria-describedby", dragDisabled? INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED : INSTRUCTION_IDs.DND_ZONE_ACTIVE);
         }
-        node.tabIndex = isDragging && (node === focusedDz || config.dropFromOthersDisabled || (focusedDz && config.type!==dzToConfig.get(focusedDz).type)) ? -1 : 0;
-        node.addEventListener('focus', handleZoneFocus);
-
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
         }
         config.type = newType;
         registerDropZone(node, newType);
         dzToConfig.set(node, config);
+
+        node.tabIndex = isDragging && (node === focusedDz || config.dropFromOthersDisabled || (focusedDz && config.type !== dzToConfig.get(focusedDz).type)) ? -1 : 0;
+        node.addEventListener('focus', handleZoneFocus);
 
         for (let i = 0; i < node.children.length ; i++) {
             const draggableEl = node.children[i];

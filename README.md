@@ -20,7 +20,7 @@ It is being actively maintained.
 - Scroll dnd-zones and/or the window horizontally or vertically by placing the dragged element next to the edge
 - Supports advanced use-cases such as various flavours of copy-on-drag and custom drag handles (see examples below)
 - Performant and small footprint (no external dependencies, no fluff code)  
-- Fully accessible (alpha) - keyboard support, aria attributes and assistive instructions for screen readers  
+- Fully accessible (beta) - keyboard support, aria attributes and assistive instructions for screen readers  
 
 ### Installation
 **Pre-requisites**: svelte-3
@@ -118,7 +118,7 @@ You have to listen for both events and update the list of items in order for thi
 
 For advanced usecases (ex: [custom styling for the placeholder element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)) you might also need to import SHADOW_ITEM_MARKER_PROPERTY_NAME, which marks the placeholder element that is temporarily added to the list the dragged element hovers over.
 
-### Accessibility (alpha)
+### Accessibility (beta)
 If you want screen-readers to tell the user which item is being dragged and which container it interacts with, **please add `aria-label` on the container and on every draggable item**. The library will take care of the rest.
 For example:
 ```html

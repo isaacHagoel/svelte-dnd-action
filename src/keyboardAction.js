@@ -160,7 +160,7 @@ export function dndzone(node, options) {
             case("Enter"):
             case(" "): {
                 // we don't want to affect nested input elements
-                if (e.target.value !== undefined && !allDragTargets.has(e.target)) {
+                if ((e.target.value !== undefined || e.target.isContentEditable) && !allDragTargets.has(e.target)) {
                     return;
                 }
                 e.preventDefault(); // preventing scrolling on spacebar

@@ -86,31 +86,31 @@ function globalClickHandler() {
 
 function handleZoneFocus(e) {
     console.debug("zone focus");
-    focusedDzLabel = e.currentTarget.getAttribute('aria-label') || '';
     if (!isDragging) return;
-    if (e.currentTarget !== focusedDz) {
-        const {items:originItems} = dzToConfig.get(focusedDz);
-        const originItem = originItems.find(item => item[ITEM_ID_KEY] === focusedItemId);
-        const originIdx = originItems.indexOf(originItem);
-        const itemToMove = originItems.splice(originIdx, 1)[0];
-        const {items:targetItems, autoAriaDisabled} = dzToConfig.get(e.currentTarget);
-        if (e.currentTarget.getBoundingClientRect().top < focusedDz.getBoundingClientRect().top || e.currentTarget.getBoundingClientRect().left < focusedDz.getBoundingClientRect().left) {
-            targetItems.push(itemToMove);
-            if (!autoAriaDisabled) {
-                alertToScreenReader(`Moved item ${focusedItemLabel} to the end of the list ${focusedDzLabel}`);
-            }
-        } else {
-            targetItems.unshift(itemToMove);
-            if (!autoAriaDisabled) {
-                alertToScreenReader(`Moved item ${focusedItemLabel} to the beginning of the list ${focusedDzLabel}`);
-            }
-        }
-        const dzFrom = focusedDz;
-        dispatchFinalizeEvent(dzFrom, originItems, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: focusedItemId, source: SOURCES.KEYBOARD});
-        dispatchFinalizeEvent(e.currentTarget, targetItems, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
-        focusedDz = e.currentTarget;
-    }
+    const newlyFocusedDz = e.currentTarget;
+    if (newlyFocusedDz === focusedDz) return;
 
+    focusedDzLabel = newlyFocusedDz.getAttribute('aria-label') || '';
+    const {items:originItems} = dzToConfig.get(focusedDz);
+    const originItem = originItems.find(item => item[ITEM_ID_KEY] === focusedItemId);
+    const originIdx = originItems.indexOf(originItem);
+    const itemToMove = originItems.splice(originIdx, 1)[0];
+    const {items:targetItems, autoAriaDisabled} = dzToConfig.get(newlyFocusedDz);
+    if (newlyFocusedDz.getBoundingClientRect().top < focusedDz.getBoundingClientRect().top || newlyFocusedDz.getBoundingClientRect().left < focusedDz.getBoundingClientRect().left) {
+        targetItems.push(itemToMove);
+        if (!autoAriaDisabled) {
+            alertToScreenReader(`Moved item ${focusedItemLabel} to the end of the list ${focusedDzLabel}`);
+        }
+    } else {
+        targetItems.unshift(itemToMove);
+        if (!autoAriaDisabled) {
+            alertToScreenReader(`Moved item ${focusedItemLabel} to the beginning of the list ${focusedDzLabel}`);
+        }
+    }
+    const dzFrom = focusedDz;
+    dispatchFinalizeEvent(dzFrom, originItems, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: focusedItemId, source: SOURCES.KEYBOARD});
+    dispatchFinalizeEvent(newlyFocusedDz, targetItems, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
+    focusedDz = newlyFocusedDz;
 }
 
 function triggerAllDzsUpdate() {
@@ -233,6 +233,7 @@ export function dndzone(node, options) {
     function handleClick(e) {
         if(!isDragging) return;
         if (e.currentTarget === focusedItem) return;
+        e.stopPropagation();
         handleDrop(false);
         handleDragStart(e);
     }
@@ -270,7 +271,7 @@ export function dndzone(node, options) {
         registerDropZone(node, newType);
         dzToConfig.set(node, config);
 
-        node.tabIndex = isDragging && (node === focusedDz || config.dropFromOthersDisabled || (focusedDz && config.type !== dzToConfig.get(focusedDz).type)) ? -1 : 0;
+        node.tabIndex = isDragging && (node === focusedDz || focusedItem.contains(node) || config.dropFromOthersDisabled || (focusedDz && config.type !== dzToConfig.get(focusedDz).type)) ? -1 : 0;
         node.addEventListener('focus', handleZoneFocus);
 
         for (let i = 0; i < node.children.length ; i++) {
@@ -289,7 +290,9 @@ export function dndzone(node, options) {
                 elToFocusListeners.set(draggableEl, handleClick);
             }
             if (isDragging && config.items[i][ITEM_ID_KEY] === focusedItemId) {
-                console.debug("focusing on", {i, focusedItemId})
+                console.debug("focusing on", {i, focusedItemId});
+                // if it is a nested dropzone, it was re-rendered and we need to refresh our pointer
+                focusedItem = draggableEl;
                 // without this the element loses focus if it moves backwards in the list
                 draggableEl.focus();
             }

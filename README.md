@@ -20,7 +20,7 @@ It is being actively maintained.
 - Scroll dnd-zones and/or the window horizontally or vertically by placing the dragged element next to the edge
 - Supports advanced use-cases such as various flavours of copy-on-drag and custom drag handles (see examples below)
 - Performant and small footprint (no external dependencies, no fluff code)  
-- Fully accessible (alpha) - keyboard support, aria attributes and assistive instructions for screen readers  
+- Fully accessible (alpha) - keyboard support, aria attributes and assistive instructions for screen readers
 
 ### Installation
 **Pre-requisites**: svelte-3
@@ -164,6 +164,14 @@ import {overrideItemIdKeyNameBeforeInitialisingDndZones} from 'svelte-dnd-action
 overrideItemIdKeyNameBeforeInitialisingDndZones('_id');
 ``` 
 It applies globally (as in, all of your items everywhere are expected to have a unique identifier with this name). It can only be called when there are no rendered dndzones (I recommend calling it within the top-level <script> tag, ex: in the App component).
+
+### Debug output
+By default no debug output will be logged to the console. If you want to see internal debug messages, you can enable the debug output like this:
+
+```javascript
+import {setDebug} from 'svelte-dnd-action';
+setDebug(true);
+``` 
 
 ### Examples
 * [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3.24.1)

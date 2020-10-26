@@ -1,4 +1,5 @@
 import {makeScroller} from "./scroller";
+import {printDebug} from "../constants";
 
 const INTERVAL_MS = 300;
 let mousePosition;
@@ -26,7 +27,7 @@ function loop() {
  * will start watching the mouse pointer and scroll the window if it goes next to the edges
  */
 export function armWindowScroller() {
-    console.debug('arming window scroller');
+    printDebug(() => 'arming window scroller');
     window.addEventListener('mousemove', updateMousePosition);
     window.addEventListener('touchmove', updateMousePosition);
     loop();
@@ -36,7 +37,7 @@ export function armWindowScroller() {
  * will stop watching the mouse pointer and won't scroll the window anymore
  */
 export function disarmWindowScroller() {
-    console.debug('disarming window scroller');
+    printDebug(() => 'disarming window scroller');
     window.removeEventListener('mousemove', updateMousePosition);
     window.removeEventListener('touchmove', updateMousePosition);
     mousePosition = undefined;

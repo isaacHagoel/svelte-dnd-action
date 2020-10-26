@@ -7,6 +7,7 @@ import {dispatchDraggedElementEnteredContainer,
     from './dispatcher';
 import {makeScroller} from "./scroller";
 import { getDepth } from "./util";
+import {printDebug} from "../constants";
 
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
@@ -43,7 +44,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
             return;
         }
         if (isElementOffDocument(draggedEl)) {
-            console.debug("off document");
+            printDebug(() => "off document");
             dispatchDraggedLeftDocument(draggedEl);
             return;
         }
@@ -89,7 +90,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
 
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
 export function unobserve() {
-    console.debug("unobserving");
+    printDebug(() => "unobserving");
     clearTimeout(next);
     resetScrolling();
 }

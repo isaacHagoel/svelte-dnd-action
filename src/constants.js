@@ -53,12 +53,12 @@ export let printDebug = () => {};
  */
 export function setDebugMode(isDebug) {
     if (isDebug) {
-        printDebug = (generateMessage) => {
+        printDebug = (generateMessage, logFunction = console.debug) => {
             const message = generateMessage();
             if (Array.isArray(message)) {
-                console.debug(...message)
+                logFunction(...message)
             } else {
-                console.debug(message)
+                logFunction(message)
             }
         }
     }

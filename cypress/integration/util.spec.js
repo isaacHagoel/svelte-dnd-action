@@ -1,4 +1,5 @@
 import {areObjectsShallowEqual, getDepth} from "../../src/helpers/util";
+import {printDebug, setDebugMode} from "../../src/constants"
 
 describe("util", () => {
     describe("getDepth", () => {
@@ -35,7 +36,20 @@ describe("util", () => {
             expect(areObjectsShallowEqual({a:1, z:"lala"}, {b:9, h:7})).to.equal(false);
         });
 
+    });
+    describe("debug output can be configured", () => {
+        let consoleStub = null;
+        const logStub = (message) => consoleStub = message;
+        const logMessage = () => "some debug message";
 
-
+        it("does not log anything by default", () => {
+            printDebug(logMessage, logStub);
+            expect(consoleStub).to.equal(null);
+        });
+        it("does log if debugMode is set", () => {
+            setDebugMode(true);
+            printDebug(logMessage, logStub)
+            expect(consoleStub).to.equal(logMessage());
+        })
     });
 });

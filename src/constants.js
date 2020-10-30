@@ -39,8 +39,30 @@ export function overrideItemIdKeyNameBeforeInitialisingDndZones(newKeyName) {
     if (typeof newKeyName !== "string") {
         throw new Error("item id key has to be a string");
     }
-    console.debug("overriding item id key name", newKeyName)
+    printDebug(() => ["overriding item id key name", newKeyName])
     ITEM_ID_KEY = newKeyName;
 }
 
 export const isOnServer =  (typeof window === 'undefined');
+
+export let printDebug = () => {};
+
+/**
+ * Allows the user to show console debug output if he wants
+ * * @param {Boolean} isDebug
+ */
+export function setDebugMode(isDebug) {
+    if (isDebug) {
+        printDebug = (generateMessage, logFunction = console.debug) => {
+            const message = generateMessage();
+            if (Array.isArray(message)) {
+                logFunction(...message)
+            } else {
+                logFunction(message)
+            }
+        }
+    }
+    else {
+        printDebug = () => {};
+    }
+}

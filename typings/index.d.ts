@@ -69,3 +69,7 @@ export type DndEvent = {
 }
 
 export declare const SHADOW_ITEM_MARKER_PROPERTY_NAME: "isDndShadowItem";
+
+export declare function printDebug(generateMessage: () => string, logFunction: any): void;
+
+export declare function setDebug(isDebug: boolean): void;

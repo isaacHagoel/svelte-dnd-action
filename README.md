@@ -86,23 +86,6 @@ npm install --save-dev svelte-dnd-action
 	{/each}
 </section>
 ```
-### More Examples and Recipes
-* [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3.24.1)
-* [Super basic, single list, with animation](https://svelte.dev/repl/3d544791e5c24fd4aa1eb983d749f776?version=3.24.1) 
-* [Multiple dndzones, multiple types](https://svelte.dev/repl/4d23eb3b9e184b90b58f0867010ad258?version=3.24.1)
-* [Board (nested zones and multiple types), scrolling containers, scrolling page](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3.22.2)
-* [Selectively enable/disable drag/drop](https://svelte.dev/repl/44c9229556f3456e9883c10fc0aa0ee9?version=3)
-* [Custom active dropzone styling](https://svelte.dev/repl/4ceecc5bae54490b811bd62d4d613e59?version=3.24.1) 
-* [Customizing the dragged element](https://svelte.dev/repl/438fca28bb1f4eb1b34eff9dc6a728dc?version=3)
-* [Customizing the placeholder(shadow) element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)
-
-* [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.24.1)
-* [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3.24.1), courtesy of @gleuch
-* [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)
-* [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
-
-* [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
-* [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)
 
 ##### Input:
 An options-object with the following attributes:
@@ -161,6 +144,24 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 - Clicking on another item while in drag mode will make it the new drag target. Clicking outside of any draggable will exit dragging-mode (and tell the user)
 - Mouse drag and drop can be preformed independently of keyboard dragging (as in an item can be dragged with the mouse while in or out of keyboard initiated dragging-mode)
 - Keyboard drag uses the same `consider` (only on drag start) and `finalize` (every time the item is moved) events but share only some of the `TRIGGERS`. The same handlers should work fine for both.  
+
+### Examples and Recipes
+* [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3.24.1)
+* [Super basic, single list, with animation](https://svelte.dev/repl/3d544791e5c24fd4aa1eb983d749f776?version=3.24.1) 
+* [Multiple dndzones, multiple types](https://svelte.dev/repl/4d23eb3b9e184b90b58f0867010ad258?version=3.24.1)
+* [Board (nested zones and multiple types), scrolling containers, scrolling page](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3.22.2)
+* [Selectively enable/disable drag/drop](https://svelte.dev/repl/44c9229556f3456e9883c10fc0aa0ee9?version=3)
+* [Custom active dropzone styling](https://svelte.dev/repl/4ceecc5bae54490b811bd62d4d613e59?version=3.24.1) 
+* [Customizing the dragged element](https://svelte.dev/repl/438fca28bb1f4eb1b34eff9dc6a728dc?version=3)
+* [Customizing the placeholder(shadow) element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)
+
+* [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.24.1)
+* [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3.24.1), courtesy of @gleuch
+* [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)
+* [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
+
+* [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
+* [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)
 
 ### Rules/ assumptions to keep in mind
 * Only one element can be dragged in any given time

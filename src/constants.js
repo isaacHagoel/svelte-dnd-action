@@ -48,7 +48,7 @@ export const isOnServer =  (typeof window === 'undefined');
 export let printDebug = () => {};
 
 /**
- * Allows the user to show console debug output if he wants
+ * Allows the user to show/hide console debug output
  * * @param {Boolean} isDebug
  */
 export function setDebugMode(isDebug) {

@@ -46,10 +46,14 @@ describe("util", () => {
             printDebug(logMessage, logStub);
             expect(consoleStub).to.equal(null);
         });
-        it("does log if debugMode is set", () => {
+        it("does log if debugMode is set, stops logging when turned off again", () => {
             setDebugMode(true);
             printDebug(logMessage, logStub)
             expect(consoleStub).to.equal(logMessage());
-        })
+            consoleStub = null;
+            setDebugMode(false);
+            printDebug(logMessage, logStub);
+            expect(consoleStub).to.equal(null);
+        });
     });
 });

@@ -11,7 +11,7 @@ export function toString(object) {
  * @param {HTMLElement} node
  * @return {number} - the depth of the node
  */
-export function getDepth(node){
+export function getDepth(node) {
     if (!node) {
         throw new Error("cannot get depth of a falsy node");
     }
@@ -35,7 +35,7 @@ export function areObjectsShallowEqual(objA, objB) {
         return false;
     }
     for (const keyA in objA) {
-        if(!{}.hasOwnProperty.call(objB, keyA) || objB[keyA] !== objA[keyA]) {
+        if (!{}.hasOwnProperty.call(objB, keyA) || objB[keyA] !== objA[keyA]) {
             return false;
         }
     }

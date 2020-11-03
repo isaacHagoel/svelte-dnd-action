@@ -21,16 +21,16 @@ export function createDraggedElementFrom(originalElement) {
     draggedEl.style.position = "fixed";
     draggedEl.style.top = `${rect.top}px`;
     draggedEl.style.left = `${rect.left}px`;
-    draggedEl.style.margin = '0';
+    draggedEl.style.margin = "0";
     // we can't have relative or automatic height and width or it will break the illusion
-    draggedEl.style.boxSizing = 'border-box';
+    draggedEl.style.boxSizing = "border-box";
     draggedEl.style.height = `${rect.height}px`;
     draggedEl.style.width = `${rect.width}px`;
-    draggedEl.style.transition = `${trs('width')}, ${trs('height')}, ${trs('background-color')}, ${trs('opacity')}, ${trs('color')} `;
+    draggedEl.style.transition = `${trs("width")}, ${trs("height")}, ${trs("background-color")}, ${trs("opacity")}, ${trs("color")} `;
     // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
-    window.setTimeout(() => draggedEl.style.transition +=`, ${trs('top')}, ${trs('left')}`,0);
-    draggedEl.style.zIndex = '9999';
-    draggedEl.style.cursor = 'grabbing';
+    window.setTimeout(() => (draggedEl.style.transition += `, ${trs("top")}, ${trs("left")}`), 0);
+    draggedEl.style.zIndex = "9999";
+    draggedEl.style.cursor = "grabbing";
 
     return draggedEl;
 }
@@ -40,7 +40,7 @@ export function createDraggedElementFrom(originalElement) {
  * @param {HTMLElement} draggedEl
  */
 export function moveDraggedElementToWasDroppedState(draggedEl) {
-    draggedEl.style.cursor = 'grab';
+    draggedEl.style.cursor = "grab";
 }
 
 /**
@@ -80,11 +80,22 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
 function copyStylesFromTo(copyFromEl, copyToEl) {
     const computedStyle = window.getComputedStyle(copyFromEl);
     Array.from(computedStyle)
-        .filter(s => s.startsWith('background') || s.startsWith('padding') || s.startsWith('font') || s.startsWith('text') || s.startsWith('align') ||
-            s.startsWith('justify') || s.startsWith('display') || s.startsWith('flex') || s.startsWith('border') || s === 'opacity' || s === 'color' || s === 'list-style-type')
-        .forEach(s =>
-            copyToEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s))
-        );
+        .filter(
+            s =>
+                s.startsWith("background") ||
+                s.startsWith("padding") ||
+                s.startsWith("font") ||
+                s.startsWith("text") ||
+                s.startsWith("align") ||
+                s.startsWith("justify") ||
+                s.startsWith("display") ||
+                s.startsWith("flex") ||
+                s.startsWith("border") ||
+                s === "opacity" ||
+                s === "color" ||
+                s === "list-style-type"
+        )
+        .forEach(s => copyToEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s)));
 }
 
 /**
@@ -96,12 +107,11 @@ export function styleDraggable(draggableEl, dragDisabled) {
     draggableEl.draggable = false;
     draggableEl.ondragstart = () => false;
     if (!dragDisabled) {
-        draggableEl.style.userSelect = 'none';
-        draggableEl.style.cursor = 'grab';
-    }
-    else {
-        draggableEl.style.userSelect = '';
-        draggableEl.style.cursor = '';
+        draggableEl.style.userSelect = "none";
+        draggableEl.style.cursor = "grab";
+    } else {
+        draggableEl.style.userSelect = "";
+        draggableEl.style.cursor = "";
     }
 }
 
@@ -110,9 +120,9 @@ export function styleDraggable(draggableEl, dragDisabled) {
  * @param {HTMLElement} dragTarget
  */
 export function hideOriginalDragTarget(dragTarget) {
-    dragTarget.style.display = 'none';
-    dragTarget.style.position = 'fixed';
-    dragTarget.style.zIndex = '-5';
+    dragTarget.style.display = "none";
+    dragTarget.style.position = "fixed";
+    dragTarget.style.zIndex = "-5";
 }
 
 /**
@@ -130,7 +140,7 @@ export function styleShadowEl(shadowEl) {
  */
 export function styleActiveDropZones(dropZones, getStyles = () => {}) {
     dropZones.forEach(dz => {
-        const styles = getStyles(dz)
+        const styles = getStyles(dz);
         Object.keys(styles).forEach(style => {
             dz.style[style] = styles[style];
         });
@@ -144,9 +154,9 @@ export function styleActiveDropZones(dropZones, getStyles = () => {}) {
  */
 export function styleInactiveDropZones(dropZones, getStyles = () => {}) {
     dropZones.forEach(dz => {
-        const styles = getStyles(dz)
+        const styles = getStyles(dz);
         Object.keys(styles).forEach(style => {
-            dz.style[style] = '';
+            dz.style[style] = "";
         });
     });
 }

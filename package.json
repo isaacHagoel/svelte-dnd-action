@@ -1,50 +1,63 @@
 {
-  "name": "svelte-dnd-action",
-  "svelte": "src/index.js",
-  "module": "dist/index.mjs",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "test": "cypress run",
-    "lint": "eslint 'src/**'",
-    "build": "npm run lint && rollup -c",
-    "prepublishOnly": "npm run build"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "@rollup/plugin-node-resolve": "^6.0.0",
-    "babel-jest": "^26.0.1",
-    "cypress": "^4.5.0",
-    "eslint": "^7.11.0",
-    "rollup": "^1.20.0",
-    "rollup-plugin-babel": "^4.3.2",
-    "rollup-plugin-copy": "^3.3.0"
-  },
-  "keywords": [
-    "svelte",
-    "drag and drop",
-    "sortable",
-    "dnd",
-    "draggable",
-    "accessible",
-    "touch"
-  ],
-  "files": [
-    "src",
-    "dist"
-  ],
-  "description": "*An awesome drag and drop library for Svelte 3 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
-  "version": "0.6.20",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"
-  },
-  "author": "Isaac Hagoel",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/isaacHagoel/svelte-dnd-action/issues"
-  },
-  "homepage": "https://github.com/isaacHagoel/svelte-dnd-action#readme"
+    "name": "svelte-dnd-action",
+    "svelte": "src/index.js",
+    "module": "dist/index.mjs",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "test": "cypress run",
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "build": "yarn lint && rollup -c",
+        "prepublishOnly": "yarn build"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@babel/core": "^7.9.6",
+        "@babel/preset-env": "^7.9.6",
+        "@rollup/plugin-node-resolve": "^6.0.0",
+        "babel-jest": "^26.0.1",
+        "cypress": "^4.5.0",
+        "eslint": "^7.11.0",
+        "husky": "^4.3.0",
+        "lint-staged": "^10.5.1",
+        "prettier": "^2.1.2",
+        "rollup": "^1.20.0",
+        "rollup-plugin-babel": "^4.3.2",
+        "rollup-plugin-copy": "^3.3.0"
+    },
+    "keywords": [
+        "svelte",
+        "drag and drop",
+        "sortable",
+        "dnd",
+        "draggable",
+        "accessible",
+        "touch"
+    ],
+    "files": [
+        "src",
+        "dist"
+    ],
+    "description": "*An awesome drag and drop library for Svelte 3 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
+    "version": "0.6.20",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"
+    },
+    "author": "Isaac Hagoel",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/isaacHagoel/svelte-dnd-action/issues"
+    },
+    "homepage": "https://github.com/isaacHagoel/svelte-dnd-action#readme",
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.js": "eslint --cache --fix",
+        "*.{js,css,md}": "prettier --write"
+    }
 }

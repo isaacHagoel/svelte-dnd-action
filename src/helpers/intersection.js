@@ -8,13 +8,13 @@ function adjustedBoundingRect(el) {
 
     if (tx) {
         let sx, sy, dx, dy;
-        if (tx.startsWith('matrix3d(')) {
-            ta = tx.slice(9,-1).split(/, /);
+        if (tx.startsWith("matrix3d(")) {
+            ta = tx.slice(9, -1).split(/, /);
             sx = +ta[0];
             sy = +ta[5];
             dx = +ta[12];
             dy = +ta[13];
-        } else if (tx.startsWith('matrix(')) {
+        } else if (tx.startsWith("matrix(")) {
             ta = tx.slice(7, -1).split(/, /);
             sx = +ta[0];
             sy = +ta[3];
@@ -26,11 +26,18 @@ function adjustedBoundingRect(el) {
 
         const to = style.transformOrigin;
         const x = rect.x - dx - (1 - sx) * parseFloat(to);
-        const y = rect.y - dy - (1 - sy) * parseFloat(to.slice(to.indexOf(' ') + 1));
+        const y = rect.y - dy - (1 - sy) * parseFloat(to.slice(to.indexOf(" ") + 1));
         const w = sx ? rect.width / sx : el.offsetWidth;
         const h = sy ? rect.height / sy : el.offsetHeight;
         return {
-            x: x, y: y, width: w, height: h, top: y, right: x + w, bottom: y + h, left: x
+            x: x,
+            y: y,
+            width: w,
+            height: h,
+            top: y,
+            right: x + w,
+            bottom: y + h,
+            left: x
         };
     } else {
         return rect;
@@ -44,12 +51,12 @@ function adjustedBoundingRect(el) {
  */
 function getAbsoluteRectNoTransforms(el) {
     const rect = adjustedBoundingRect(el);
-    return ({
+    return {
         top: rect.top + window.scrollY,
         bottom: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
         right: rect.right + window.scrollX
-    });
+    };
 }
 
 /**
@@ -59,12 +66,12 @@ function getAbsoluteRectNoTransforms(el) {
  */
 export function getAbsoluteRect(el) {
     const rect = el.getBoundingClientRect();
-    return ({
+    return {
         top: rect.top + window.scrollY,
         bottom: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
         right: rect.right + window.scrollX
-    });
+    };
 }
 
 /**
@@ -78,10 +85,10 @@ export function getAbsoluteRect(el) {
  * @return {{x: number, y: number}}
  */
 export function findCenter(rect) {
-    return ({
-        x: (rect.left + rect.right) /2,
-        y: (rect.top + rect.bottom) /2
-    });    
+    return {
+        x: (rect.left + rect.right) / 2,
+        y: (rect.top + rect.bottom) / 2
+    };
 }
 
 /**
@@ -93,7 +100,7 @@ export function findCenter(rect) {
  * @return {number}
  */
 function calcDistance(pointA, pointB) {
-    return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) +  Math.pow(pointA.y - pointB.y, 2));
+    return Math.sqrt(Math.pow(pointA.x - pointB.x, 2) + Math.pow(pointA.y - pointB.y, 2));
 }
 
 /**
@@ -102,11 +109,7 @@ function calcDistance(pointA, pointB) {
  * @return {boolean|boolean}
  */
 function isPointInsideRect(point, rect) {
-    return (
-        (point.y <= rect.bottom && point.y >= rect.top)
-        &&
-        (point.x >= rect.left && point.x <= rect.right)
-    );
+    return point.y <= rect.bottom && point.y >= rect.top && point.x >= rect.left && point.x <= rect.right;
 }
 
 /**
@@ -115,7 +118,7 @@ function isPointInsideRect(point, rect) {
  * @returns {{x: number, y: number}}
  */
 export function findCenterOfElement(el) {
-    return findCenter( getAbsoluteRect(el));
+    return findCenter(getAbsoluteRect(el));
 }
 
 /**
@@ -166,5 +169,5 @@ export function calcInnerDistancesBetweenPointAndSidesOfElement(point, el) {
         left: point.x - rect.left,
         // TODO - figure out what is so special about right (why the rect is too big)
         right: Math.min(rect.right, document.documentElement.clientWidth) - point.x
-    }
+    };
 }

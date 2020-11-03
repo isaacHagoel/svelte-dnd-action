@@ -10,7 +10,7 @@ let mousePosition;
  * @param {{clientX: number, clientY: number}} e
  */
 export function updateMousePosition(e) {
-    const c = e.touches? e.touches[0] : e;
+    const c = e.touches ? e.touches[0] : e;
     mousePosition = {x: c.clientX, y: c.clientY};
 }
 const {scrollIfNeeded, resetScrolling} = makeScroller();
@@ -27,9 +27,9 @@ function loop() {
  * will start watching the mouse pointer and scroll the window if it goes next to the edges
  */
 export function armWindowScroller() {
-    printDebug(() => 'arming window scroller');
-    window.addEventListener('mousemove', updateMousePosition);
-    window.addEventListener('touchmove', updateMousePosition);
+    printDebug(() => "arming window scroller");
+    window.addEventListener("mousemove", updateMousePosition);
+    window.addEventListener("touchmove", updateMousePosition);
     loop();
 }
 
@@ -37,9 +37,9 @@ export function armWindowScroller() {
  * will stop watching the mouse pointer and won't scroll the window anymore
  */
 export function disarmWindowScroller() {
-    printDebug(() => 'disarming window scroller');
-    window.removeEventListener('mousemove', updateMousePosition);
-    window.removeEventListener('touchmove', updateMousePosition);
+    printDebug(() => "disarming window scroller");
+    window.removeEventListener("mousemove", updateMousePosition);
+    window.removeEventListener("touchmove", updateMousePosition);
     mousePosition = undefined;
     window.clearTimeout(next);
     resetScrolling();

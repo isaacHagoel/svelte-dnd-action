@@ -1,6 +1,4 @@
-import {
-    calcInnerDistancesBetweenPointAndSidesOfElement,
-} from "./intersection";
+import {calcInnerDistancesBetweenPointAndSidesOfElement} from "./intersection";
 const SCROLL_ZONE_PX = 25;
 
 export function makeScroller() {
@@ -12,7 +10,7 @@ export function makeScroller() {
     // directionObj {x: 0|1|-1, y:0|1|-1} - 1 means down in y and right in x
     function scrollContainer(containerEl) {
         const {directionObj, stepPx} = scrollingInfo;
-        if(directionObj) {
+        if (directionObj) {
             containerEl.scrollBy(directionObj.x * stepPx, directionObj.y * stepPx);
             window.requestAnimationFrame(() => scrollContainer(containerEl));
         }
@@ -41,11 +39,11 @@ export function makeScroller() {
         if (elementToScroll.scrollHeight > elementToScroll.clientHeight) {
             if (distances.bottom < SCROLL_ZONE_PX) {
                 scrollingVertically = true;
-                scrollingInfo.directionObj = {x:0, y:1};
+                scrollingInfo.directionObj = {x: 0, y: 1};
                 scrollingInfo.stepPx = calcScrollStepPx(distances.bottom);
             } else if (distances.top < SCROLL_ZONE_PX) {
                 scrollingVertically = true;
-                scrollingInfo.directionObj = {x:0, y:-1};
+                scrollingInfo.directionObj = {x: 0, y: -1};
                 scrollingInfo.stepPx = calcScrollStepPx(distances.top);
             }
             if (!isAlreadyScrolling && scrollingVertically) {
@@ -57,14 +55,14 @@ export function makeScroller() {
         if (elementToScroll.scrollWidth > elementToScroll.clientWidth) {
             if (distances.right < SCROLL_ZONE_PX) {
                 scrollingHorizontally = true;
-                scrollingInfo.directionObj = {x:1, y:0};
+                scrollingInfo.directionObj = {x: 1, y: 0};
                 scrollingInfo.stepPx = calcScrollStepPx(distances.right);
             } else if (distances.left < SCROLL_ZONE_PX) {
                 scrollingHorizontally = true;
-                scrollingInfo.directionObj = {x:-1, y:0};
+                scrollingInfo.directionObj = {x: -1, y: 0};
                 scrollingInfo.stepPx = calcScrollStepPx(distances.left);
             }
-            if (!isAlreadyScrolling && scrollingHorizontally){
+            if (!isAlreadyScrolling && scrollingHorizontally) {
                 scrollContainer(elementToScroll);
                 return true;
             }
@@ -73,8 +71,8 @@ export function makeScroller() {
         return false;
     }
 
-    return ({
+    return {
         scrollIfNeeded,
         resetScrolling
-    });
+    };
 }

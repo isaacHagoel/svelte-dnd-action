@@ -1,19 +1,13 @@
-import {
-    decrementActiveDropZoneCount,
-    incrementActiveDropZoneCount,
-    ITEM_ID_KEY,
-    SOURCES,
-    TRIGGERS
-} from "./constants";
+import {decrementActiveDropZoneCount, incrementActiveDropZoneCount, ITEM_ID_KEY, SOURCES, TRIGGERS} from "./constants";
 import {styleActiveDropZones, styleInactiveDropZones} from "./helpers/styler";
 import {dispatchConsiderEvent, dispatchFinalizeEvent} from "./helpers/dispatcher";
 import {initAria, alertToScreenReader} from "./helpers/aria";
 import {toString} from "./helpers/util";
 import {printDebug} from "./constants";
 
-const DEFAULT_DROP_ZONE_TYPE = '--any--';
+const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const DEFAULT_DROP_TARGET_STYLE = {
-    outline: 'rgba(255, 255, 102, 0.7) solid 2px',
+    outline: "rgba(255, 255, 102, 0.7) solid 2px"
 };
 
 let isDragging = false;
@@ -31,19 +25,19 @@ const dzToConfig = new Map();
 const typeToDropZones = new Map();
 
 /* TODO (potentially)
-* what's the deal with the black border of voice-reader not following focus?
-* maybe keep focus on the last dragged item upon drop?
+ * what's the deal with the black border of voice-reader not following focus?
+ * maybe keep focus on the last dragged item upon drop?
  */
 
 const INSTRUCTION_IDs = initAria();
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
-    printDebug(() => 'registering drop-zone if absent');
+    printDebug(() => "registering drop-zone if absent");
     if (typeToDropZones.size === 0) {
-      printDebug(() => "adding global keydown and click handlers");
-      window.addEventListener("keydown", globalKeyDownHandler);
-      window.addEventListener('click', globalClickHandler);
+        printDebug(() => "adding global keydown and click handlers");
+        window.addEventListener("keydown", globalKeyDownHandler);
+        window.addEventListener("click", globalClickHandler);
     }
     if (!typeToDropZones.has(type)) {
         typeToDropZones.set(type, new Set());
@@ -54,7 +48,7 @@ function registerDropZone(dropZoneEl, type) {
     }
 }
 function unregisterDropZone(dropZoneEl, type) {
-    printDebug(() => 'unregistering drop-zone');
+    printDebug(() => "unregistering drop-zone");
     typeToDropZones.get(type).delete(dropZoneEl);
     decrementActiveDropZoneCount();
     if (typeToDropZones.get(type).size === 0) {
@@ -63,14 +57,14 @@ function unregisterDropZone(dropZoneEl, type) {
     if (typeToDropZones.size === 0) {
         printDebug(() => "removing global keydown and click handlers");
         window.removeEventListener("keydown", globalKeyDownHandler);
-        window.removeEventListener('click', globalClickHandler);
+        window.removeEventListener("click", globalClickHandler);
     }
 }
 
 function globalKeyDownHandler(e) {
     if (!isDragging) return;
-    switch(e.key) {
-        case("Escape"): {
+    switch (e.key) {
+        case "Escape": {
             handleDrop();
             break;
         }
@@ -78,7 +72,7 @@ function globalKeyDownHandler(e) {
 }
 
 function globalClickHandler() {
-    if (!isDragging) return ;
+    if (!isDragging) return;
     if (!allDragTargets.has(document.activeElement)) {
         printDebug(() => "clicked outside of any draggable");
         handleDrop();
@@ -91,13 +85,16 @@ function handleZoneFocus(e) {
     const newlyFocusedDz = e.currentTarget;
     if (newlyFocusedDz === focusedDz) return;
 
-    focusedDzLabel = newlyFocusedDz.getAttribute('aria-label') || '';
-    const {items:originItems} = dzToConfig.get(focusedDz);
+    focusedDzLabel = newlyFocusedDz.getAttribute("aria-label") || "";
+    const {items: originItems} = dzToConfig.get(focusedDz);
     const originItem = originItems.find(item => item[ITEM_ID_KEY] === focusedItemId);
     const originIdx = originItems.indexOf(originItem);
     const itemToMove = originItems.splice(originIdx, 1)[0];
-    const {items:targetItems, autoAriaDisabled} = dzToConfig.get(newlyFocusedDz);
-    if (newlyFocusedDz.getBoundingClientRect().top < focusedDz.getBoundingClientRect().top || newlyFocusedDz.getBoundingClientRect().left < focusedDz.getBoundingClientRect().left) {
+    const {items: targetItems, autoAriaDisabled} = dzToConfig.get(newlyFocusedDz);
+    if (
+        newlyFocusedDz.getBoundingClientRect().top < focusedDz.getBoundingClientRect().top ||
+        newlyFocusedDz.getBoundingClientRect().left < focusedDz.getBoundingClientRect().left
+    ) {
         targetItems.push(itemToMove);
         if (!autoAriaDisabled) {
             alertToScreenReader(`Moved item ${focusedItemLabel} to the end of the list ${focusedDzLabel}`);
@@ -127,21 +124,25 @@ function handleDrop(dispatchConsider = true) {
         document.activeElement.blur();
     }
     if (dispatchConsider) {
-        dispatchConsiderEvent(focusedDz, dzToConfig.get(focusedDz).items, {trigger: TRIGGERS.DRAG_STOPPED, id: focusedItemId, source: SOURCES.KEYBOARD});
+        dispatchConsiderEvent(focusedDz, dzToConfig.get(focusedDz).items, {
+            trigger: TRIGGERS.DRAG_STOPPED,
+            id: focusedItemId,
+            source: SOURCES.KEYBOARD
+        });
     }
     styleInactiveDropZones(typeToDropZones.get(draggedItemType), dz => dzToConfig.get(dz).dropTargetStyle);
     focusedItem = null;
     focusedItemId = null;
-    focusedItemLabel = '';
+    focusedItemLabel = "";
     draggedItemType = null;
     focusedDz = null;
-    focusedDzLabel = '';
+    focusedDzLabel = "";
     isDragging = false;
     triggerAllDzsUpdate();
 }
 //////
 export function dndzone(node, options) {
-    const config =  {
+    const config = {
         items: undefined,
         type: undefined,
         dragDisabled: false,
@@ -150,16 +151,16 @@ export function dndzone(node, options) {
         autoAriaDisabled: false
     };
 
-    function swap (arr, i, j) {
+    function swap(arr, i, j) {
         if (arr.length <= 1) return;
         arr.splice(j, 1, arr.splice(i, 1, arr[j])[0]);
     }
 
     function handleKeyDown(e) {
         printDebug(() => ["handling key down", e.key]);
-        switch(e.key) {
-            case("Enter"):
-            case(" "): {
+        switch (e.key) {
+            case "Enter":
+            case " ": {
                 // we don't want to affect nested input elements
                 if ((e.target.value !== undefined || e.target.isContentEditable) && !allDragTargets.has(e.target)) {
                     return;
@@ -171,12 +172,12 @@ export function dndzone(node, options) {
                     handleDrop();
                 } else {
                     // drag start
-                    handleDragStart(e)
+                    handleDragStart(e);
                 }
                 break;
             }
-            case("ArrowDown"):
-            case("ArrowRight"):{
+            case "ArrowDown":
+            case "ArrowRight": {
                 if (!isDragging) return;
                 e.preventDefault(); // prevent scrolling
                 e.stopPropagation();
@@ -193,8 +194,8 @@ export function dndzone(node, options) {
                 }
                 break;
             }
-            case("ArrowUp"):
-            case("ArrowLeft"):{
+            case "ArrowUp":
+            case "ArrowLeft": {
                 if (!isDragging) return;
                 e.preventDefault(); // prevent scrolling
                 e.stopPropagation();
@@ -216,23 +217,24 @@ export function dndzone(node, options) {
     function handleDragStart(e) {
         printDebug(() => "drag start");
         if (!config.autoAriaDisabled) {
-            alertToScreenReader(`Started dragging item ${focusedItemLabel}. Use the arrow keys to move it within its list ${focusedDzLabel}, or tab to another list in order to move the item into it`);
+            alertToScreenReader(
+                `Started dragging item ${focusedItemLabel}. Use the arrow keys to move it within its list ${focusedDzLabel}, or tab to another list in order to move the item into it`
+            );
         }
         setCurrentFocusedItem(e.currentTarget);
         focusedDz = node;
         draggedItemType = config.type;
         isDragging = true;
         styleActiveDropZones(
-            Array.from(typeToDropZones.get(config.type))
-                .filter(dz => dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled),
-            dz => dzToConfig.get(dz).dropTargetStyle,
+            Array.from(typeToDropZones.get(config.type)).filter(dz => dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled),
+            dz => dzToConfig.get(dz).dropTargetStyle
         );
         dispatchConsiderEvent(node, dzToConfig.get(node).items, {trigger: TRIGGERS.DRAG_STARTED, id: focusedItemId, source: SOURCES.KEYBOARD});
         triggerAllDzsUpdate();
     }
 
     function handleClick(e) {
-        if(!isDragging) return;
+        if (!isDragging) return;
         if (e.currentTarget === focusedItem) return;
         e.stopPropagation();
         handleDrop(false);
@@ -244,17 +246,17 @@ export function dndzone(node, options) {
         const focusedItemIdx = children.indexOf(draggableEl);
         focusedItem = draggableEl;
         focusedItemId = items[focusedItemIdx][ITEM_ID_KEY];
-        focusedItemLabel = children[focusedItemIdx].getAttribute('aria-label') || '';
+        focusedItemLabel = children[focusedItemIdx].getAttribute("aria-label") || "";
     }
 
     function configure({
-                        items = [],
-                        type: newType = DEFAULT_DROP_ZONE_TYPE,
-                        dragDisabled = false,
-                        dropFromOthersDisabled = false,
-                        dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
-                        autoAriaDisabled = false
-                    }) {
+        items = [],
+        type: newType = DEFAULT_DROP_ZONE_TYPE,
+        dragDisabled = false,
+        dropFromOthersDisabled = false,
+        dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
+        autoAriaDisabled = false
+    }) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.dropFromOthersDisabled = dropFromOthersDisabled;
@@ -263,7 +265,7 @@ export function dndzone(node, options) {
         if (!autoAriaDisabled) {
             node.setAttribute("aria-disabled", dragDisabled);
             node.setAttribute("role", "list");
-            node.setAttribute("aria-describedby", dragDisabled? INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED : INSTRUCTION_IDs.DND_ZONE_ACTIVE);
+            node.setAttribute("aria-describedby", dragDisabled ? INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED : INSTRUCTION_IDs.DND_ZONE_ACTIVE);
         }
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
@@ -272,13 +274,20 @@ export function dndzone(node, options) {
         registerDropZone(node, newType);
         dzToConfig.set(node, config);
 
-        node.tabIndex = isDragging && (node === focusedDz || focusedItem.contains(node) || config.dropFromOthersDisabled || (focusedDz && config.type !== dzToConfig.get(focusedDz).type)) ? -1 : 0;
-        node.addEventListener('focus', handleZoneFocus);
+        node.tabIndex =
+            isDragging &&
+            (node === focusedDz ||
+                focusedItem.contains(node) ||
+                config.dropFromOthersDisabled ||
+                (focusedDz && config.type !== dzToConfig.get(focusedDz).type))
+                ? -1
+                : 0;
+        node.addEventListener("focus", handleZoneFocus);
 
-        for (let i = 0; i < node.children.length ; i++) {
+        for (let i = 0; i < node.children.length; i++) {
             const draggableEl = node.children[i];
             allDragTargets.add(draggableEl);
-            draggableEl.tabIndex = (isDragging) ? -1 : 0;
+            draggableEl.tabIndex = isDragging ? -1 : 0;
             if (!autoAriaDisabled) {
                 draggableEl.setAttribute("role", "listitem");
             }
@@ -302,7 +311,7 @@ export function dndzone(node, options) {
     configure(options);
 
     const handles = {
-        update: (newOptions) => {
+        update: newOptions => {
             printDebug(() => `keyboard dndzone will update newOptions: ${toString(newOptions)}`);
             configure(newOptions);
         },

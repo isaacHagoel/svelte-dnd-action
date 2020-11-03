@@ -1,12 +1,13 @@
-import {findWouldBeIndex} from './listUtil';
+import {findWouldBeIndex} from "./listUtil";
 import {findCenterOfElement, isElementOffDocument} from "./intersection";
-import {dispatchDraggedElementEnteredContainer, 
-        dispatchDraggedElementLeftContainer,
-        dispatchDraggedLeftDocument,
-        dispatchDraggedElementIsOverIndex} 
-    from './dispatcher';
+import {
+    dispatchDraggedElementEnteredContainer,
+    dispatchDraggedElementLeftContainer,
+    dispatchDraggedLeftDocument,
+    dispatchDraggedElementIsOverIndex
+} from "./dispatcher";
 import {makeScroller} from "./scroller";
-import { getDepth } from "./util";
+import {getDepth} from "./util";
 import {printDebug} from "../constants";
 
 const INTERVAL_MS = 200;
@@ -14,11 +15,10 @@ const TOLERANCE_PX = 10;
 const {scrollIfNeeded, resetScrolling} = makeScroller();
 let next;
 
-
 /**
  * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
- * @param {Set<HTMLElement>} dropZones 
- * @param {HTMLElement} draggedEl 
+ * @param {Set<HTMLElement>} dropZones
+ * @param {HTMLElement} draggedEl
  * @param {number} [intervalMs = INTERVAL_MS]
  */
 export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
@@ -37,9 +37,12 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         const currentCenterOfDragged = findCenterOfElement(draggedEl);
         const scrolled = scrollIfNeeded(currentCenterOfDragged, lastDropZoneFound);
         // we only want to make a new decision after the element was moved a bit to prevent flickering
-        if (!scrolled && lastCentrePositionOfDragged &&
+        if (
+            !scrolled &&
+            lastCentrePositionOfDragged &&
             Math.abs(lastCentrePositionOfDragged.x - currentCenterOfDragged.x) < TOLERANCE_PX &&
-            Math.abs(lastCentrePositionOfDragged.y - currentCenterOfDragged.y) < TOLERANCE_PX ) {
+            Math.abs(lastCentrePositionOfDragged.y - currentCenterOfDragged.y) < TOLERANCE_PX
+        ) {
             next = window.setTimeout(andNow, intervalMs);
             return;
         }
@@ -51,12 +54,12 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
 
         lastCentrePositionOfDragged = currentCenterOfDragged;
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
-        let isDraggedInADropZone = false
+        let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
             const indexObj = findWouldBeIndex(draggedEl, dz);
             if (indexObj === null) {
-               // it is not inside
-               continue;     
+                // it is not inside
+                continue;
             }
             const {index} = indexObj;
             isDraggedInADropZone = true;
@@ -66,8 +69,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
                 dispatchDraggedElementEnteredContainer(dz, indexObj, draggedEl);
                 lastDropZoneFound = dz;
                 lastIndexFound = index;
-            }
-            else if (index !== lastIndexFound) {
+            } else if (index !== lastIndexFound) {
                 dispatchDraggedElementIsOverIndex(dz, indexObj, draggedEl);
                 lastIndexFound = index;
             }

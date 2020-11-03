@@ -35,7 +35,7 @@ export function dndzone(node, options) {
             pointerZone.destroy();
             keyboardZone.destroy();
         }
-    }
+    };
 }
 
 function validateOptions(options) {

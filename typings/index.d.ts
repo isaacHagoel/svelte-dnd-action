@@ -4,7 +4,10 @@
  * Dispatches two events that the container is expected to react to by modifying its list of items,
  * which will then feed back in to this action via the update function
  */
-export declare function dndzone(node: HTMLElement, options: Options): {
+export declare function dndzone(
+    node: HTMLElement,
+    options: Options
+): {
     update: (newOptions: Options) => void;
     destroy: () => void;
 };
@@ -12,7 +15,7 @@ export declare function dndzone(node: HTMLElement, options: Options): {
 export type TransformDraggedElementFunction = (
     element?: HTMLElement, // the dragged element.
     draggedElementData?: Item, // the data of the item from the items array
-    index?: number, // the index the dragged element would get if dropped into the new dnd-zone
+    index?: number // the index the dragged element would get if dropped into the new dnd-zone
 ) => void;
 
 export declare type Item = Record<string, any>;
@@ -37,9 +40,7 @@ export declare function alertToScreenReader(txt: string): void;
  * Has to be called when there are no rendered dndzones whatsoever.
  * @throws {Error} if it was called when there are rendered dndzones or if it is given the wrong type (not a string)
  */
-export declare function overrideItemIdKeyNameBeforeInitialisingDndZones(
-    newKeyName: string
-): void;
+export declare function overrideItemIdKeyNameBeforeInitialisingDndZones(newKeyName: string): void;
 
 export enum TRIGGERS {
     DRAG_STARTED = "dragStarted",
@@ -49,7 +50,7 @@ export enum TRIGGERS {
     DROPPED_INTO_ZONE = "droppedIntoZone",
     DROPPED_INTO_ANOTHER = "droppedIntoAnother",
     DROPPED_OUTSIDE_OF_ANY = "droppedOutsideOfAny",
-    DRAG_STOPPED = "dragStopped", //only relevant for keyboard interactions - when the use exists dragging mode
+    DRAG_STOPPED = "dragStopped" //only relevant for keyboard interactions - when the use exists dragging mode
 }
 
 export enum SOURCES {
@@ -64,9 +65,9 @@ export interface DndEventInfo {
 }
 
 export type DndEvent = {
-    items: Item[],
-    info: DndEventInfo
-}
+    items: Item[];
+    info: DndEventInfo;
+};
 
 export declare const SHADOW_ITEM_MARKER_PROPERTY_NAME: "isDndShadowItem";
 

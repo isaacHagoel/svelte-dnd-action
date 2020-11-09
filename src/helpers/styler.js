@@ -108,9 +108,11 @@ export function styleDraggable(draggableEl, dragDisabled) {
     draggableEl.ondragstart = () => false;
     if (!dragDisabled) {
         draggableEl.style.userSelect = "none";
+        draggableEl.style.webkitUserSelect = "none";
         draggableEl.style.cursor = "grab";
     } else {
         draggableEl.style.userSelect = "";
+        draggableEl.style.webkitUserSelect = "";
         draggableEl.style.cursor = "";
     }
 }

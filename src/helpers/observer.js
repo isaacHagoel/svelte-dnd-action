@@ -68,7 +68,6 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
                 lastDropZoneFound && dispatchDraggedElementLeftContainer(lastDropZoneFound, draggedEl);
                 dispatchDraggedElementEnteredContainer(dz, indexObj, draggedEl);
                 lastDropZoneFound = dz;
-                lastIndexFound = index;
             } else if (index !== lastIndexFound) {
                 dispatchDraggedElementIsOverIndex(dz, indexObj, draggedEl);
                 lastIndexFound = index;

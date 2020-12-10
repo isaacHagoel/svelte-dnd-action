@@ -2,12 +2,22 @@ import {isCenterOfAInsideB, calcDistanceBetweenCenters, getAbsoluteRectNoTransfo
 import {printDebug, SHADOW_ELEMENT_ATTRIBUTE_NAME} from "../constants";
 
 let dzToShadowIndexToRect;
+
+/**
+ * Resets the cache that allows for smarter "would be index" resolution. Should be called after every drag operation
+ */
 export function resetIndexesCache() {
     printDebug(() => "resetting indexes cache");
     dzToShadowIndexToRect = new Map();
 }
 resetIndexesCache();
 
+/**
+ * Caches the coordinates of the shadow element when it's in a certain index in a certain dropzone.
+ * Helpful in order to determine "would be index" more effectively
+ * @param {HTMLElement} dz
+ * @return {number} - the shadow element index
+ */
 function cacheShadowRect(dz) {
     const shadowElIndex = Array.from(dz.children).findIndex(child => child.getAttribute(SHADOW_ELEMENT_ATTRIBUTE_NAME));
     if (shadowElIndex >= 0) {
@@ -15,8 +25,9 @@ function cacheShadowRect(dz) {
             dzToShadowIndexToRect.set(dz, new Map());
         }
         dzToShadowIndexToRect.get(dz).set(shadowElIndex, getAbsoluteRectNoTransforms(dz.children[shadowElIndex]));
+        return shadowElIndex;
     }
-    return shadowElIndex;
+    return undefined;
 }
 
 /**

@@ -16,6 +16,8 @@ export const SOURCES = {
 };
 
 export const SHADOW_ITEM_MARKER_PROPERTY_NAME = "isDndShadowItem";
+export const SHADOW_ELEMENT_ATTRIBUTE_NAME = "data-is-dnd-shadow-item";
+
 export let ITEM_ID_KEY = "id";
 let activeDndZoneCount = 0;
 export function incrementActiveDropZoneCount() {

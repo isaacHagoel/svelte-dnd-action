@@ -1,4 +1,4 @@
-import {findWouldBeIndex} from "./listUtil";
+import {findWouldBeIndex, resetIndexesCache} from "./listUtil";
 import {findCenterOfElement, isElementOffDocument} from "./intersection";
 import {
     dispatchDraggedElementEnteredContainer,
@@ -95,4 +95,5 @@ export function unobserve() {
     printDebug(() => "unobserving");
     clearTimeout(next);
     resetScrolling();
+    resetIndexesCache();
 }

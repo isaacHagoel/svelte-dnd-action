@@ -13,10 +13,11 @@ import {
     moveDraggedElementToWasDroppedState,
     morphDraggedElementToBeLike,
     styleDraggable,
-    styleShadowEl,
+    decorateShadowEl,
     styleActiveDropZones,
     styleInactiveDropZones,
-    hideOriginalDragTarget
+    hideOriginalDragTarget,
+    unDecorateShadowElement
 } from "./helpers/styler";
 import {
     DRAGGED_ENTERED_EVENT_NAME,
@@ -193,7 +194,7 @@ function handleDrop() {
                     source: SOURCES.POINTER
                 });
             }
-            shadowElDropZone.children[shadowElIdx].style.visibility = "";
+            unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
             cleanupPostDrop();
         };
         animateDraggedToFinalPosition(shadowElIdx, finalizeFunction);
@@ -217,7 +218,7 @@ function handleDrop() {
                 id: draggedElData[ITEM_ID_KEY],
                 source: SOURCES.POINTER
             });
-            shadowElDropZone.children[originIndex].style.visibility = "";
+            unDecorateShadowElement(shadowElDropZone.children[originIndex]);
             cleanupPostDrop();
         };
         window.setTimeout(() => animateDraggedToFinalPosition(originIndex, finalizeFunction), 0);
@@ -410,7 +411,7 @@ export function dndzone(node, options) {
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () =>
                     config.transformDraggedElement(draggedEl, draggedElData, idx)
                 );
-                styleShadowEl(draggableEl);
+                decorateShadowEl(draggableEl);
                 continue;
             }
             draggableEl.removeEventListener("mousedown", elToMouseDownListener.get(draggableEl));

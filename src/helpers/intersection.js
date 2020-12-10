@@ -49,7 +49,7 @@ function adjustedBoundingRect(el) {
  * @param {HTMLElement} el
  * @return {{top: number, left: number, bottom: number, right: number}}
  */
-function getAbsoluteRectNoTransforms(el) {
+export function getAbsoluteRectNoTransforms(el) {
     const rect = adjustedBoundingRect(el);
     return {
         top: rect.top + window.scrollY,
@@ -108,7 +108,7 @@ function calcDistance(pointA, pointB) {
  * @param {Rect} rect
  * @return {boolean|boolean}
  */
-function isPointInsideRect(point, rect) {
+export function isPointInsideRect(point, rect) {
     return point.y <= rect.bottom && point.y >= rect.top && point.x >= rect.left && point.x <= rect.right;
 }
 

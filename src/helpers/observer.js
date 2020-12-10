@@ -1,4 +1,4 @@
-import {findWouldBeIndex} from "./listUtil";
+import {findWouldBeIndex, resetIndexesCache} from "./listUtil";
 import {findCenterOfElement, isElementOffDocument} from "./intersection";
 import {
     dispatchDraggedElementEnteredContainer,
@@ -68,7 +68,6 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
                 lastDropZoneFound && dispatchDraggedElementLeftContainer(lastDropZoneFound, draggedEl);
                 dispatchDraggedElementEnteredContainer(dz, indexObj, draggedEl);
                 lastDropZoneFound = dz;
-                lastIndexFound = index;
             } else if (index !== lastIndexFound) {
                 dispatchDraggedElementIsOverIndex(dz, indexObj, draggedEl);
                 lastIndexFound = index;
@@ -95,4 +94,5 @@ export function unobserve() {
     printDebug(() => "unobserving");
     clearTimeout(next);
     resetScrolling();
+    resetIndexesCache();
 }

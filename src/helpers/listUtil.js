@@ -1,4 +1,34 @@
-import {isCenterOfAInsideB, calcDistanceBetweenCenters} from "./intersection";
+import {isCenterOfAInsideB, calcDistanceBetweenCenters, getAbsoluteRectNoTransforms, isPointInsideRect, findCenterOfElement} from "./intersection";
+import {printDebug, SHADOW_ELEMENT_ATTRIBUTE_NAME} from "../constants";
+
+let dzToShadowIndexToRect;
+
+/**
+ * Resets the cache that allows for smarter "would be index" resolution. Should be called after every drag operation
+ */
+export function resetIndexesCache() {
+    printDebug(() => "resetting indexes cache");
+    dzToShadowIndexToRect = new Map();
+}
+resetIndexesCache();
+
+/**
+ * Caches the coordinates of the shadow element when it's in a certain index in a certain dropzone.
+ * Helpful in order to determine "would be index" more effectively
+ * @param {HTMLElement} dz
+ * @return {number} - the shadow element index
+ */
+function cacheShadowRect(dz) {
+    const shadowElIndex = Array.from(dz.children).findIndex(child => child.getAttribute(SHADOW_ELEMENT_ATTRIBUTE_NAME));
+    if (shadowElIndex >= 0) {
+        if (!dzToShadowIndexToRect.has(dz)) {
+            dzToShadowIndexToRect.set(dz, new Map());
+        }
+        dzToShadowIndexToRect.get(dz).set(shadowElIndex, getAbsoluteRectNoTransforms(dz.children[shadowElIndex]));
+        return shadowElIndex;
+    }
+    return undefined;
+}
 
 /**
  * @typedef {Object} Index
@@ -20,10 +50,18 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     if (children.length === 0) {
         return {index: 0, isProximityBased: true};
     }
+    const shadowElIndex = cacheShadowRect(collectionBelowEl);
+
     // the search could be more efficient but keeping it simple for now
     // a possible improvement: pass in the lastIndex it was found in and check there first, then expand from there
     for (let i = 0; i < children.length; i++) {
         if (isCenterOfAInsideB(floatingAboveEl, children[i])) {
+            const cachedShadowRect = dzToShadowIndexToRect.has(collectionBelowEl) && dzToShadowIndexToRect.get(collectionBelowEl).get(i);
+            if (cachedShadowRect) {
+                if (!isPointInsideRect(findCenterOfElement(floatingAboveEl), cachedShadowRect)) {
+                    return {index: shadowElIndex, isProximityBased: false};
+                }
+            }
             return {index: i, isProximityBased: false};
         }
     }

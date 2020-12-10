@@ -1,3 +1,5 @@
+import {SHADOW_ELEMENT_ATTRIBUTE_NAME} from "../constants";
+
 const TRANSITION_DURATION_SECONDS = 0.2;
 
 /**
@@ -131,8 +133,18 @@ export function hideOriginalDragTarget(dragTarget) {
  * styles the shadow element
  * @param {HTMLElement} shadowEl
  */
-export function styleShadowEl(shadowEl) {
+export function decorateShadowEl(shadowEl) {
     shadowEl.style.visibility = "hidden";
+    shadowEl.setAttribute(SHADOW_ELEMENT_ATTRIBUTE_NAME, "true");
+}
+
+/**
+ * undo the styles the shadow element
+ * @param {HTMLElement} shadowEl
+ */
+export function unDecorateShadowElement(shadowEl) {
+    shadowEl.style.visibility = "";
+    shadowEl.removeAttribute(SHADOW_ELEMENT_ATTRIBUTE_NAME);
 }
 
 /**

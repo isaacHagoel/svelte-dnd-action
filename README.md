@@ -1,7 +1,8 @@
 # SVELTE DND ACTION [![Known Vulnerabilities](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action/badge.svg?targetFile=package.json)](https://snyk.io/test/github/isaacHagoel/svelte-dnd-action?targetFile=package.json)
 
-This is a feature-complete implementation of drag and drop for Svelte using a custom action. It supports almost every imaginable drag and drop use-case and is fully accessible.
-See full features list below.
+This is a feature-complete implementation of drag and drop for Svelte using a custom action. It supports almost every imaginable drag and drop use-case, any input device and is fully accessible. <br />
+It requires very minimal configuration, while offering a rich set of primitives that allow overriding basically any of its default behaviours (using the handler functions). <br /><br />
+See full features list below. <br />
 
 ![dnd_demo2](https://user-images.githubusercontent.com/20507787/81682367-267eb780-9498-11ea-8dbc-5c9582033522.gif)
 
@@ -9,8 +10,9 @@ See full features list below.
 
 ### Current Status
 
-The library is working well as far as I can tell, and I am in the process of integrating it into a production system that will be used at scale.
+The library is **production ready**, and I am in the process of integrating it into several production systems that will be used at scale.
 It is being actively maintained.
+**I have never introduced a breaking change so far and have no plans of doing so in the future**.
 
 ### Features
 
@@ -24,6 +26,11 @@ It is being actively maintained.
 -   Supports advanced use-cases such as various flavours of copy-on-drag and custom drag handles (see examples below)
 -   Performant and small footprint (no external dependencies, no fluff code)
 -   Fully accessible (beta) - keyboard support, aria attributes and assistive instructions for screen readers
+
+### Why a svelte action rather than a higher order component?
+
+A custom action allows for a much more elegant API (no slot props thanks god) as well as more control. <br />
+If you prefer a generic dnd list component that accepts different child components as your abstraction, you can very easily wrap this library with one (see [here](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)).
 
 ### Installation
 
@@ -171,6 +178,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3.24.1), courtesy of @gleuch
 -   [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)
 -   [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
+-   [Generic List Component (Alternative to Slots)](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)
 
 -   [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
 -   [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)

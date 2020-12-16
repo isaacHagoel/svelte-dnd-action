@@ -8,15 +8,11 @@ See full features list below. <br />
 
 [Play with this example in the REPL](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3.22.2).
 
-### Why a svelte action rather than a higher order component?
-
-Because it allows for a much more elegant API (no slot props thanks god) as well as more control. <br />
-If you prefer a generic dnd list component that accepts different Item components as your abstraction, you can very easily wrap this library with one (see [here](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)).
-
 ### Current Status
 
-The library is production ready, and I am in the process of integrating it into several production systems that will be used at scale.
+The library is **production ready**, and I am in the process of integrating it into several production systems that will be used at scale.
 It is being actively maintained.
+** I have never introduced a breaking change so far and have no plans of doing so in the future **
 
 ### Features
 
@@ -30,6 +26,11 @@ It is being actively maintained.
 -   Supports advanced use-cases such as various flavours of copy-on-drag and custom drag handles (see examples below)
 -   Performant and small footprint (no external dependencies, no fluff code)
 -   Fully accessible (beta) - keyboard support, aria attributes and assistive instructions for screen readers
+
+### Why a svelte action rather than a higher order component?
+
+A custom action allows for a much more elegant API (no slot props thanks god) as well as more control. <br />
+If you prefer a generic dnd list component that accepts different child components as your abstraction, you can very easily wrap this library with one (see [here](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)).
 
 ### Installation
 

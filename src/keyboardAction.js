@@ -49,6 +49,9 @@ function registerDropZone(dropZoneEl, type) {
 }
 function unregisterDropZone(dropZoneEl, type) {
     printDebug(() => "unregistering drop-zone");
+    if (focusedDz === dropZoneEl) {
+        handleDrop();
+    }
     typeToDropZones.get(type).delete(dropZoneEl);
     decrementActiveDropZoneCount();
     if (typeToDropZones.get(type).size === 0) {

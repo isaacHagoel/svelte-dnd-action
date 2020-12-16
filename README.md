@@ -12,7 +12,7 @@ See full features list below. <br />
 
 The library is **production ready**, and I am in the process of integrating it into several production systems that will be used at scale.
 It is being actively maintained.
-**I have never introduced a breaking change so far and have no plans of doing so in the future**
+**I have never introduced a breaking change so far and have no plans of doing so in the future**.
 
 ### Features
 

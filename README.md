@@ -179,6 +179,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)
 -   [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
 -   [Generic List Component (Alternative to Slots)](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)
+-   [Maitaining internal scroll poisition on scrollable dragabble](https://svelte.dev/repl/eb2f5988bd2f46488810606c1fb13392?version=3.29.4)
 
 -   [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
 -   [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)

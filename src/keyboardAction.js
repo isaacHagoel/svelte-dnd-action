@@ -219,19 +219,19 @@ export function dndzone(node, options) {
     }
     function handleDragStart(e) {
         printDebug(() => "drag start");
-        if (!config.autoAriaDisabled) {
-            alertToScreenReader(
-                `Started dragging item ${focusedItemLabel}. Use the arrow keys to move it within its list ${focusedDzLabel}, or tab to another list in order to move the item into it`
-            );
-        }
         setCurrentFocusedItem(e.currentTarget);
         focusedDz = node;
         draggedItemType = config.type;
         isDragging = true;
-        styleActiveDropZones(
-            Array.from(typeToDropZones.get(config.type)).filter(dz => dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled),
-            dz => dzToConfig.get(dz).dropTargetStyle
-        );
+        const dropTargets = Array.from(typeToDropZones.get(config.type)).filter(dz => dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled);
+        styleActiveDropZones(dropTargets, dz => dzToConfig.get(dz).dropTargetStyle);
+        if (!config.autoAriaDisabled) {
+            let msg = `Started dragging item ${focusedItemLabel}. Use the arrow keys to move it within its list ${focusedDzLabel}`;
+            if (dropTargets.length > 1) {
+                msg += `, or tab to another list in order to move the item into it`;
+            }
+            alertToScreenReader(msg);
+        }
         dispatchConsiderEvent(node, dzToConfig.get(node).items, {trigger: TRIGGERS.DRAG_STARTED, id: focusedItemId, source: SOURCES.KEYBOARD});
         triggerAllDzsUpdate();
     }

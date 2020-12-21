@@ -70,7 +70,7 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
     }
 
     /// other properties
-    copyStylesRecursively(copyFromEl, draggedEl);
+    copyStylesFromTo(copyFromEl, draggedEl);
     transformDraggedElement();
 }
 
@@ -97,21 +97,6 @@ function copyStylesFromTo(copyFromEl, copyToEl) {
                 s === "list-style-type"
         )
         .forEach(s => copyToEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s)));
-}
-
-/**
- * @param {HTMLElement} copyFromEl
- * @param {HTMLElement} copyToEl
- */
-function copyStylesRecursively(copyFromEl, copyToEl) {
-    copyStylesFromTo(copyFromEl, copyToEl);
-    if ((copyFromEl.children || []).length !== (copyToEl.children || []).length) {
-        throw new Error("got corrupted dragged element");
-    }
-    if (!copyFromEl.children) return;
-    for (let i = 0; i < copyFromEl.children.length; i++) {
-        copyStylesRecursively(copyFromEl.children[i], copyToEl.children[i]);
-    }
 }
 
 /**

@@ -50,8 +50,8 @@ let dragStartMousePosition;
 let currentMousePosition;
 let isWorkingOnPreviousDrag = false;
 let finalizingPreviousDrag = false;
-let shouldRemoveOriginDzInlineHeight = false;
-let shouldRemoveOriginDzInlineWidth = false;
+let originalOriginDzInlineMinHeight = undefined;
+let originalOriginDzInlineMinWidth = undefined;
 let isDraggedOutsideOfAnyDz = false;
 
 // a map from type to a set of drop-zones
@@ -208,8 +208,8 @@ function handleDrop() {
     if (shadowElIdx === -1) shadowElIdx = originIndex;
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
     function finalizeWithinZone() {
-        if (shouldRemoveOriginDzInlineHeight) originDropZone.style.removeProperty("height");
-        if (shouldRemoveOriginDzInlineWidth) originDropZone.style.removeProperty("width");
+        originDropZone.style.minHeight = originalOriginDzInlineMinHeight;
+        originDropZone.style.minWidth = originalOriginDzInlineMinWidth;
         dispatchFinalizeEvent(shadowElDropZone, items, {
             trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
             id: draggedElData[ITEM_ID_KEY],
@@ -259,8 +259,8 @@ function cleanupPostDrop() {
     currentMousePosition = undefined;
     isWorkingOnPreviousDrag = false;
     finalizingPreviousDrag = false;
-    shouldRemoveOriginDzInlineHeight = false;
-    shouldRemoveOriginDzInlineWidth = false;
+    originalOriginDzInlineMinHeight = undefined;
+    originalOriginDzInlineMinWidth = undefined;
     isDraggedOutsideOfAnyDz = false;
 }
 
@@ -364,15 +364,12 @@ export function dndzone(node, options) {
 
         // removing the original element by removing its data entry
         items.splice(currentIdx, 1);
-        // TODO - move to styler
-        if (!originDropZone.style.height) {
-            shouldRemoveOriginDzInlineHeight = true;
-            originDropZone.style.height = window.getComputedStyle(originDropZone).getPropertyValue("height");
-        }
-        if (!originDropZone.style.width) {
-            shouldRemoveOriginDzInlineWidth = true;
-            originDropZone.style.width = window.getComputedStyle(originDropZone).getPropertyValue("width");
-        }
+        // TODO - move to styler?
+        originalOriginDzInlineMinHeight = originDropZone.style.minHeight;
+        originDropZone.style.minHeight = window.getComputedStyle(originDropZone).getPropertyValue("height");
+        originalOriginDzInlineMinWidth = originDropZone.style.minWidth;
+        originDropZone.style.minWidth = window.getComputedStyle(originDropZone).getPropertyValue("width");
+
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 
         // handing over to global handlers - starting to watch the element

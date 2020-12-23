@@ -93,7 +93,7 @@ npm install --save-dev svelte-dnd-action
         margin: 0.15em 0;
     }
 </style>
-<section use:dndzone="{{items," flipDurationMs}} on:consider="{handleDndConsider}" on:finalize="{handleDndFinalize}">
+<section use:dndzone="{{items, flipDurationMs}}" on:consider="{handleDndConsider}" on:finalize="{handleDndFinalize}">
     {#each items as item(item.id)}
     <div animate:flip="{{duration: flipDurationMs}}">{item.name}</div>
     {/each}
@@ -141,7 +141,7 @@ For example:
 
 ```html
 <h2>{listName}</h2>
-<section aria-label="{listName}" use:dndzone="{{items," flipDurationMs}} on:consider="{handleDndConsider}" on:finalize="{handleDndFinalize}">
+<section aria-label="{listName}" use:dndzone="{{items, flipDurationMs}}" on:consider="{handleDndConsider}" on:finalize="{handleDndFinalize}">
     {#each items as item(item.id)}
     <div aria-label="{item.name}" animate:flip="{{duration: flipDurationMs}}">{item.name}</div>
     {/each}
@@ -265,7 +265,7 @@ Then you will be able to use the library with type safety as follows (Typescript
         {id: 3, title: "Yoda"}
     ];
 </script>
-<section use:dndzone="{{items," flipDurationMs}} on:consider="{handleSort}" on:finalize="{handleSort}">
+<section use:dndzone="{{items, flipDurationMs}}" on:consider="{handleSort}" on:finalize="{handleSort}">
     {#each items as item(item.id)}
     <div animate:flip="{{duration:flipDurationMs}}">{item.title}</div>
     {/each}

@@ -173,3 +173,20 @@ export function styleInactiveDropZones(dropZones, getStyles = () => {}) {
         });
     });
 }
+
+// TODO - create issue to refactor the other do/undo functions to this style maybe
+/**
+ * will prevent the provided element from shrinking by setting its minWidth and minHeight to the current width and height values
+ * @param {HTMLElement} el
+ * @return {function(): void} - run this function to undo the operation and restore the original values
+ */
+export function preventShrinking(el) {
+    const originalMinHeight = el.style.minHeight;
+    el.style.minHeight = window.getComputedStyle(el).getPropertyValue("height");
+    const originalMinWidth = el.style.minWidth;
+    el.style.minWidth = window.getComputedStyle(el).getPropertyValue("width");
+    return function undo() {
+        el.style.minHeight = originalMinHeight;
+        el.style.minWidth = originalMinWidth;
+    };
+}

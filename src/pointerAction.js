@@ -25,7 +25,8 @@ import {
     DRAGGED_LEFT_DOCUMENT_EVENT_NAME,
     DRAGGED_OVER_INDEX_EVENT_NAME,
     dispatchConsiderEvent,
-    dispatchFinalizeEvent
+    dispatchFinalizeEvent,
+    DRAGGED_LEFT_TYPES
 } from "./helpers/dispatcher";
 import {areObjectsShallowEqual, toString} from "./helpers/util";
 import {printDebug} from "./constants";
@@ -118,6 +119,17 @@ function handleDraggedEntered(e) {
     // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(i => i[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
     printDebug(() => `dragged entered items ${toString(items)}`);
+
+    if (originDropZone !== e.currentTarget) {
+        const originZoneItems = dzToConfig.get(originDropZone).items;
+        const newOriginZoneItems = originZoneItems.filter(item => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+        dispatchConsiderEvent(originDropZone, newOriginZoneItems, {
+            trigger: TRIGGERS.DRAGGED_ENTERED_ANOTHER,
+            id: draggedElData[ITEM_ID_KEY],
+            source: SOURCES.POINTER
+        });
+    }
+
     const {index, isProximityBased} = e.detail.indexObj;
     const shadowElIdx = isProximityBased && index === e.currentTarget.children.length - 1 ? index + 1 : index;
     shadowElDropZone = e.currentTarget;
@@ -132,8 +144,17 @@ function handleDraggedLeft(e) {
         return;
     }
     const shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
-    items.splice(shadowElIdx, 1);
+    const shadowItem = items.splice(shadowElIdx, 1)[0];
     shadowElDropZone = undefined;
+    if (e.detail.type === DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY) {
+        const originZoneItems = dzToConfig.get(originDropZone).items;
+        originZoneItems.splice(originIndex, 0, shadowItem);
+        dispatchConsiderEvent(originDropZone, originZoneItems, {
+            trigger: TRIGGERS.DRAGGED_LEFT_ALL,
+            id: draggedElData[ITEM_ID_KEY],
+            source: SOURCES.POINTER
+        });
+    }
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 function handleDraggedIsOverIndex(e) {
@@ -203,13 +224,16 @@ function handleDrop() {
         printDebug(() => "no dz available");
         let {items, type} = dzToConfig.get(originDropZone);
         styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
-        items.splice(originIndex, 0, shadowElData);
         shadowElDropZone = originDropZone;
-        dispatchConsiderEvent(originDropZone, items, {
-            trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY,
-            id: draggedElData[ITEM_ID_KEY],
-            source: SOURCES.POINTER
-        });
+        // if the shadow item is not already there (the original behaviour of the library) we need to add it
+        if (!items[originIndex][SHADOW_ITEM_MARKER_PROPERTY_NAME]) {
+            items.splice(originIndex, 0, shadowElData);
+            dispatchConsiderEvent(originDropZone, items, {
+                trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY,
+                id: draggedElData[ITEM_ID_KEY],
+                source: SOURCES.POINTER
+            });
+        }
         finalizeFunction = function finalizeBackToOrigin() {
             const finalItems = [...items];
             finalItems.splice(originIndex, 1, draggedElData);

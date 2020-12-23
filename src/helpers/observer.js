@@ -2,7 +2,8 @@ import {findWouldBeIndex, resetIndexesCache} from "./listUtil";
 import {findCenterOfElement, isElementOffDocument} from "./intersection";
 import {
     dispatchDraggedElementEnteredContainer,
-    dispatchDraggedElementLeftContainer,
+    dispatchDraggedElementLeftContainerForAnother,
+    dispatchDraggedElementLeftContainerForNone,
     dispatchDraggedLeftDocument,
     dispatchDraggedElementIsOverIndex
 } from "./dispatcher";
@@ -65,7 +66,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
             isDraggedInADropZone = true;
             // the element is over a container
             if (dz !== lastDropZoneFound) {
-                lastDropZoneFound && dispatchDraggedElementLeftContainer(lastDropZoneFound, draggedEl);
+                lastDropZoneFound && dispatchDraggedElementLeftContainerForAnother(lastDropZoneFound, draggedEl);
                 dispatchDraggedElementEnteredContainer(dz, indexObj, draggedEl);
                 lastDropZoneFound = dz;
             } else if (index !== lastIndexFound) {
@@ -77,7 +78,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         }
         // the first time the dragged element is not in any dropzone we need to notify the last dropzone it was in
         if (!isDraggedInADropZone && lastIsDraggedInADropZone && lastDropZoneFound) {
-            dispatchDraggedElementLeftContainer(lastDropZoneFound, draggedEl);
+            dispatchDraggedElementLeftContainerForNone(lastDropZoneFound, draggedEl);
             lastDropZoneFound = undefined;
             lastIndexFound = undefined;
             lastIsDraggedInADropZone = false;

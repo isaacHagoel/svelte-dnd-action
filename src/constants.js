@@ -3,11 +3,9 @@ import {DRAGGED_ENTERED_EVENT_NAME, DRAGGED_LEFT_EVENT_NAME, DRAGGED_OVER_INDEX_
 export const TRIGGERS = {
     DRAG_STARTED: "dragStarted",
     DRAGGED_ENTERED: DRAGGED_ENTERED_EVENT_NAME,
-    // TODO - add to types file and README
     DRAGGED_ENTERED_ANOTHER: "dragEnteredAnother",
     DRAGGED_OVER_INDEX: DRAGGED_OVER_INDEX_EVENT_NAME,
     DRAGGED_LEFT: DRAGGED_LEFT_EVENT_NAME,
-    // TODO - add to types file and README
     DRAGGED_LEFT_ALL: "draggedLeftAll",
     DROPPED_INTO_ZONE: "droppedIntoZone",
     DROPPED_INTO_ANOTHER: "droppedIntoAnother",

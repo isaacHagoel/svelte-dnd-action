@@ -126,7 +126,7 @@ In both cases the payload (within e.detail) is the same: an object with two attr
 
 -   `items`: contains the updated items list.
 -   `info`: This one can be used to achieve very advanced custom behaviours (ex: copy on drag). In most cases, don't worry about it. It is an object with the following properties:
-    -   `trigger`: will be one of the exported list of TRIGGERS (Please import if you plan to use): [DRAG_STARTED, DRAGGED_ENTERED, DRAGGED_OVER_INDEX, DRAGGED_LEFT, DROPPED_INTO_ZONE, DROPPED_INTO_ANOTHER, DROPPED_OUTSIDE_OF_ANY, DRAG_STOPPED]. Most triggers apply to both pointer and keyboard, but some are only relevant for pointer (dragged_entered, dragged_over_index and dragged_left), and some only for keyboard (drag_stopped)
+    -   `trigger`: will be one of the exported list of TRIGGERS (Please import if you plan to use): [DRAG_STARTED, DRAGGED_ENTERED, DRAGGED_ENTERED_ANOTHER, DRAGGED_OVER_INDEX, DRAGGED_LEFT, DRAGGED_LEFT_ALL, DROPPED_INTO_ZONE, DROPPED_INTO_ANOTHER, DROPPED_OUTSIDE_OF_ANY, DRAG_STOPPED]. Most triggers apply to both pointer and keyboard, but some are only relevant for pointer (dragged_entered, dragged_over_index and dragged_left), and some only for keyboard (drag_stopped).
     -   `id`: the item id of the dragged element
     -   `source`: will be one of the exported list of SOURCES (Please import if you plan to use): [POINTER, KEYBOARD]
 

@@ -45,8 +45,10 @@ export declare function overrideItemIdKeyNameBeforeInitialisingDndZones(newKeyNa
 export enum TRIGGERS {
     DRAG_STARTED = "dragStarted",
     DRAGGED_ENTERED = "draggedEntered", //only relevant for pointer interactions
+    DRAGGED_ENTERED_ANOTHER = "dragEnteredAnother", //only relevant for pointer interactions
     DRAGGED_OVER_INDEX = "draggedOverIndex", //only relevant for pointer interactions
     DRAGGED_LEFT = "draggedLeft", //only relevant for pointer interactions
+    DRAGGED_LEFT_ALL = "draggedLeftAll", //only relevant for pointer interactions
     DROPPED_INTO_ZONE = "droppedIntoZone",
     DROPPED_INTO_ANOTHER = "droppedIntoAnother",
     DROPPED_OUTSIDE_OF_ANY = "droppedOutsideOfAny",

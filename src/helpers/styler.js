@@ -174,7 +174,6 @@ export function styleInactiveDropZones(dropZones, getStyles = () => {}) {
     });
 }
 
-// TODO - create issue to refactor the other do/undo functions to this style maybe
 /**
  * will prevent the provided element from shrinking by setting its minWidth and minHeight to the current width and height values
  * @param {HTMLElement} el

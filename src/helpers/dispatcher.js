@@ -38,6 +38,12 @@ export const DRAGGED_ENTERED_EVENT_NAME = "draggedEntered";
 export const DRAGGED_LEFT_EVENT_NAME = "draggedLeft";
 export const DRAGGED_OVER_INDEX_EVENT_NAME = "draggedOverIndex";
 export const DRAGGED_LEFT_DOCUMENT_EVENT_NAME = "draggedLeftDocument";
+
+export const DRAGGED_LEFT_TYPES = {
+    LEFT_FOR_ANOTHER: "leftForAnother",
+    OUTSIDE_OF_ANY: "outsideOfAny"
+};
+
 export function dispatchDraggedElementEnteredContainer(containerEl, indexObj, draggedEl) {
     containerEl.dispatchEvent(
         new CustomEvent(DRAGGED_ENTERED_EVENT_NAME, {
@@ -45,10 +51,19 @@ export function dispatchDraggedElementEnteredContainer(containerEl, indexObj, dr
         })
     );
 }
-export function dispatchDraggedElementLeftContainer(containerEl, draggedEl) {
+
+export function dispatchDraggedElementLeftContainerForAnother(containerEl, draggedEl) {
     containerEl.dispatchEvent(
         new CustomEvent(DRAGGED_LEFT_EVENT_NAME, {
-            detail: {draggedEl}
+            detail: {draggedEl, type: DRAGGED_LEFT_TYPES.LEFT_FOR_ANOTHER}
+        })
+    );
+}
+
+export function dispatchDraggedElementLeftContainerForNone(containerEl, draggedEl) {
+    containerEl.dispatchEvent(
+        new CustomEvent(DRAGGED_LEFT_EVENT_NAME, {
+            detail: {draggedEl, type: DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY}
         })
     );
 }

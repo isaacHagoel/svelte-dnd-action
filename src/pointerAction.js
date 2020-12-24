@@ -1,34 +1,36 @@
 import {
-    SHADOW_ITEM_MARKER_PROPERTY_NAME,
-    ITEM_ID_KEY,
-    TRIGGERS,
-    incrementActiveDropZoneCount,
     decrementActiveDropZoneCount,
-    SOURCES
+    incrementActiveDropZoneCount,
+    ITEM_ID_KEY,
+    printDebug,
+    SHADOW_ITEM_MARKER_PROPERTY_NAME,
+    SOURCES,
+    TRIGGERS
 } from "./constants";
 import {observe, unobserve} from "./helpers/observer";
 import {armWindowScroller, disarmWindowScroller} from "./helpers/windowScroller";
 import {
     createDraggedElementFrom,
-    moveDraggedElementToWasDroppedState,
-    morphDraggedElementToBeLike,
-    styleDraggable,
     decorateShadowEl,
-    styleActiveDropZones,
-    styleInactiveDropZones,
     hideOriginalDragTarget,
+    morphDraggedElementToBeLike,
+    moveDraggedElementToWasDroppedState,
+    preventShrinking,
+    styleActiveDropZones,
+    styleDraggable,
+    styleInactiveDropZones,
     unDecorateShadowElement
 } from "./helpers/styler";
 import {
-    DRAGGED_ENTERED_EVENT_NAME,
-    DRAGGED_LEFT_EVENT_NAME,
-    DRAGGED_LEFT_DOCUMENT_EVENT_NAME,
-    DRAGGED_OVER_INDEX_EVENT_NAME,
     dispatchConsiderEvent,
-    dispatchFinalizeEvent
+    dispatchFinalizeEvent,
+    DRAGGED_ENTERED_EVENT_NAME,
+    DRAGGED_LEFT_DOCUMENT_EVENT_NAME,
+    DRAGGED_LEFT_EVENT_NAME,
+    DRAGGED_LEFT_TYPES,
+    DRAGGED_OVER_INDEX_EVENT_NAME
 } from "./helpers/dispatcher";
 import {areObjectsShallowEqual, toString} from "./helpers/util";
-import {printDebug} from "./constants";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -49,6 +51,8 @@ let dragStartMousePosition;
 let currentMousePosition;
 let isWorkingOnPreviousDrag = false;
 let finalizingPreviousDrag = false;
+let unlockOriginDzMinDimensions;
+let isDraggedOutsideOfAnyDz = false;
 
 // a map from type to a set of drop-zones
 const typeToDropZones = new Map();
@@ -110,6 +114,7 @@ function unWatchDraggedElement() {
 /* custom drag-events handlers */
 function handleDraggedEntered(e) {
     printDebug(() => ["dragged entered", e.currentTarget, e.detail]);
+    isDraggedOutsideOfAnyDz = false;
     let {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         printDebug(() => "drop is currently disabled");
@@ -118,6 +123,17 @@ function handleDraggedEntered(e) {
     // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(i => i[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
     printDebug(() => `dragged entered items ${toString(items)}`);
+
+    if (originDropZone !== e.currentTarget) {
+        const originZoneItems = dzToConfig.get(originDropZone).items;
+        const newOriginZoneItems = originZoneItems.filter(item => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+        dispatchConsiderEvent(originDropZone, newOriginZoneItems, {
+            trigger: TRIGGERS.DRAGGED_ENTERED_ANOTHER,
+            id: draggedElData[ITEM_ID_KEY],
+            source: SOURCES.POINTER
+        });
+    }
+
     const {index, isProximityBased} = e.detail.indexObj;
     const shadowElIdx = isProximityBased && index === e.currentTarget.children.length - 1 ? index + 1 : index;
     shadowElDropZone = e.currentTarget;
@@ -132,12 +148,24 @@ function handleDraggedLeft(e) {
         return;
     }
     const shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
-    items.splice(shadowElIdx, 1);
+    const shadowItem = items.splice(shadowElIdx, 1)[0];
     shadowElDropZone = undefined;
+    if (e.detail.type === DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY) {
+        isDraggedOutsideOfAnyDz = true;
+        shadowElDropZone = originDropZone;
+        const originZoneItems = dzToConfig.get(originDropZone).items;
+        originZoneItems.splice(originIndex, 0, shadowItem);
+        dispatchConsiderEvent(originDropZone, originZoneItems, {
+            trigger: TRIGGERS.DRAGGED_LEFT_ALL,
+            id: draggedElData[ITEM_ID_KEY],
+            source: SOURCES.POINTER
+        });
+    }
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 function handleDraggedIsOverIndex(e) {
     printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
+    isDraggedOutsideOfAnyDz = false;
     const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         printDebug(() => "drop is currently disabled");
@@ -170,59 +198,34 @@ function handleDrop() {
     window.removeEventListener("touchend", handleDrop);
     unWatchDraggedElement();
     moveDraggedElementToWasDroppedState(draggedEl);
-    let finalizeFunction;
-    if (shadowElDropZone) {
-        // it was dropped in a drop-zone
-        printDebug(() => ["dropped in dz", shadowElDropZone]);
-        let {items, type} = dzToConfig.get(shadowElDropZone);
-        styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
-        let shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
-        // the handler might remove the shadow element, ex: dragula like copy on drag
-        if (shadowElIdx === -1) shadowElIdx = originIndex;
-        items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
-        finalizeFunction = function finalizeWithinZone() {
-            dispatchFinalizeEvent(shadowElDropZone, items, {
-                trigger: TRIGGERS.DROPPED_INTO_ZONE,
-                id: draggedElData[ITEM_ID_KEY],
-                source: SOURCES.POINTER
-            });
-            if (shadowElDropZone !== originDropZone) {
-                // letting the origin drop zone know the element was permanently taken away
-                dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {
-                    trigger: TRIGGERS.DROPPED_INTO_ANOTHER,
-                    id: draggedElData[ITEM_ID_KEY],
-                    source: SOURCES.POINTER
-                });
-            }
-            unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
-            cleanupPostDrop();
-        };
-        animateDraggedToFinalPosition(shadowElIdx, finalizeFunction);
-    } else {
-        // it needs to return to its place
-        printDebug(() => "no dz available");
-        let {items, type} = dzToConfig.get(originDropZone);
-        styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
-        items.splice(originIndex, 0, shadowElData);
-        shadowElDropZone = originDropZone;
-        dispatchConsiderEvent(originDropZone, items, {
-            trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY,
+
+    // it was dropped in a drop-zone
+    printDebug(() => ["dropped in dz", shadowElDropZone]);
+    let {items, type} = dzToConfig.get(shadowElDropZone);
+    styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
+    let shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+    // the handler might remove the shadow element, ex: dragula like copy on drag
+    if (shadowElIdx === -1) shadowElIdx = originIndex;
+    items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
+    function finalizeWithinZone() {
+        unlockOriginDzMinDimensions();
+        dispatchFinalizeEvent(shadowElDropZone, items, {
+            trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
             id: draggedElData[ITEM_ID_KEY],
             source: SOURCES.POINTER
         });
-        finalizeFunction = function finalizeBackToOrigin() {
-            const finalItems = [...items];
-            finalItems.splice(originIndex, 1, draggedElData);
-            dispatchFinalizeEvent(originDropZone, finalItems, {
-                trigger: TRIGGERS.DROPPED_OUTSIDE_OF_ANY,
+        if (shadowElDropZone !== originDropZone) {
+            // letting the origin drop zone know the element was permanently taken away
+            dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {
+                trigger: TRIGGERS.DROPPED_INTO_ANOTHER,
                 id: draggedElData[ITEM_ID_KEY],
                 source: SOURCES.POINTER
             });
-            unDecorateShadowElement(shadowElDropZone.children[originIndex]);
-            cleanupPostDrop();
-        };
-        window.setTimeout(() => animateDraggedToFinalPosition(originIndex, finalizeFunction), 0);
+        }
+        unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
+        cleanupPostDrop();
     }
+    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
 }
 
 // helper function for handleDrop
@@ -255,6 +258,8 @@ function cleanupPostDrop() {
     currentMousePosition = undefined;
     isWorkingOnPreviousDrag = false;
     finalizingPreviousDrag = false;
+    unlockOriginDzMinDimensions = undefined;
+    isDraggedOutsideOfAnyDz = false;
 }
 
 export function dndzone(node, options) {
@@ -357,6 +362,8 @@ export function dndzone(node, options) {
 
         // removing the original element by removing its data entry
         items.splice(currentIdx, 1);
+        unlockOriginDzMinDimensions = preventShrinking(originDropZone);
+
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 
         // handing over to global handlers - starting to watch the element

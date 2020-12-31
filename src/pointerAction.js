@@ -307,6 +307,11 @@ export function dndzone(node, options) {
         }
     }
     function handleMouseDown(e) {
+        // on safari clicking on a select element doesn't fire mouseup at the end of the click and in general this makes more sense
+        if (e.target !== e.currentTarget && (e.target.value !== undefined || e.target.isContentEditable)) {
+            printDebug(() => "won't initiate drag on a nested input element");
+            return;
+        }
         // prevents responding to any button but left click which equals 0 (which is falsy)
         if (e.button) {
             printDebug(() => `ignoring none left click button: ${e.button}`);

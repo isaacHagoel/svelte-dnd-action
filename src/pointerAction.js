@@ -201,7 +201,7 @@ function handleDrop() {
     moveDraggedElementToWasDroppedState(draggedEl);
 
     if (!shadowElDropZone) {
-        printDebug("element was dropped right after left origin but before entering somewhere else");
+        printDebug(() => "element was dropped right after left origin but before entering somewhere else");
         shadowElDropZone = originDropZone;
     }
     printDebug(() => ["dropped in dz", shadowElDropZone]);

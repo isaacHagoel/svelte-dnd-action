@@ -1,6 +1,11 @@
 // This is based off https://stackoverflow.com/questions/27745438/how-to-compute-getboundingclientrect-without-considering-transforms/57876601#57876601
 // It removes the transforms that are potentially applied by the flip animations
-function adjustedBoundingRect(el) {
+/**
+ * Gets the bounding rect but removes transforms (ex: flip animation)
+ * @param {HTMLElement} el
+ * @return {{top: number, left: number, bottom: number, right: number}}
+ */
+export function getBoundingRectNoTransforms(el) {
     let ta;
     const rect = el.getBoundingClientRect();
     const style = getComputedStyle(el);
@@ -50,7 +55,7 @@ function adjustedBoundingRect(el) {
  * @return {{top: number, left: number, bottom: number, right: number}}
  */
 export function getAbsoluteRectNoTransforms(el) {
-    const rect = adjustedBoundingRect(el);
+    const rect = getBoundingRectNoTransforms(el);
     return {
         top: rect.top + window.scrollY,
         bottom: rect.bottom + window.scrollY,

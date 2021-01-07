@@ -31,6 +31,7 @@ import {
     DRAGGED_OVER_INDEX_EVENT_NAME
 } from "./helpers/dispatcher";
 import {areObjectsShallowEqual, toString} from "./helpers/util";
+import {getBoundingRectNoTransforms} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -199,7 +200,10 @@ function handleDrop() {
     unWatchDraggedElement();
     moveDraggedElementToWasDroppedState(draggedEl);
 
-    // it was dropped in a drop-zone
+    if (!shadowElDropZone) {
+        printDebug("element was dropped right after left origin but before entering somewhere else");
+        shadowElDropZone = originDropZone;
+    }
     printDebug(() => ["dropped in dz", shadowElDropZone]);
     let {items, type} = dzToConfig.get(shadowElDropZone);
     styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
@@ -230,7 +234,7 @@ function handleDrop() {
 
 // helper function for handleDrop
 function animateDraggedToFinalPosition(shadowElIdx, callback) {
-    const shadowElRect = shadowElDropZone.children[shadowElIdx].getBoundingClientRect();
+    const shadowElRect = getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx]);
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
         y: shadowElRect.top - parseFloat(draggedEl.style.top)

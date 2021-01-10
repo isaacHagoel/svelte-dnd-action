@@ -4,6 +4,7 @@ import {
     ITEM_ID_KEY,
     printDebug,
     SHADOW_ITEM_MARKER_PROPERTY_NAME,
+    SHADOW_PLACEHOLDER_ITEM_ID,
     SOURCES,
     TRIGGERS
 } from "./constants";
@@ -133,6 +134,9 @@ function handleDraggedEntered(e) {
             id: draggedElData[ITEM_ID_KEY],
             source: SOURCES.POINTER
         });
+    } else {
+        printDebug(() => "removing placeholder item from origin dz");
+        items = items.filter(item => item[ITEM_ID_KEY] !== SHADOW_PLACEHOLDER_ITEM_ID);
     }
 
     const {index, isProximityBased} = e.detail.indexObj;
@@ -345,13 +349,15 @@ export function dndzone(node, options) {
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
         shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true};
+        // The initial shadow element. We need a different id at first in order to avoid conflicts and timing issues
+        const placeHolderElData = {...shadowElData, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
 
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
             const {items: itemsNow} = config;
-            if (!draggedEl.parentElement && (!itemsNow[originIndex] || draggedElData[ITEM_ID_KEY] !== itemsNow[originIndex][ITEM_ID_KEY])) {
+            if (!draggedEl.parentElement && SHADOW_PLACEHOLDER_ITEM_ID === itemsNow[originIndex][ITEM_ID_KEY]) {
                 document.body.appendChild(draggedEl);
                 // to prevent the outline from disappearing
                 draggedEl.focus();
@@ -370,7 +376,8 @@ export function dndzone(node, options) {
         );
 
         // removing the original element by removing its data entry
-        items.splice(currentIdx, 1);
+        items.splice(currentIdx, 1, placeHolderElData);
+        // TODO - do i still need this?
         unlockOriginDzMinDimensions = preventShrinking(originDropZone);
 
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
@@ -423,7 +430,7 @@ export function dndzone(node, options) {
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
-            if (config.items[idx][SHADOW_ITEM_MARKER_PROPERTY_NAME]) {
+            if (config.items[idx][SHADOW_ITEM_MARKER_PROPERTY_NAME] && config.items[idx][ITEM_ID_KEY] !== SHADOW_PLACEHOLDER_ITEM_ID) {
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () =>
                     config.transformDraggedElement(draggedEl, draggedElData, idx)
                 );

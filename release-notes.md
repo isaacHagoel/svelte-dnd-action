@@ -11,6 +11,6 @@ It changes some default behaviours (for the better).
 
 ### [v0.7.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/213)
 
-This release introduces a subtle change to the dragStarted event. \*If you are using [Dragula Copy on Drag](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.31.2), you will need to update your consider handler (add 1 line of code to remove the newly added shadow placeholder), see linked REPL).
-Starting with this version, the initial consider event (dragStarted) places a placeholder with a new id instead of the dragged item (old behaviour: removing the dragged item from the list all together). The placeholder is replaced with the real shadow element (the one that has the same id as the original item) in the next event (basically instantly).
+This release introduces a subtle change to the dragStarted event. If you are using [Dragula Copy on Drag](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.31.2), you will need to update your consider handler (add 1 line of code to remove the newly added shadow placeholder, see linked REPL).
+Starting with this version, the initial consider event (dragStarted) places a placeholder item with a new id instead of the dragged item in the items list (old behaviour: removing the dragged item from the list altogether). The placeholder is replaced with the real shadow element (the one that has the same id as the original item) in the next event (basically instantly).
 This change makes the initial behaviour of large items (relative to their peers) much smoother.

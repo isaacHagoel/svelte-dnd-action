@@ -4,6 +4,7 @@ import {
     ITEM_ID_KEY,
     printDebug,
     SHADOW_ITEM_MARKER_PROPERTY_NAME,
+    SHADOW_PLACEHOLDER_ITEM_ID,
     SOURCES,
     TRIGGERS
 } from "./constants";
@@ -112,6 +113,15 @@ function unWatchDraggedElement() {
     unobserve();
 }
 
+// finds the initial placeholder that is placed there on drag start
+function findShadowPlaceHolderIdx(items) {
+    return items.findIndex(item => item[ITEM_ID_KEY] === SHADOW_PLACEHOLDER_ITEM_ID);
+}
+function findShadowElementIdx(items) {
+    // checking that the id is not the placeholder's for Dragula like usecases
+    return items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME] && item[ITEM_ID_KEY] !== SHADOW_PLACEHOLDER_ITEM_ID);
+}
+
 /* custom drag-events handlers */
 function handleDraggedEntered(e) {
     printDebug(() => ["dragged entered", e.currentTarget, e.detail]);
@@ -122,7 +132,7 @@ function handleDraggedEntered(e) {
         return;
     }
     // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
-    items = items.filter(i => i[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
+    items = items.filter(item => item[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
     printDebug(() => `dragged entered items ${toString(items)}`);
 
     if (originDropZone !== e.currentTarget) {
@@ -133,6 +143,13 @@ function handleDraggedEntered(e) {
             id: draggedElData[ITEM_ID_KEY],
             source: SOURCES.POINTER
         });
+    } else {
+        const shadowPlaceHolderIdx = findShadowPlaceHolderIdx(items);
+        if (shadowPlaceHolderIdx !== -1) {
+            // only happens right after drag start, on the first drag entered event
+            printDebug(() => "removing placeholder item from origin dz");
+            items.splice(shadowPlaceHolderIdx, 1);
+        }
     }
 
     const {index, isProximityBased} = e.detail.indexObj;
@@ -141,6 +158,7 @@ function handleDraggedEntered(e) {
     items.splice(shadowElIdx, 0, shadowElData);
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
+
 function handleDraggedLeft(e) {
     printDebug(() => ["dragged left", e.currentTarget, e.detail]);
     const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
@@ -148,7 +166,7 @@ function handleDraggedLeft(e) {
         printDebug(() => "drop is currently disabled");
         return;
     }
-    const shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+    const shadowElIdx = findShadowElementIdx(items);
     const shadowItem = items.splice(shadowElIdx, 1)[0];
     shadowElDropZone = undefined;
     if (e.detail.type === DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY) {
@@ -162,7 +180,12 @@ function handleDraggedLeft(e) {
             source: SOURCES.POINTER
         });
     }
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_LEFT, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
+    // for the origin dz, when the dragged is outside of any, this will be fired in addition to the previous. this is for simplicity
+    dispatchConsiderEvent(e.currentTarget, items, {
+        trigger: TRIGGERS.DRAGGED_LEFT,
+        id: draggedElData[ITEM_ID_KEY],
+        source: SOURCES.POINTER
+    });
 }
 function handleDraggedIsOverIndex(e) {
     printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
@@ -173,7 +196,7 @@ function handleDraggedIsOverIndex(e) {
         return;
     }
     const {index} = e.detail.indexObj;
-    const shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+    const shadowElIdx = findShadowElementIdx(items);
     items.splice(shadowElIdx, 1);
     items.splice(index, 0, shadowElData);
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
@@ -207,7 +230,7 @@ function handleDrop() {
     printDebug(() => ["dropped in dz", shadowElDropZone]);
     let {items, type} = dzToConfig.get(shadowElDropZone);
     styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
-    let shadowElIdx = items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+    let shadowElIdx = findShadowElementIdx(items);
     // the handler might remove the shadow element, ex: dragula like copy on drag
     if (shadowElIdx === -1) shadowElIdx = originIndex;
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
@@ -345,13 +368,14 @@ export function dndzone(node, options) {
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
         shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true};
+        // The initial shadow element. We need a different id at first in order to avoid conflicts and timing issues
+        const placeHolderElData = {...shadowElData, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
 
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
-            const {items: itemsNow} = config;
-            if (!draggedEl.parentElement && (!itemsNow[originIndex] || draggedElData[ITEM_ID_KEY] !== itemsNow[originIndex][ITEM_ID_KEY])) {
+            if (!draggedEl.parentElement) {
                 document.body.appendChild(draggedEl);
                 // to prevent the outline from disappearing
                 draggedEl.focus();
@@ -370,7 +394,7 @@ export function dndzone(node, options) {
         );
 
         // removing the original element by removing its data entry
-        items.splice(currentIdx, 1);
+        items.splice(currentIdx, 1, placeHolderElData);
         unlockOriginDzMinDimensions = preventShrinking(originDropZone);
 
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
@@ -420,10 +444,11 @@ export function dndzone(node, options) {
         config.dropFromOthersDisabled = dropFromOthersDisabled;
 
         dzToConfig.set(node, config);
+        const shadowElIdx = findShadowElementIdx(config.items);
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
-            if (config.items[idx][SHADOW_ITEM_MARKER_PROPERTY_NAME]) {
+            if (idx === shadowElIdx) {
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () =>
                     config.transformDraggedElement(draggedEl, draggedElData, idx)
                 );

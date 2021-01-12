@@ -180,13 +180,12 @@ function handleDraggedLeft(e) {
             source: SOURCES.POINTER
         });
     }
-    if (e.currentTarget !== originDropZone) {
-        dispatchConsiderEvent(e.currentTarget, items, {
-            trigger: TRIGGERS.DRAGGED_LEFT,
-            id: draggedElData[ITEM_ID_KEY],
-            source: SOURCES.POINTER
-        });
-    }
+    // for the origin dz, when the dragged is outside of any, this will be fired in addition to the previous. this is for simplicity
+    dispatchConsiderEvent(e.currentTarget, items, {
+        trigger: TRIGGERS.DRAGGED_LEFT,
+        id: draggedElData[ITEM_ID_KEY],
+        source: SOURCES.POINTER
+    });
 }
 function handleDraggedIsOverIndex(e) {
     printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);

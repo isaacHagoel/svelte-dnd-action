@@ -155,6 +155,7 @@ export function dndzone(node, options) {
         dragDisabled: false,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
+        dropTargetClasses: [],
         autoAriaDisabled: false
     };
 

@@ -11,33 +11,40 @@ const ID_TO_INSTRUCTION = {
 
 const ALERT_DIV_ID = "dnd-action-aria-alert";
 let alertsDiv;
+
+function initAriaOnBrowser() {
+    // setting the dynamic alerts
+    alertsDiv = document.createElement("div");
+    (function initAlertsDiv() {
+        alertsDiv.id = ALERT_DIV_ID;
+        // tab index -1 makes the alert be read twice on chrome for some reason
+        //alertsDiv.tabIndex = -1;
+        alertsDiv.style.position = "fixed";
+        alertsDiv.style.bottom = "0";
+        alertsDiv.style.left = "0";
+        alertsDiv.style.zIndex = "-5";
+        alertsDiv.style.opacity = "0";
+        alertsDiv.style.height = "0";
+        alertsDiv.style.width = "0";
+        alertsDiv.setAttribute("role", "alert");
+    })();
+    document.body.prepend(alertsDiv);
+
+    // setting the instructions
+    Object.entries(ID_TO_INSTRUCTION).forEach(([id, txt]) => document.body.prepend(instructionToHiddenDiv(id, txt)));
+}
+
 /**
  * Initializes the static aria instructions so they can be attached to zones
  * @return {{DND_ZONE_ACTIVE: string, DND_ZONE_DRAG_DISABLED: string} | null} - the IDs for static aria instruction (to be used via aria-describedby) or null on the server
  */
 export function initAria() {
     if (isOnServer) return null;
-    window.addEventListener("DOMContentLoaded", () => {
-        // setting the dynamic alerts
-        alertsDiv = document.createElement("div");
-        (function initAlertsDiv() {
-            alertsDiv.id = ALERT_DIV_ID;
-            // tab index -1 makes the alert be read twice on chrome for some reason
-            //alertsDiv.tabIndex = -1;
-            alertsDiv.style.position = "fixed";
-            alertsDiv.style.bottom = "0";
-            alertsDiv.style.left = "0";
-            alertsDiv.style.zIndex = "-5";
-            alertsDiv.style.opacity = "0";
-            alertsDiv.style.height = "0";
-            alertsDiv.style.width = "0";
-            alertsDiv.setAttribute("role", "alert");
-        })();
-        document.body.prepend(alertsDiv);
-
-        // setting the instructions
-        Object.entries(ID_TO_INSTRUCTION).forEach(([id, txt]) => document.body.prepend(instructionToHiddenDiv(id, txt)));
-    });
+    if (document.readyState === "complete") {
+        initAriaOnBrowser();
+    } else {
+        window.addEventListener("DOMContentLoaded", initAriaOnBrowser);
+    }
     return {...INSTRUCTION_IDs};
 }
 function instructionToHiddenDiv(id, txt) {

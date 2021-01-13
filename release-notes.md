@@ -21,4 +21,8 @@ Added a new option, `dropTargetClasses`, that allows adding global classes to a 
 
 ### [0.8.1](https://github.com/isaacHagoel/svelte-dnd-action/pull/220)
 
-Made `dropTargetClasses` when initiating drag via keyboard
+Made `dropTargetClasses` when initiating drag via keyboard.
+
+### [0.8.2](https://github.com/isaacHagoel/svelte-dnd-action/pull/221)
+
+accessibility features now work when the library is dynamically imported (in other words, it should now work in the REPL).

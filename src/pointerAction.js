@@ -31,7 +31,7 @@ import {
     DRAGGED_LEFT_TYPES,
     DRAGGED_OVER_INDEX_EVENT_NAME
 } from "./helpers/dispatcher";
-import {areObjectsShallowEqual, toString} from "./helpers/util";
+import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, toString} from "./helpers/util";
 import {getBoundingRectNoTransforms} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
@@ -229,7 +229,11 @@ function handleDrop() {
     }
     printDebug(() => ["dropped in dz", shadowElDropZone]);
     let {items, type} = dzToConfig.get(shadowElDropZone);
-    styleInactiveDropZones(typeToDropZones.get(type), dz => dzToConfig.get(dz).dropTargetStyle);
+    styleInactiveDropZones(
+        typeToDropZones.get(type),
+        dz => dzToConfig.get(dz).dropTargetStyle,
+        dz => dzToConfig.get(dz).dropTargetClasses
+    );
     let shadowElIdx = findShadowElementIdx(items);
     // the handler might remove the shadow element, ex: dragula like copy on drag
     if (shadowElIdx === -1) shadowElIdx = originIndex;
@@ -297,6 +301,7 @@ export function dndzone(node, options) {
         dragDisabled: false,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
+        dropTargetClasses: [],
         transformDraggedElement: () => {}
     };
     printDebug(() => [`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node}]);
@@ -390,7 +395,8 @@ export function dndzone(node, options) {
 
         styleActiveDropZones(
             Array.from(typeToDropZones.get(config.type)).filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
-            dz => dzToConfig.get(dz).dropTargetStyle
+            dz => dzToConfig.get(dz).dropTargetStyle,
+            dz => dzToConfig.get(dz).dropTargetClasses
         );
 
         // removing the original element by removing its data entry
@@ -413,6 +419,7 @@ export function dndzone(node, options) {
         dragDisabled = false,
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
+        dropTargetClasses = [],
         transformDraggedElement = () => {}
     }) {
         config.dropAnimationDurationMs = dropAnimationDurationMs;
@@ -427,18 +434,40 @@ export function dndzone(node, options) {
         config.transformDraggedElement = transformDraggedElement;
 
         // realtime update for dropTargetStyle
-        if (isWorkingOnPreviousDrag && !finalizingPreviousDrag && !areObjectsShallowEqual(dropTargetStyle, config.dropTargetStyle)) {
-            styleInactiveDropZones([node], () => config.dropTargetStyle);
-            styleActiveDropZones([node], () => dropTargetStyle);
+        if (
+            isWorkingOnPreviousDrag &&
+            !finalizingPreviousDrag &&
+            (!areObjectsShallowEqual(dropTargetStyle, config.dropTargetStyle) ||
+                !areArraysShallowEqualSameOrder(dropTargetClasses, config.dropTargetClasses))
+        ) {
+            styleInactiveDropZones(
+                [node],
+                () => config.dropTargetStyle,
+                () => dropTargetClasses
+            );
+            styleActiveDropZones(
+                [node],
+                () => dropTargetStyle,
+                () => dropTargetClasses
+            );
         }
         config.dropTargetStyle = dropTargetStyle;
+        config.dropTargetClasses = [...dropTargetClasses];
 
         // realtime update for dropFromOthersDisabled
         if (isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
             if (dropFromOthersDisabled) {
-                styleInactiveDropZones([node], dz => dzToConfig.get(dz).dropTargetStyle);
+                styleInactiveDropZones(
+                    [node],
+                    dz => dzToConfig.get(dz).dropTargetStyle,
+                    dz => dzToConfig.get(dz).dropTargetClasses
+                );
             } else {
-                styleActiveDropZones([node], dz => dzToConfig.get(dz).dropTargetStyle);
+                styleActiveDropZones(
+                    [node],
+                    dz => dzToConfig.get(dz).dropTargetStyle,
+                    dz => dzToConfig.get(dz).dropTargetClasses
+                );
             }
         }
         config.dropFromOthersDisabled = dropFromOthersDisabled;

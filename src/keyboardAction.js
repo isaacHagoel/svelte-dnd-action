@@ -133,7 +133,11 @@ function handleDrop(dispatchConsider = true) {
             source: SOURCES.KEYBOARD
         });
     }
-    styleInactiveDropZones(typeToDropZones.get(draggedItemType), dz => dzToConfig.get(dz).dropTargetStyle);
+    styleInactiveDropZones(
+        typeToDropZones.get(draggedItemType),
+        dz => dzToConfig.get(dz).dropTargetStyle,
+        dz => dzToConfig.get(dz).dropTargetClasses
+    );
     focusedItem = null;
     focusedItemId = null;
     focusedItemLabel = "";
@@ -224,7 +228,11 @@ export function dndzone(node, options) {
         draggedItemType = config.type;
         isDragging = true;
         const dropTargets = Array.from(typeToDropZones.get(config.type)).filter(dz => dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled);
-        styleActiveDropZones(dropTargets, dz => dzToConfig.get(dz).dropTargetStyle);
+        styleActiveDropZones(
+            dropTargets,
+            dz => dzToConfig.get(dz).dropTargetStyle,
+            dz => dzToConfig.get(dz).dropTargetClasses
+        );
         if (!config.autoAriaDisabled) {
             let msg = `Started dragging item ${focusedItemLabel}. Use the arrow keys to move it within its list ${focusedDzLabel}`;
             if (dropTargets.length > 1) {

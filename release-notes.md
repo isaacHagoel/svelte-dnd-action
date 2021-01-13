@@ -17,4 +17,4 @@ This change makes the initial behaviour of large items (relative to their peers)
 
 ### [v0.8.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/218)
 
-Added a new option dropTargetClasses that allows adding global classes to a dnd-zone when it is a potential drop target (during drag)
+Added a new option, `dropTargetClasses`, that allows adding global classes to a dnd-zone when it is a potential drop target (during drag).

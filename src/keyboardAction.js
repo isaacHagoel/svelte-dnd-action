@@ -155,6 +155,7 @@ export function dndzone(node, options) {
         dragDisabled: false,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
+        dropTargetClasses: [],
         autoAriaDisabled: false
     };
 
@@ -266,12 +267,14 @@ export function dndzone(node, options) {
         dragDisabled = false,
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
+        dropTargetClasses = [],
         autoAriaDisabled = false
     }) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.dropFromOthersDisabled = dropFromOthersDisabled;
         config.dropTargetStyle = dropTargetStyle;
+        config.dropTargetClasses = dropTargetClasses;
         config.autoAriaDisabled = autoAriaDisabled;
         if (!autoAriaDisabled) {
             node.setAttribute("aria-disabled", dragDisabled);

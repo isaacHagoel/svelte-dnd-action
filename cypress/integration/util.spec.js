@@ -1,4 +1,4 @@
-import {areObjectsShallowEqual, getDepth} from "../../src/helpers/util";
+import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, getDepth} from "../../src/helpers/util";
 import {printDebug, setDebugMode} from "../../src/constants";
 
 describe("util", () => {
@@ -53,6 +53,23 @@ describe("util", () => {
             setDebugMode(false);
             printDebug(logMessage, logStub);
             expect(consoleStub).to.equal(null);
+        });
+    });
+    describe("areArraysShallowEqual", () => {
+        it("return true when equal same order", () => {
+            expect(areArraysShallowEqualSameOrder([1, "hello", null], [1, "hello", null]));
+            expect(areArraysShallowEqualSameOrder([], []));
+        });
+        it("return false when equal but different order", () => {
+            expect(areArraysShallowEqualSameOrder([1, "hello", null], ["hello", 1, null]));
+        });
+        it("return false when different size", () => {
+            expect(areArraysShallowEqualSameOrder(["hello"], ["hello", 1, null]));
+            expect(areArraysShallowEqualSameOrder(["hello", 1, null], ["hello"]));
+        });
+        it("return false when different", () => {
+            expect(areArraysShallowEqualSameOrder([1, "hello", null], ["1", "hello", null]));
+            expect(areArraysShallowEqualSameOrder([1, 2], []));
         });
     });
 });

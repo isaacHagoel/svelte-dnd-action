@@ -9,14 +9,15 @@ import {toString} from "./helpers/util";
  * Dispatches two events that the container is expected to react to by modifying its list of items,
  * which will then feed back in to this action via the update function
  *
- * @typedef {Object} Options
- * @property {Array} items - the list of items that was used to generate the children of the given node (the list used in the #each block
+ * @typedef {object} Options
+ * @property {array} items - the list of items that was used to generate the children of the given node (the list used in the #each block
  * @property {string} [type] - the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, default to a base type
  * @property {number} [flipDurationMs] - if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
  * @property {boolean} [dragDisabled]
  * @property {boolean} [dropFromOthersDisabled]
- * @property {Object} [dropTargetStyle]
- * @property {Function} [transformDraggedElement]
+ * @property {object} [dropTargetStyle]
+ * @property {string[]} [dropTargetClasses]
+ * @property {function} [transformDraggedElement]
  * @param {HTMLElement} node - the element to enhance
  * @param {Options} options
  * @return {{update: function, destroy: function}}
@@ -47,6 +48,7 @@ function validateOptions(options) {
         dragDisabled,
         dropFromOthersDisabled,
         dropTargetStyle,
+        dropTargetClasses,
         transformDraggedElement,
         autoAriaDisabled,
         ...rest
@@ -61,5 +63,8 @@ function validateOptions(options) {
     const itemWithMissingId = items.find(item => !{}.hasOwnProperty.call(item, ITEM_ID_KEY));
     if (itemWithMissingId) {
         throw new Error(`missing '${ITEM_ID_KEY}' property for item ${toString(itemWithMissingId)}`);
+    }
+    if (dropTargetClasses && !Array.isArray(dropTargetClasses)) {
+        throw new Error(`dropTargetClasses should be an array but instead it is a ${typeof dropTargetClasses}, ${toString(dropTargetClasses)}`);
     }
 }

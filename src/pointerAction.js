@@ -141,8 +141,7 @@ function handleDraggedEntered(e) {
         dispatchConsiderEvent(originDropZone, newOriginZoneItems, {
             trigger: TRIGGERS.DRAGGED_ENTERED_ANOTHER,
             id: draggedElData[ITEM_ID_KEY],
-            source: SOURCES.POINTER,
-            target: dzToConfig.get(e.currentTarget)
+            source: SOURCES.POINTER
         });
     } else {
         const shadowPlaceHolderIdx = findShadowPlaceHolderIdx(items);

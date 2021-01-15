@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### [0.8.3](https://github.com/isaacHagoel/svelte-dnd-action/pull/226)
+### [0.8.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/226)
 
 fixed a keyboard related bug - it is now possible to tab back to the dragged item after tabbing to external elements mid drag
 

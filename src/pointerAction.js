@@ -141,7 +141,8 @@ function handleDraggedEntered(e) {
         dispatchConsiderEvent(originDropZone, newOriginZoneItems, {
             trigger: TRIGGERS.DRAGGED_ENTERED_ANOTHER,
             id: draggedElData[ITEM_ID_KEY],
-            source: SOURCES.POINTER
+            source: SOURCES.POINTER,
+            target: dzToConfig.get(e.currentTarget)
         });
     } else {
         const shadowPlaceHolderIdx = findShadowPlaceHolderIdx(items);
@@ -256,7 +257,13 @@ function handleDrop() {
         unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+
+    const showAnimation = dzToConfig.get(originDropZone).customDrop(draggedElData, currentMousePosition);
+    if (showAnimation === undefined || showAnimation === true) {
+        animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    } else {
+        finalizeWithinZone();
+    }
 }
 
 // helper function for handleDrop
@@ -302,7 +309,8 @@ export function dndzone(node, options) {
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
-        transformDraggedElement: () => {}
+        transformDraggedElement: () => {},
+        customDrop: () => {}
     };
     printDebug(() => [`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node}]);
     let elToIdx = new Map();
@@ -420,7 +428,8 @@ export function dndzone(node, options) {
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
-        transformDraggedElement = () => {}
+        transformDraggedElement = () => {},
+        customDrop = () => {}
     }) {
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
@@ -432,6 +441,7 @@ export function dndzone(node, options) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.transformDraggedElement = transformDraggedElement;
+        config.customDrop = customDrop;
 
         // realtime update for dropTargetStyle
         if (

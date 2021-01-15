@@ -50,6 +50,7 @@ function validateOptions(options) {
         dropTargetStyle,
         dropTargetClasses,
         transformDraggedElement,
+        customDrop,
         autoAriaDisabled,
         ...rest
     } = options;

@@ -77,4 +77,4 @@ export declare const SHADOW_ITEM_MARKER_PROPERTY_NAME: "isDndShadowItem";
 /**
  * Allows the user to show/hide console debug output
  */
-export declare function setDebug(isDebug: boolean): void;
+export declare function setDebugMode(isDebug: boolean): void;

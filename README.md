@@ -214,8 +214,8 @@ It applies globally (as in, all of your items everywhere are expected to have a 
 By default no debug output will be logged to the console. If you want to see internal debug messages, you can enable the debug output like this:
 
 ```javascript
-import {setDebug} from "svelte-dnd-action";
-setDebug(true);
+import {setDebugMode} from "svelte-dnd-action";
+setDebugMode(true);
 ```
 
 ### Typescript

@@ -1,13 +1,20 @@
 ## Svelte Dnd Action - Release Notes
 
-### [v0.7.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/202)
+### [0.8.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/226)
 
-All the changes in this release only affect pointer (mouse/ touch) based drag and drop operations.
-It changes some default behaviours (for the better).
+fixed a keyboard related bug - it is now possible to tab back to the dragged item after tabbing to external elements mid drag
 
--   When an element is being dragged outside of any dnd zone, the placeholder element now appears in the original dnd zone in the original index and indicates where the element would land if dropped. This was added for better UX and to address single sortable list use cases.
--   This change includes the introduction of two new triggers, that can be intercepted by the `consider` handler: `DRAGGED_LEFT_ALL` which fires when the placeholder is added to the origin dndzone, and `DRAGGED_ENTERED_ANOTHER` which fires when the placeholder is removed from the origin dnd zone.
--   When drag starts - the library now locks the minimum width and height of the origin dropzone for the duration of the drag operation. This is done in order to prevent the container from shrinking and growing jarringly as the element is dragged around. This is especially helpful when the user drags the last element, which in previous versions could make the dndzone shrink underneath such that the dragged element wasn't over it anymore.
+### [0.8.2](https://github.com/isaacHagoel/svelte-dnd-action/pull/221)
+
+accessibility features now work when the library is dynamically imported (in other words, keyboard navigation now works in the REPL again).
+
+### [0.8.1](https://github.com/isaacHagoel/svelte-dnd-action/pull/220)
+
+Made `dropTargetClasses` when initiating drag via keyboard.
+
+### [v0.8.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/218)
+
+Added a new option, `dropTargetClasses`, that allows adding global classes to a dnd-zone when it is a potential drop target (during drag).
 
 ### [v0.7.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/213)
 
@@ -17,14 +24,11 @@ Same goes for the [crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6
 Starting with this version, the initial consider event (dragStarted) places a placeholder item with a new id instead of the dragged item in the items list (old behaviour: removing the dragged item from the list altogether). The placeholder is replaced with the real shadow element (the one that has the same id as the original item) in the next event (basically instantly).
 This change makes the initial behaviour of large items (relative to their peers) much smoother.
 
-### [v0.8.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/218)
+### [v0.7.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/202)
 
-Added a new option, `dropTargetClasses`, that allows adding global classes to a dnd-zone when it is a potential drop target (during drag).
+All the changes in this release only affect pointer (mouse/ touch) based drag and drop operations.
+It changes some default behaviours (for the better).
 
-### [0.8.1](https://github.com/isaacHagoel/svelte-dnd-action/pull/220)
-
-Made `dropTargetClasses` when initiating drag via keyboard.
-
-### [0.8.2](https://github.com/isaacHagoel/svelte-dnd-action/pull/221)
-
-accessibility features now work when the library is dynamically imported (in other words, it should now work in the REPL).
+-   When an element is being dragged outside of any dnd zone, the placeholder element now appears in the original dnd zone in the original index and indicates where the element would land if dropped. This was added for better UX and to address single sortable list use cases.
+-   This change includes the introduction of two new triggers, that can be intercepted by the `consider` handler: `DRAGGED_LEFT_ALL` which fires when the placeholder is added to the origin dndzone, and `DRAGGED_ENTERED_ANOTHER` which fires when the placeholder is removed from the origin dnd zone.
+-   When drag starts - the library now locks the minimum width and height of the origin dropzone for the duration of the drag operation. This is done in order to prevent the container from shrinking and growing jarringly as the element is dragged around. This is especially helpful when the user drags the last element, which in previous versions could make the dndzone shrink underneath such that the dragged element wasn't over it anymore.

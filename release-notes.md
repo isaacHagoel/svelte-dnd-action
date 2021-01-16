@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.8.6](https://github.com/isaacHagoel/svelte-dnd-action/pull/231)
+
+fixed an issue when dragging an item on top of a droppedFromItemsDisabled zone (it is treated as outside of any now, as it should)
+
 ### [0.8.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/226)
 
 fixed a keyboard related bug - it is now possible to tab back to the dragged item after tabbing to external elements mid drag

@@ -66,7 +66,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
             isDraggedInADropZone = true;
             // the element is over a container
             if (dz !== lastDropZoneFound) {
-                lastDropZoneFound && dispatchDraggedElementLeftContainerForAnother(lastDropZoneFound, draggedEl);
+                lastDropZoneFound && dispatchDraggedElementLeftContainerForAnother(lastDropZoneFound, draggedEl, dz);
                 dispatchDraggedElementEnteredContainer(dz, indexObj, draggedEl);
                 lastDropZoneFound = dz;
             } else if (index !== lastIndexFound) {

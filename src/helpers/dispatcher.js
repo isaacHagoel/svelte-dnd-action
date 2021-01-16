@@ -52,10 +52,15 @@ export function dispatchDraggedElementEnteredContainer(containerEl, indexObj, dr
     );
 }
 
-export function dispatchDraggedElementLeftContainerForAnother(containerEl, draggedEl) {
+/**
+ * @param containerEl - the dropzone the element left
+ * @param draggedEl - the dragged element
+ * @param theOtherDz - the new dropzone the element entered
+ */
+export function dispatchDraggedElementLeftContainerForAnother(containerEl, draggedEl, theOtherDz) {
     containerEl.dispatchEvent(
         new CustomEvent(DRAGGED_LEFT_EVENT_NAME, {
-            detail: {draggedEl, type: DRAGGED_LEFT_TYPES.LEFT_FOR_ANOTHER}
+            detail: {draggedEl, type: DRAGGED_LEFT_TYPES.LEFT_FOR_ANOTHER, theOtherDz}
         })
     );
 }

@@ -125,12 +125,12 @@ function findShadowElementIdx(items) {
 /* custom drag-events handlers */
 function handleDraggedEntered(e) {
     printDebug(() => ["dragged entered", e.currentTarget, e.detail]);
-    isDraggedOutsideOfAnyDz = false;
     let {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
-        printDebug(() => "drop is currently disabled");
+        printDebug(() => "ignoring dragged entered because drop is currently disabled");
         return;
     }
+    isDraggedOutsideOfAnyDz = false;
     // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(item => item[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
     printDebug(() => `dragged entered items ${toString(items)}`);
@@ -169,7 +169,12 @@ function handleDraggedLeft(e) {
     const shadowElIdx = findShadowElementIdx(items);
     const shadowItem = items.splice(shadowElIdx, 1)[0];
     shadowElDropZone = undefined;
-    if (e.detail.type === DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY) {
+    const {type, theOtherDz} = e.detail;
+    if (
+        type === DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY ||
+        (type === DRAGGED_LEFT_TYPES.LEFT_FOR_ANOTHER && theOtherDz !== originDropZone && dzToConfig.get(theOtherDz).dropFromOthersDisabled)
+    ) {
+        printDebug(() => "dragged left all, putting shadow element back in the origin dz");
         isDraggedOutsideOfAnyDz = true;
         shadowElDropZone = originDropZone;
         const originZoneItems = dzToConfig.get(originDropZone).items;

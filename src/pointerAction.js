@@ -266,7 +266,9 @@ function handleDrop() {
         shouldFinalizeDrop = !dispatchConsiderEvent(originDropZone, dzToConfig.get(originDropZone).items, {
             trigger: TRIGGERS.USER_DROPPED,
             id: draggedElData[ITEM_ID_KEY],
-            source: SOURCES.POINTER
+            source: SOURCES.POINTER,
+            draggedElement: draggedEl,
+            pointerClientXY: {...currentMousePosition}
         });
     }
     if (shouldFinalizeDrop) {

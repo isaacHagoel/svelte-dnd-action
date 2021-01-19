@@ -26,7 +26,7 @@ export function dispatchFinalizeEvent(el, items, info) {
  * @param {Info} info
  */
 export function dispatchConsiderEvent(el, items, info) {
-    el.dispatchEvent(
+    return el.dispatchEvent(
         new CustomEvent(CONSIDER_EVENT_NAME, {
             detail: {items, info}
         })

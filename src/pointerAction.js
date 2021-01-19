@@ -261,7 +261,21 @@ function handleDrop() {
         unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    let shouldFinalizeDrop = true;
+    if (isDraggedOutsideOfAnyDz) {
+        shouldFinalizeDrop = !dispatchConsiderEvent(originDropZone, dzToConfig.get(originDropZone).items, {
+            trigger: TRIGGERS.USER_DROPPED,
+            id: draggedElData[ITEM_ID_KEY],
+            source: SOURCES.POINTER
+        });
+    }
+    if (shouldFinalizeDrop) {
+        printDebug(() => "will animate before finalizing drop");
+        animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    } else {
+        finalizeWithinZone();
+        printDebug(() => "dropped outside and event was cancelled, finalizing without animating");
+    }
 }
 
 // helper function for handleDrop

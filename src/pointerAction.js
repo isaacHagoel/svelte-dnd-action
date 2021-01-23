@@ -267,7 +267,6 @@ function handleDrop() {
         cleanupPostDrop();
     }
     let shouldFinalizeDrop = true;
-    console.error("outside of any", isDraggedOutsideOfAnyDz);
     if (isDraggedOutsideOfAnyDz) {
         shouldFinalizeDrop = !dispatchConsiderEvent(originDropZone, dzToConfig.get(originDropZone).items, {
             trigger: TRIGGERS.USER_DROPPED,

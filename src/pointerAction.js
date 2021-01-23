@@ -130,6 +130,7 @@ function handleDraggedEntered(e) {
         printDebug(() => "ignoring dragged entered because drop is currently disabled");
         return;
     }
+    console.warn("entered");
     isDraggedOutsideOfAnyDz = false;
     // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(item => item[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
@@ -170,11 +171,13 @@ function handleDraggedLeft(e) {
     const shadowItem = items.splice(shadowElIdx, 1)[0];
     shadowElDropZone = undefined;
     const {type, theOtherDz} = e.detail;
+    console.error({type});
     if (
         type === DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY ||
         (type === DRAGGED_LEFT_TYPES.LEFT_FOR_ANOTHER && theOtherDz !== originDropZone && dzToConfig.get(theOtherDz).dropFromOthersDisabled)
     ) {
         printDebug(() => "dragged left all, putting shadow element back in the origin dz");
+        console.warn("out of any");
         isDraggedOutsideOfAnyDz = true;
         shadowElDropZone = originDropZone;
         const originZoneItems = dzToConfig.get(originDropZone).items;
@@ -194,12 +197,13 @@ function handleDraggedLeft(e) {
 }
 function handleDraggedIsOverIndex(e) {
     printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
-    isDraggedOutsideOfAnyDz = false;
+    console.warn("over index");
     const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         printDebug(() => "drop is currently disabled");
         return;
     }
+    isDraggedOutsideOfAnyDz = false;
     const {index} = e.detail.indexObj;
     const shadowElIdx = findShadowElementIdx(items);
     items.splice(shadowElIdx, 1);
@@ -219,6 +223,7 @@ function handleMouseMove(e) {
 
 function handleDrop() {
     printDebug(() => "dropped");
+    console.error("drop");
     finalizingPreviousDrag = true;
     // cleanup
     window.removeEventListener("mousemove", handleMouseMove);
@@ -262,6 +267,7 @@ function handleDrop() {
         cleanupPostDrop();
     }
     let shouldFinalizeDrop = true;
+    console.error("outside of any", isDraggedOutsideOfAnyDz);
     if (isDraggedOutsideOfAnyDz) {
         shouldFinalizeDrop = !dispatchConsiderEvent(originDropZone, dzToConfig.get(originDropZone).items, {
             trigger: TRIGGERS.USER_DROPPED,
@@ -270,12 +276,15 @@ function handleDrop() {
             draggedElement: draggedEl,
             pointerClientXY: {...currentMousePosition}
         });
+        console.error("cancelled", !shouldFinalizeDrop);
     }
     if (shouldFinalizeDrop) {
         printDebug(() => "will animate before finalizing drop");
+        console.error("Animation!!");
         animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
     } else {
-        finalizeWithinZone();
+        // requesting animation grame to create separation between the consider and finalize events
+        window.requestAnimationFrame(finalizeWithinZone);
         printDebug(() => "dropped outside and event was cancelled, finalizing without animating");
     }
 }
@@ -296,6 +305,7 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 
 /* cleanup */
 function cleanupPostDrop() {
+    console.warn("cleaning all");
     draggedEl.remove();
     originalDragTarget.remove();
     draggedEl = undefined;
@@ -499,6 +509,7 @@ export function dndzone(node, options) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (idx === shadowElIdx) {
+                if (!currentMousePosition) console.error(shadowElIdx, draggableEl, toString(items));
                 morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () =>
                     config.transformDraggedElement(draggedEl, draggedElData, idx)
                 );

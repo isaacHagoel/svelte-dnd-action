@@ -268,13 +268,18 @@ function handleDrop() {
     }
     let shouldFinalizeDrop = true;
     if (isDraggedOutsideOfAnyDz) {
-        shouldFinalizeDrop = !dispatchConsiderEvent(originDropZone, dzToConfig.get(originDropZone).items, {
-            trigger: TRIGGERS.USER_DROPPED,
-            id: draggedElData[ITEM_ID_KEY],
-            source: SOURCES.POINTER,
-            draggedElement: draggedEl,
-            pointerClientXY: {...currentMousePosition}
-        });
+        shouldFinalizeDrop = dispatchConsiderEvent(
+            originDropZone,
+            dzToConfig.get(originDropZone).items,
+            {
+                trigger: TRIGGERS.USER_DROPPED,
+                id: draggedElData[ITEM_ID_KEY],
+                source: SOURCES.POINTER,
+                draggedElement: draggedEl,
+                pointerClientXY: {...currentMousePosition}
+            },
+            true
+        );
         console.error("cancelled", !shouldFinalizeDrop);
     }
     if (shouldFinalizeDrop) {

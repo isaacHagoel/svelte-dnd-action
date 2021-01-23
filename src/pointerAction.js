@@ -194,12 +194,12 @@ function handleDraggedLeft(e) {
 }
 function handleDraggedIsOverIndex(e) {
     printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
-    isDraggedOutsideOfAnyDz = false;
     const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         printDebug(() => "drop is currently disabled");
         return;
     }
+    isDraggedOutsideOfAnyDz = false;
     const {index} = e.detail.indexObj;
     const shadowElIdx = findShadowElementIdx(items);
     items.splice(shadowElIdx, 1);

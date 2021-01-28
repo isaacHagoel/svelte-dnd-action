@@ -120,7 +120,7 @@ An options-object with the following attributes:
 The action dispatches two custom events:
 
 -   `consider` - dispatched whenever the dragged element needs to make room for itself in a new position in the items list and when it leaves. The host (your component) is expected to update the items list (you can keep a copy of the original list if you need to)
--   `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position. This is the handler you want to [save the items to the server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3.32.0) for example.
+-   `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position. This is the event you want to use to [save the items to the server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3.32.0) for example.
 
 The expectation is the same for both event handlers - update the list of items.
 In both cases the payload (within e.detail) is the same: an object with two attributes: `items` and `info`.

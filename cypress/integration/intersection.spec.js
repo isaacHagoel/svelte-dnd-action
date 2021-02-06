@@ -1,4 +1,4 @@
-import {isCenterOfAInsideB, calcDistanceBetweenCenters, isElementOffDocument} from "../../src/helpers/intersection";
+import {isPointInsideB, calcDistanceBetweenCenters, isElementOffDocument, findCenterOfElement} from "../../src/helpers/intersection";
 
 function makeDiv(widthPx = 50, heightPx = 50) {
     const el = document.createElement("div");
@@ -8,20 +8,20 @@ function makeDiv(widthPx = 50, heightPx = 50) {
 }
 
 describe("intersection", () => {
-    describe("isCenterOfAInsideB", () => {
+    describe("isPointInsideB", () => {
         it("center is inside", () => {
             const el = makeDiv(50, 50);
             document.body.style.width = "1000px";
             document.body.style.height = "1000px";
             document.body.appendChild(el);
-            expect(isCenterOfAInsideB(el, document.body)).to.equal(true);
+            expect(isPointInsideB(findCenterOfElement(el), document.body)).to.equal(true);
         });
         it("center is outside", () => {
             const elA = makeDiv();
             const elB = makeDiv();
             document.body.appendChild(elA);
             document.body.appendChild(elB);
-            expect(isCenterOfAInsideB(elA, elB)).to.equal(false);
+            expect(isPointInsideB(findCenterOfElement(elA), elB)).to.equal(false);
         });
     });
 
@@ -29,7 +29,7 @@ describe("intersection", () => {
         it("distance from self is zero", () => {
             const el = makeDiv();
             document.body.appendChild(el);
-            expect(calcDistanceBetweenCenters(el, el)).to.equal(0);
+            expect(calcDistanceBetweenCenters(findCenterOfElement(el), el)).to.equal(0);
         });
         it("calculates distance correctly", () => {
             const elA = makeDiv(80, 60);
@@ -40,8 +40,8 @@ describe("intersection", () => {
             elB.left = 0;
             document.body.appendChild(elA);
             elA.appendChild(elB);
-            expect(calcDistanceBetweenCenters(elA, elB)).to.equal(25);
-            expect(calcDistanceBetweenCenters(elB, elA)).to.equal(25);
+            expect(calcDistanceBetweenCenters(findCenterOfElement(elA), elB)).to.equal(25);
+            expect(calcDistanceBetweenCenters(findCenterOfElement(elB), elA)).to.equal(25);
         });
     });
 

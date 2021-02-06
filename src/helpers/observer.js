@@ -57,7 +57,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
-            const indexObj = findWouldBeIndex(draggedEl, dz);
+            const indexObj = findWouldBeIndex(currentCenterOfDragged, dz);
             if (indexObj === null) {
                 // it is not inside
                 continue;

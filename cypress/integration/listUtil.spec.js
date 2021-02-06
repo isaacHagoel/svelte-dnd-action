@@ -1,3 +1,4 @@
+import {findCenterOfElement} from "../../src/helpers/intersection";
 import {findWouldBeIndex} from "../../src/helpers/listUtil";
 
 describe("listUtil", () => {
@@ -37,17 +38,17 @@ describe("listUtil", () => {
         it("returns null when element is outside of containers", () => {
             draggedEl.style.top = "600px";
             draggedEl.style.left = "0";
-            expect(findWouldBeIndex(draggedEl, containerEl)).to.equal(null);
+            expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.equal(null);
         });
         it("works correctly, not proximity based", () => {
             draggedEl.style.top = "150px";
             draggedEl.style.left = "5px";
-            expect(findWouldBeIndex(draggedEl, containerEl)).to.deep.equal({index: 1, isProximityBased: false});
+            expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.deep.equal({index: 1, isProximityBased: false});
         });
         it("works correctly, proximity based", () => {
             draggedEl.style.top = "450px";
             draggedEl.style.left = "5px";
-            expect(findWouldBeIndex(draggedEl, containerEl)).to.deep.equal({index: 2, isProximityBased: true});
+            expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.deep.equal({index: 2, isProximityBased: true});
         });
     });
 });

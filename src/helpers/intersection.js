@@ -127,14 +127,13 @@ export function findCenterOfElement(el) {
 }
 
 /**
- * @param {HTMLElement} elA
+ * @param {Point} point
  * @param {HTMLElement} elB
  * @return {boolean}
  */
-export function isCenterOfAInsideB(elA, elB) {
-    const centerOfA = findCenterOfElement(elA);
+export function isPointInsideB(point, elB) {
     const rectOfB = getAbsoluteRectNoTransforms(elB);
-    return isPointInsideRect(centerOfA, rectOfB);
+    return isPointInsideRect(point, rectOfB);
 }
 
 /**
@@ -142,8 +141,7 @@ export function isCenterOfAInsideB(elA, elB) {
  * @param {HTMLElement|ChildNode} elB
  * @return {number}
  */
-export function calcDistanceBetweenCenters(elA, elB) {
-    const centerOfA = findCenterOfElement(elA);
+export function calcDistanceBetweenCenters(centerOfA, elB) {
     const centerOfB = findCenterOfElement(elB);
     return calcDistance(centerOfA, centerOfB);
 }

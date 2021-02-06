@@ -16,13 +16,23 @@ const TOLERANCE_PX = 10;
 const {scrollIfNeeded, resetScrolling} = makeScroller();
 let next;
 
+let mouseX = 0;
+let mouseY = 0;
+
+function onMouseMove(event) {
+    mouseX = event.touches ? event.touches[0].clientX : event.clientX;
+    mouseY = event.touches ? event.touches[0].clientY : event.clientY;
+}
+
 /**
  * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
  * @param {Set<HTMLElement>} dropZones
  * @param {HTMLElement} draggedEl
  * @param {number} [intervalMs = INTERVAL_MS]
  */
-export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
+export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, useTouchPosition = false) {
+    document.body.addEventListener("mousemove", onMouseMove);
+    document.body.addEventListener("touchmove", onMouseMove);
     // initialization
     let lastDropZoneFound;
     let lastIndexFound;
@@ -35,7 +45,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
      * The main function in this module. Tracks where everything is/ should be a take the actions
      */
     function andNow() {
-        const currentCenterOfDragged = findCenterOfElement(draggedEl);
+        const currentCenterOfDragged = useTouchPosition ? {x: mouseX, y: mouseY} : findCenterOfElement(draggedEl);
         const scrolled = scrollIfNeeded(currentCenterOfDragged, lastDropZoneFound);
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         if (
@@ -93,6 +103,8 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
 export function unobserve() {
     printDebug(() => "unobserving");
+    document.body.removeEventListener("mousemove", onMouseMove);
+    document.body.removeEventListener("touchmove", onMouseMove);
     clearTimeout(next);
     resetScrolling();
     resetIndexesCache();

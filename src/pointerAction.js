@@ -98,7 +98,11 @@ function watchDraggedElement() {
         MIN_OBSERVATION_INTERVAL_MS,
         ...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs)
     );
-    observe(draggedEl, dropZones, observationIntervalMs * 1.07);
+    const useTouchPosition = Array.from(dropZones.keys())
+        .map(dz => dzToConfig.get(dz).useTouchPosition)
+        .find(use => use);
+
+    observe(draggedEl, dropZones, observationIntervalMs * 1.07, useTouchPosition);
 }
 function unWatchDraggedElement() {
     printDebug(() => "unwatching dragged element");
@@ -425,7 +429,8 @@ export function dndzone(node, options) {
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
-        transformDraggedElement = () => {}
+        transformDraggedElement = () => {},
+        useTouchPosition = false
     }) {
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
@@ -437,6 +442,7 @@ export function dndzone(node, options) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.transformDraggedElement = transformDraggedElement;
+        config.useTouchPosition = useTouchPosition;
 
         // realtime update for dropTargetStyle
         if (

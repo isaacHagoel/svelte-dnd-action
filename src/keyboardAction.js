@@ -290,7 +290,7 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
 
         node.tabIndex =
-            config.items.length === 0 ||
+            (!isDragging && config.items.length === 0) ||
             (isDragging &&
                 (node === focusedDz ||
                     focusedItem.contains(node) ||

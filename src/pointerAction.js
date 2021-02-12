@@ -130,7 +130,6 @@ function handleDraggedEntered(e) {
         printDebug(() => "ignoring dragged entered because drop is currently disabled");
         return;
     }
-    console.warn("entered");
     isDraggedOutsideOfAnyDz = false;
     // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(item => item[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
@@ -171,13 +170,11 @@ function handleDraggedLeft(e) {
     const shadowItem = items.splice(shadowElIdx, 1)[0];
     shadowElDropZone = undefined;
     const {type, theOtherDz} = e.detail;
-    console.error({type});
     if (
         type === DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY ||
         (type === DRAGGED_LEFT_TYPES.LEFT_FOR_ANOTHER && theOtherDz !== originDropZone && dzToConfig.get(theOtherDz).dropFromOthersDisabled)
     ) {
         printDebug(() => "dragged left all, putting shadow element back in the origin dz");
-        console.warn("out of any");
         isDraggedOutsideOfAnyDz = true;
         shadowElDropZone = originDropZone;
         const originZoneItems = dzToConfig.get(originDropZone).items;
@@ -197,7 +194,6 @@ function handleDraggedLeft(e) {
 }
 function handleDraggedIsOverIndex(e) {
     printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
-    console.warn("over index");
     const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         printDebug(() => "drop is currently disabled");
@@ -223,7 +219,6 @@ function handleMouseMove(e) {
 
 function handleDrop() {
     printDebug(() => "dropped");
-    console.error("drop");
     finalizingPreviousDrag = true;
     // cleanup
     window.removeEventListener("mousemove", handleMouseMove);
@@ -309,7 +304,6 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 
 /* cleanup */
 function cleanupPostDrop() {
-    console.warn("cleaning all");
     draggedEl.remove();
     originalDragTarget.remove();
     draggedEl = undefined;

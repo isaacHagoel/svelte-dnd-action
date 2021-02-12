@@ -120,9 +120,9 @@ An options-object with the following attributes:
 The action dispatches two custom events:
 
 -   `consider` - dispatched whenever the dragged element needs to make room for itself in a new position in the items list and when it leaves. The host (your component) is expected to update the items list (you can keep a copy of the original list if you need to)
--   `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position.
+-   `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position. This is the event you want to use to [save the items to the server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3.32.0) for example.
 
-The expectation is the same - update the list of items.
+The expectation is the same for both event handlers - update the list of items.
 In both cases the payload (within e.detail) is the same: an object with two attributes: `items` and `info`.
 
 -   `items`: contains the updated items list.
@@ -177,6 +177,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 
 -   [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.24.1)
 -   [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3.24.1), courtesy of @gleuch
+-   [Interaction (save/get items) with an asynchronous server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3.32.0)
 -   [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)
 -   [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
 -   [Generic List Component (Alternative to Slots)](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)

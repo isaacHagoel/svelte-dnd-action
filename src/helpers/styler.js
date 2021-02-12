@@ -1,4 +1,5 @@
 import {SHADOW_ELEMENT_ATTRIBUTE_NAME} from "../constants";
+import {findCenter} from "./intersection";
 
 const TRANSITION_DURATION_SECONDS = 0.2;
 
@@ -13,24 +14,36 @@ function trs(property) {
 /**
  * clones the given element and applies proper styles and transitions to the dragged element
  * @param {HTMLElement} originalElement
+ * @param {Point} positionCenterOnXY
  * @return {Node} - the cloned, styled element
  */
-export function createDraggedElementFrom(originalElement) {
+export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     const rect = originalElement.getBoundingClientRect();
     const draggedEl = originalElement.cloneNode(true);
     copyStylesFromTo(originalElement, draggedEl);
     draggedEl.id = `dnd-action-dragged-el`;
     draggedEl.style.position = "fixed";
-    draggedEl.style.top = `${rect.top}px`;
-    draggedEl.style.left = `${rect.left}px`;
+    let elTopPx =  rect.top;
+    let elLeftPx = rect.left;
+    draggedEl.style.top = `${elTopPx}px`;
+    draggedEl.style.left = `${elLeftPx}px`;
+    if (positionCenterOnXY) {
+        const center = findCenter(rect);
+        elTopPx -= center.y - positionCenterOnXY.y;
+        elLeftPx -= center.x - positionCenterOnXY.x;
+        window.setTimeout(() => {
+            draggedEl.style.top = `${elTopPx}px`;
+            draggedEl.style.left = `${elLeftPx}px`;
+        }, 0);
+    }
     draggedEl.style.margin = "0";
     // we can't have relative or automatic height and width or it will break the illusion
     draggedEl.style.boxSizing = "border-box";
     draggedEl.style.height = `${rect.height}px`;
     draggedEl.style.width = `${rect.width}px`;
-    draggedEl.style.transition = `${trs("width")}, ${trs("height")}, ${trs("background-color")}, ${trs("opacity")}, ${trs("color")} `;
+    draggedEl.style.transition = `${trs("top")}, ${trs("left")}, ${trs("background-color")}, ${trs("opacity")}, ${trs("color")} `;
     // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
-    window.setTimeout(() => (draggedEl.style.transition += `, ${trs("top")}, ${trs("left")}`), 0);
+    window.setTimeout(() => (draggedEl.style.transition += `, ${trs("width")}, ${trs("height")}`), 0);
     draggedEl.style.zIndex = "9999";
     draggedEl.style.cursor = "grabbing";
 

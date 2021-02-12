@@ -382,7 +382,7 @@ export function dndzone(node, options) {
         const placeHolderElData = {...shadowElData, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
 
         // creating the draggable element
-        draggedEl = createDraggedElementFrom(originalDragTarget);
+        draggedEl = createDraggedElementFrom(originalDragTarget, currentMousePosition);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
             if (!draggedEl.parentElement) {

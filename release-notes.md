@@ -1,5 +1,7 @@
 ## Svelte Dnd Action - Release Notes
+
 ### [0.9.1](https://github.com/isaacHagoel/svelte-dnd-action/pull/256)
+
 exporting `SHADOW_PLACEHOLDER_ITEM_ID` for easier filtering in recursive zones use-cases
 
 ### [0.9.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/250)

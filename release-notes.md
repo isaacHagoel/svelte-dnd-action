@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.1](https://github.com/isaacHagoel/svelte-dnd-action/pull/256)
+
+exporting `SHADOW_PLACEHOLDER_ITEM_ID` for easier filtering in recursive zones use-cases
+
 ### [0.9.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/250)
 
 added the `centreDraggedOnCursor` option to deal with zones that have large items (wide, tall or both) in them that can be dragged over much smaller items. <br/>

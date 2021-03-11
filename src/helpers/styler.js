@@ -14,7 +14,7 @@ function trs(property) {
 /**
  * clones the given element and applies proper styles and transitions to the dragged element
  * @param {HTMLElement} originalElement
- * @param {Point} positionCenterOnXY
+ * @param {Point} [positionCenterOnXY]
  * @return {Node} - the cloned, styled element
  */
 export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
@@ -23,7 +23,7 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     copyStylesFromTo(originalElement, draggedEl);
     draggedEl.id = `dnd-action-dragged-el`;
     draggedEl.style.position = "fixed";
-    let elTopPx =  rect.top;
+    let elTopPx = rect.top;
     let elLeftPx = rect.left;
     draggedEl.style.top = `${elTopPx}px`;
     draggedEl.style.left = `${elLeftPx}px`;

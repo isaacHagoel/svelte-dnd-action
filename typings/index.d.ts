@@ -25,10 +25,11 @@ export interface Options {
     flipDurationMs?: number; // if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict
     dragDisabled?: boolean;
     dropFromOthersDisabled?: boolean;
-    dropTargetClasses?: [string]
+    dropTargetClasses?: [string];
     dropTargetStyle?: Record<string, string>;
     transformDraggedElement?: TransformDraggedElementFunction;
     autoAriaDisabled?: boolean;
+    centreDraggedOnCursor?: boolean;
 }
 
 /**

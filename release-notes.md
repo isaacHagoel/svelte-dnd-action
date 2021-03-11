@@ -1,5 +1,10 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/250)
+
+added the `centreDraggedOnCursor` option to deal with zones that have large items (wide, tall or both) in them that can be dragged over much smaller items. <br/>
+in these cases, having the center of the items (which is the focal point that triggers all dnd events), and the cursor be the same point makes it more intuitive to drag the large items around.
+
 ### [0.8.6](https://github.com/isaacHagoel/svelte-dnd-action/pull/231)
 
 fixed an issue when dragging an item on top of a droppedFromItemsDisabled zone (it is treated as outside of any now, as it should)

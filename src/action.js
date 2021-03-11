@@ -51,6 +51,7 @@ function validateOptions(options) {
         dropTargetClasses,
         transformDraggedElement,
         autoAriaDisabled,
+        centreDraggedOnCursor,
         ...rest
     } = options;
     /*eslint-enable*/

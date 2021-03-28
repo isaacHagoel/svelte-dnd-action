@@ -160,6 +160,8 @@ function handleDraggedEntered(e) {
 }
 
 function handleDraggedLeft(e) {
+    // dealing with a rare race condition on extremely rapid clicking and dropping
+    if (!isWorkingOnPreviousDrag) return;
     printDebug(() => ["dragged left", e.currentTarget, e.detail]);
     const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {

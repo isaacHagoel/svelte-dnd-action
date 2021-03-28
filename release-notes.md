@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.2](https://github.com/isaacHagoel/svelte-dnd-action/pull/264)
+
+fixed a race condition that could happen under extremely rapid drag-start -> drop while spam-clicking feverishly
+
 ### [0.9.1](https://github.com/isaacHagoel/svelte-dnd-action/pull/256)
 
 exporting `SHADOW_PLACEHOLDER_ITEM_ID` for easier filtering in recursive zones use-cases

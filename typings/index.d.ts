@@ -30,6 +30,7 @@ export interface Options {
     transformDraggedElement?: TransformDraggedElementFunction;
     autoAriaDisabled?: boolean;
     centreDraggedOnCursor?: boolean;
+    customStartEvent?: String;
 }
 
 /**

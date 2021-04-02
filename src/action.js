@@ -52,6 +52,7 @@ function validateOptions(options) {
         transformDraggedElement,
         autoAriaDisabled,
         centreDraggedOnCursor,
+        customStartEvent,
         ...rest
     } = options;
     /*eslint-enable*/

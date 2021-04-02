@@ -310,7 +310,8 @@ export function dndzone(node, options) {
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
         transformDraggedElement: () => {},
-        centreDraggedOnCursor: false
+        centreDraggedOnCursor: false,
+        customStartEvent: ''
     };
     printDebug(() => [`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node}]);
     let elToIdx = new Map();
@@ -367,6 +368,16 @@ export function dndzone(node, options) {
         currentMousePosition = {...dragStartMousePosition};
         originalDragTarget = e.currentTarget;
         addMaybeListeners();
+    }
+
+    function handleCustomEvent(e) {
+        originalDragTarget = e.currentTarget;
+
+        if (e.detail && e.detail.startDragPosition) {
+            dragStartMousePosition = e.detail.startDragPosition;
+            currentMousePosition = {...dragStartMousePosition};
+            handleDragStart();
+        }
     }
 
     function handleDragStart() {
@@ -429,7 +440,8 @@ export function dndzone(node, options) {
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
         transformDraggedElement = () => {},
-        centreDraggedOnCursor = false
+        centreDraggedOnCursor = false,
+        customStartEvent = ''
     }) {
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
@@ -442,6 +454,7 @@ export function dndzone(node, options) {
         config.dragDisabled = dragDisabled;
         config.transformDraggedElement = transformDraggedElement;
         config.centreDraggedOnCursor = centreDraggedOnCursor;
+        config.customStartEvent = customStartEvent;
 
         // realtime update for dropTargetStyle
         if (
@@ -494,11 +507,20 @@ export function dndzone(node, options) {
                 decorateShadowEl(draggableEl);
                 continue;
             }
-            draggableEl.removeEventListener("mousedown", elToMouseDownListener.get(draggableEl));
-            draggableEl.removeEventListener("touchstart", elToMouseDownListener.get(draggableEl));
+            if (config.customStartEvent) {
+                draggableEl.removeEventListener(config.customStartEvent, elToMouseDownListener.get(draggableEl));
+            } else {
+                draggableEl.removeEventListener("mousedown", elToMouseDownListener.get(draggableEl));
+                draggableEl.removeEventListener("touchstart", elToMouseDownListener.get(draggableEl));
+            }
+
             if (!dragDisabled) {
-                draggableEl.addEventListener("mousedown", handleMouseDown);
-                draggableEl.addEventListener("touchstart", handleMouseDown);
+                if (config.customStartEvent) {
+                    draggableEl.addEventListener(config.customStartEvent, handleCustomEvent);
+                } else {
+                    draggableEl.addEventListener("mousedown", handleMouseDown);
+                    draggableEl.addEventListener("touchstart", handleMouseDown);
+                }
                 elToMouseDownListener.set(draggableEl, handleMouseDown);
             }
             // updating the idx

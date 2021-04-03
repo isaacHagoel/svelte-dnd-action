@@ -24,6 +24,7 @@ export interface Options {
     type?: string; // the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, defaults to a base type
     flipDurationMs?: number; // if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict
     dragDisabled?: boolean;
+    morphDisabled?: boolean;
     dropFromOthersDisabled?: boolean;
     dropTargetClasses?: [string];
     dropTargetStyle?: Record<string, string>;

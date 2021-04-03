@@ -14,6 +14,7 @@ import {toString} from "./helpers/util";
  * @property {string} [type] - the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, default to a base type
  * @property {number} [flipDurationMs] - if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
  * @property {boolean} [dragDisabled]
+ * @property {boolean} [morphDisabled] - whether dragged element should morph to zone dimensions
  * @property {boolean} [dropFromOthersDisabled]
  * @property {object} [dropTargetStyle]
  * @property {string[]} [dropTargetClasses]
@@ -46,6 +47,7 @@ function validateOptions(options) {
         flipDurationMs,
         type,
         dragDisabled,
+        morphDisabled,
         dropFromOthersDisabled,
         dropTargetStyle,
         dropTargetClasses,

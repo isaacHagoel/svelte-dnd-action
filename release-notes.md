@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### [0.9.3](https://github.com/isaacHagoel/svelte-dnd-action/pull/fill-here)
+### [0.9.3](https://github.com/isaacHagoel/svelte-dnd-action/pull/273)
 
 exporting `DRAGGED_ELEMENT_ID` to allow targeting the dragged element and its subtree using CSS or to fetch it with `document.getElementById`.
 

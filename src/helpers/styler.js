@@ -1,4 +1,4 @@
-import {SHADOW_ELEMENT_ATTRIBUTE_NAME} from "../constants";
+import {SHADOW_ELEMENT_ATTRIBUTE_NAME, DRAGGED_ELEMENT_ID} from "../constants";
 import {findCenter} from "./intersection";
 
 const TRANSITION_DURATION_SECONDS = 0.2;
@@ -21,7 +21,7 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     const rect = originalElement.getBoundingClientRect();
     const draggedEl = originalElement.cloneNode(true);
     copyStylesFromTo(originalElement, draggedEl);
-    draggedEl.id = `dnd-action-dragged-el`;
+    draggedEl.id = DRAGGED_ELEMENT_ID;
     draggedEl.style.position = "fixed";
     let elTopPx = rect.top;
     let elLeftPx = rect.left;

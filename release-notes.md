@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.3](https://github.com/isaacHagoel/svelte-dnd-action/pull/273)
+
+exporting `DRAGGED_ELEMENT_ID` to allow targeting the dragged element and its subtree using CSS or to fetch it with `document.getElementById`.
+
 ### [0.9.2](https://github.com/isaacHagoel/svelte-dnd-action/pull/264)
 
 fixed a race condition that could happen under extremely rapid drag-start -> drop while spam-clicking feverishly

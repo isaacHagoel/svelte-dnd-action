@@ -21,6 +21,7 @@ export const SOURCES = {
 export const SHADOW_ITEM_MARKER_PROPERTY_NAME = "isDndShadowItem";
 export const SHADOW_ELEMENT_ATTRIBUTE_NAME = "data-is-dnd-shadow-item";
 export const SHADOW_PLACEHOLDER_ITEM_ID = "id:dnd-shadow-placeholder-0000";
+export const DRAGGED_ELEMENT_ID = "dnd-action-dragged-el";
 
 export let ITEM_ID_KEY = "id";
 let activeDndZoneCount = 0;

@@ -136,6 +136,7 @@ You have to listen for both events and update the list of items in order for thi
 
 For advanced use-cases (ex: [custom styling for the placeholder element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)) you might also need to import `SHADOW_ITEM_MARKER_PROPERTY_NAME`, which marks the placeholder element that is temporarily added to the list the dragged element hovers over.
 For use cases that have recursively nested zones (ex: [crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3.35.0)), you might want to import `SHADOW_PLACEHOLDER_ITEM_ID` in order to filter the placeholder out when passing the items in to the nested component.
+If you need to manipulate the dragged element either dynamically (and don't want to use the `transformDraggedElement` option), or statically targeting it or its children with CSS, you can import and use `DRAGGED_ELEMENT_ID`;
 
 ### Accessibility (beta)
 

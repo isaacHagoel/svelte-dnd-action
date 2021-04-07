@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/274)
+
+bug fix - not crashing when a new dnd zone is created mid drag
+
 ### [0.9.3](https://github.com/isaacHagoel/svelte-dnd-action/pull/273)
 
 exporting `DRAGGED_ELEMENT_ID` to allow targeting the dragged element and its subtree using CSS or to fetch it with `document.getElementById`.

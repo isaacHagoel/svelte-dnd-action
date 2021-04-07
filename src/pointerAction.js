@@ -467,18 +467,21 @@ export function dndzone(node, options) {
         config.dropTargetClasses = [...dropTargetClasses];
 
         // realtime update for dropFromOthersDisabled
+        function getConfigProp(dz, propName) {
+            return dzToConfig.get(dz) ? dzToConfig.get(dz)[propName] : config[propName];
+        }
         if (isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
             if (dropFromOthersDisabled) {
                 styleInactiveDropZones(
                     [node],
-                    dz => dzToConfig.get(dz).dropTargetStyle,
-                    dz => dzToConfig.get(dz).dropTargetClasses
+                    dz => getConfigProp(dz, "dropTargetStyle"),
+                    dz => getConfigProp(dz, "dropTargetClasses")
                 );
             } else {
                 styleActiveDropZones(
                     [node],
-                    dz => dzToConfig.get(dz).dropTargetStyle,
-                    dz => dzToConfig.get(dz).dropTargetClasses
+                    dz => getConfigProp(dz, "dropTargetStyle"),
+                    dz => getConfigProp(dz, "dropTargetClasses")
                 );
             }
         }

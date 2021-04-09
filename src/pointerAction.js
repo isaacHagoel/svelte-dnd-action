@@ -442,6 +442,7 @@ export function dndzone(node, options) {
 
         config.items = [...items];
         config.dragDisabled = dragDisabled;
+        config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;
         config.centreDraggedOnCursor = centreDraggedOnCursor;
 

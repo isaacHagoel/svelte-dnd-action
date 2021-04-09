@@ -2,7 +2,7 @@
 
 ### [0.9.5](https://github.com/isaacHagoel/svelte-dnd-action/pull/271)
 
-Added a new option, `morphDisabled`, that allows to disable morphing of dragged item.
+added a new option, `morphDisabled`, that allows to disable morphing of dragged item.
 
 ### [0.9.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/274)
 

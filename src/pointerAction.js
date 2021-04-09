@@ -306,6 +306,7 @@ export function dndzone(node, options) {
         type: undefined,
         flipDurationMs: 0,
         dragDisabled: false,
+        morphDisabled: false,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
@@ -425,6 +426,7 @@ export function dndzone(node, options) {
         flipDurationMs: dropAnimationDurationMs = 0,
         type: newType = DEFAULT_DROP_ZONE_TYPE,
         dragDisabled = false,
+        morphDisabled = false,
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
@@ -440,6 +442,7 @@ export function dndzone(node, options) {
 
         config.items = [...items];
         config.dragDisabled = dragDisabled;
+        config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;
         config.centreDraggedOnCursor = centreDraggedOnCursor;
 
@@ -491,9 +494,11 @@ export function dndzone(node, options) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (idx === shadowElIdx) {
-                morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () =>
-                    config.transformDraggedElement(draggedEl, draggedElData, idx)
-                );
+                if (!morphDisabled) {
+                    morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () =>
+                        config.transformDraggedElement(draggedEl, draggedElData, idx)
+                    );
+                }
                 decorateShadowEl(draggableEl);
                 continue;
             }

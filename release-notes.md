@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.5](https://github.com/isaacHagoel/svelte-dnd-action/pull/271)
+
+added a new option, `morphDisabled`, that allows to disable morphing of dragged item.
+
 ### [0.9.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/274)
 
 bug fix - not crashing when a new dnd zone is created mid drag

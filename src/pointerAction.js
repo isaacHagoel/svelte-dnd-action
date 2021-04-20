@@ -270,6 +270,7 @@ function handleDrop(e) {
         {
             trigger: TRIGGERS.USER_DROPPED,
             id: draggedElData[ITEM_ID_KEY],
+            draggedItemData: {...draggedElData},
             source: SOURCES.POINTER,
             draggedElement: draggedEl,
             isDroppedOutsideOfAnyDzOfType: isDraggedOutsideOfAnyDz,

@@ -109,11 +109,13 @@ An options-object with the following attributes:
 | `flipDurationMs` | Number | No | `0` | The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations |
 | `type` | String | No | Internal | dnd-zones that share the same type can have elements from one dragged into another. By default, all dnd-zones have the same type |
 | `dragDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly |
+| `morphDisabled` | Boolean | No | `false` | By default, when dragging over a zone, the dragged element is morphed to look like it would if dropped. You can prevent it by setting this option. |
 | `dropFromOthersDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drop elements from other dnd-zones of the same type. Can be useful if you want to limit the max number of items for example. You can change it at any time, and the zone will adjust on the fly |
 | `dropTargetStyle` | Object&lt;String&gt; | No | `{outline: 'rgba(255, 255, 102, 0.7) solid 2px'}` | An object of styles to apply to the dnd-zone when items can be dragged into it. Note: the styles override any inline styles applied to the dnd-zone. When the styles are removed, any original inline styles will be lost |
 | `dropTargetClasses`| Array&lt;String&gt; | No | `[]` | A list of classes to apply to the dnd-zone when items can be dragged into it. Note: make sure the classes you use are global. |
 | `transformDraggedElement` | Function | No | `() => {}` | A function that is invoked when the draggable element enters the dnd-zone or hover overs a new index in the current dnd-zone. <br />Signature:<br />function(element, data, index) {}<br />**element**: The dragged element. <br />**data**: The data of the item from the items array.<br />**index**: The index the dragged element will become in the new dnd-zone.<br /><br />This allows you to override properties on the dragged element, such as innerHTML to change how it displays. |
 | `autoAriaDisabled` | Boolean | No | `false` | Setting it to true will disable all the automatically added aria attributes and aria alerts (for example when the user starts/ stops dragging using the keyboard).<br /> **Use it only if you intend to implement your own custom instructions, roles and alerts.** In such a case, you might find the exported function `alertToScreenReader(string)` useful. |
+| `centreDraggedOnCursor` | Boolean | No | `false` | Setting it to true will cause elements from this dnd-zone to position their center on the cursor on drag start, effectively turning the cursor to the focal point that triggers all the dnd events (ex: entering another zone). Useful for dnd-zones with large items that can be dragged over small items. |
 
 ##### Output:
 
@@ -133,7 +135,9 @@ In both cases the payload (within e.detail) is the same: an object with two attr
 
 You have to listen for both events and update the list of items in order for this library to work correctly.
 
-For advanced usecases (ex: [custom styling for the placeholder element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)) you might also need to import SHADOW_ITEM_MARKER_PROPERTY_NAME, which marks the placeholder element that is temporarily added to the list the dragged element hovers over.
+For advanced use-cases (ex: [custom styling for the placeholder element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)) you might also need to import `SHADOW_ITEM_MARKER_PROPERTY_NAME`, which marks the placeholder element that is temporarily added to the list the dragged element hovers over.
+For use cases that have recursively nested zones (ex: [crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3.35.0)), you might want to import `SHADOW_PLACEHOLDER_ITEM_ID` in order to filter the placeholder out when passing the items in to the nested component.
+If you need to manipulate the dragged element either dynamically (and don't want to use the `transformDraggedElement` option), or statically targeting it or its children with CSS, you can import and use `DRAGGED_ELEMENT_ID`;
 
 ### Accessibility (beta)
 

@@ -1,5 +1,30 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.5](https://github.com/isaacHagoel/svelte-dnd-action/pull/271)
+
+added a new option, `morphDisabled`, that allows to disable morphing of dragged item.
+
+### [0.9.4](https://github.com/isaacHagoel/svelte-dnd-action/pull/274)
+
+bug fix - not crashing when a new dnd zone is created mid drag
+
+### [0.9.3](https://github.com/isaacHagoel/svelte-dnd-action/pull/273)
+
+exporting `DRAGGED_ELEMENT_ID` to allow targeting the dragged element and its subtree using CSS or to fetch it with `document.getElementById`.
+
+### [0.9.2](https://github.com/isaacHagoel/svelte-dnd-action/pull/264)
+
+fixed a race condition that could happen under extremely rapid drag-start -> drop while spam-clicking feverishly
+
+### [0.9.1](https://github.com/isaacHagoel/svelte-dnd-action/pull/256)
+
+exporting `SHADOW_PLACEHOLDER_ITEM_ID` for easier filtering in recursive zones use-cases
+
+### [0.9.0](https://github.com/isaacHagoel/svelte-dnd-action/pull/250)
+
+added the `centreDraggedOnCursor` option to deal with zones that have large items (wide, tall or both) in them that can be dragged over much smaller items. <br/>
+in these cases, having the center of the items (which is the focal point that triggers all dnd events), and the cursor be the same point makes it more intuitive to drag the large items around.
+
 ### [0.8.6](https://github.com/isaacHagoel/svelte-dnd-action/pull/231)
 
 fixed an issue when dragging an item on top of a droppedFromItemsDisabled zone (it is treated as outside of any now, as it should)

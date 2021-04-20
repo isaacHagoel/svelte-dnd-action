@@ -24,11 +24,13 @@ export interface Options {
     type?: string; // the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, defaults to a base type
     flipDurationMs?: number; // if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict
     dragDisabled?: boolean;
+    morphDisabled?: boolean;
     dropFromOthersDisabled?: boolean;
-    dropTargetClasses?: [string]
+    dropTargetClasses?: [string];
     dropTargetStyle?: Record<string, string>;
     transformDraggedElement?: TransformDraggedElementFunction;
     autoAriaDisabled?: boolean;
+    centreDraggedOnCursor?: boolean;
 }
 
 /**
@@ -73,6 +75,8 @@ export type DndEvent = {
 };
 
 export declare const SHADOW_ITEM_MARKER_PROPERTY_NAME: "isDndShadowItem";
+export declare const SHADOW_PLACEHOLDER_ITEM_ID: "id:dnd-shadow-placeholder-0000";
+export declare const DRAGGED_ELEMENT_ID: "dnd-action-dragged-el";
 
 /**
  * Allows the user to show/hide console debug output

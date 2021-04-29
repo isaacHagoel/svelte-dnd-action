@@ -105,7 +105,7 @@ npm install --save-dev svelte-dnd-action
 An options-object with the following attributes:
 | Name | Type | Required? | Default Value | Description |
 | ------------------------- | -------------- | ------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
-| `items` | Array&lt;Object&gt; | Yes. Each object in the array **has to have** an `id` property (key name can be overridden globally) with a unique value (within all dnd-zones of the same type) | N/A | The data array that is used to produce the list with the draggable items (the same thing you run your #each block on) |
+| `items` | Array&lt;Object&gt; | Yes. Each object in the array **has to have** an `id` property (key name can be overridden globally) with a unique value (within all dnd-zones of the same type) | N/A | The data array that is used to produce the list with the draggable items (the same thing you run your #each block on). The dndzone should not have children that don't originate in `items` |
 | `flipDurationMs` | Number | No | `0` | The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations |
 | `type` | String | No | Internal | dnd-zones that share the same type can have elements from one dragged into another. By default, all dnd-zones have the same type |
 | `dragDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly |
@@ -113,7 +113,7 @@ An options-object with the following attributes:
 | `dropFromOthersDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drop elements from other dnd-zones of the same type. Can be useful if you want to limit the max number of items for example. You can change it at any time, and the zone will adjust on the fly |
 | `dropTargetStyle` | Object&lt;String&gt; | No | `{outline: 'rgba(255, 255, 102, 0.7) solid 2px'}` | An object of styles to apply to the dnd-zone when items can be dragged into it. Note: the styles override any inline styles applied to the dnd-zone. When the styles are removed, any original inline styles will be lost |
 | `dropTargetClasses`| Array&lt;String&gt; | No | `[]` | A list of classes to apply to the dnd-zone when items can be dragged into it. Note: make sure the classes you use are global. |
-| `transformDraggedElement` | Function | No | `() => {}` | A function that is invoked when the draggable element enters the dnd-zone or hover overs a new index in the current dnd-zone. <br />Signature:<br />function(element, data, index) {}<br />**element**: The dragged element. <br />**data**: The data of the item from the items array.<br />**index**: The index the dragged element will become in the new dnd-zone.<br /><br />This allows you to override properties on the dragged element, such as innerHTML to change how it displays. |
+| `transformDraggedElement` | Function | No | `() => {}` | A function that is invoked when the draggable element enters the dnd-zone or hover overs a new index in the current dnd-zone. <br />Signature:<br />function(element, data, index) {}<br />**element**: The dragged element. <br />**data**: The data of the item from the items array.<br />**index**: The index the dragged element will become in the new dnd-zone.<br /><br />This allows you to override properties on the dragged element, such as innerHTML to change how it displays. If what you are after is altering styles, do it to the children, not to the dragged element itself |
 | `autoAriaDisabled` | Boolean | No | `false` | Setting it to true will disable all the automatically added aria attributes and aria alerts (for example when the user starts/ stops dragging using the keyboard).<br /> **Use it only if you intend to implement your own custom instructions, roles and alerts.** In such a case, you might find the exported function `alertToScreenReader(string)` useful. |
 | `centreDraggedOnCursor` | Boolean | No | `false` | Setting it to true will cause elements from this dnd-zone to position their center on the cursor on drag start, effectively turning the cursor to the focal point that triggers all the dnd events (ex: entering another zone). Useful for dnd-zones with large items that can be dragged over small items. |
 
@@ -177,6 +177,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   [Selectively enable/disable drag/drop](https://svelte.dev/repl/44c9229556f3456e9883c10fc0aa0ee9?version=3)
 -   [Custom active dropzone styling](https://svelte.dev/repl/4ceecc5bae54490b811bd62d4d613e59?version=3.24.1)
 -   [Customizing the dragged element](https://svelte.dev/repl/438fca28bb1f4eb1b34eff9dc6a728dc?version=3)
+-   [Styling the dragged element](https://svelte.dev/repl/3d8be94b2bbd407c8a706d5054c8df6a?version=3.22.2)
 -   [Customizing the placeholder(shadow) element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)
 
 -   [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.24.1)
@@ -186,6 +187,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
 -   [Generic List Component (Alternative to Slots)](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)
 -   [Maitaining internal scroll poisition on scrollable dragabble](https://svelte.dev/repl/eb2f5988bd2f46488810606c1fb13392?version=3.29.4)
+-   [Scrabble like board using over a 100 single slot dnd-zones](https://svelte.dev/repl/ed2e138417094281be6db1aef23d7859?version=3.37.0)
 
 -   [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
 -   [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)
@@ -195,8 +197,11 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   Only one element can be dragged in any given time
 -   The data that represents items within dnd-zones **of the same type** is expected to have the same shape (as in a data object that represents an item in one container can be added to another without conversion).
 -   Item ids (#each keys) are unique in all dnd containers of the same type. EVERY DRAGGABLE ITEM (passed in through `items`) MUST HAVE AN ID PROPERTY CALLED `id`. You can override it globally if you'd like to use a different key (see below)
--   The items in the list that is passed-in are in the same order as the children of the container (i.e the items are rendered in an #each block).
--   The host component should refresh the items that are passed in to the custom-action when receiving consider and finalize events.
+-   Item ids are provided as the key for the #each block (no keyless each blocks please)
+-   If you need to make a copy an item, you allocate a new id for the copy upon creation.
+-   The items in the list that is passed-in are in the same order as the children of the container (i.e the items are rendered in an #each block), and the container has no extra (and no fewer) children.
+-   Any data that should "survive" when the items are dragged around and dropped should be included in the `items` array that is passed in.
+-   The host component must refresh the items that are passed in to the custom-action when receiving consider and finalize events (do not omit any handler).
 -   FYI, the library assumes it is okay to add a temporary item to the items list in any of the dnd-zones while an element is dragged around.
 -   If you want dragged items to be able to scroll the container, make sure the scroll-container (the element with overflow:scroll) is the dnd-zone (the element decorated with this custom action)
 -   Svelte's built-in transitions might not play nice with this library. Luckily, it is an easy issue to work around. There are examples below.

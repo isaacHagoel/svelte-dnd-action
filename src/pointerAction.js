@@ -164,7 +164,7 @@ function handleDraggedLeft(e) {
     if (!isWorkingOnPreviousDrag) return;
     printDebug(() => ["dragged left", e.currentTarget, e.detail]);
     const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
-    if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
+    if (dropFromOthersDisabled && e.currentTarget !== originDropZone && e.currentTarget !== shadowElDropZone) {
         printDebug(() => "drop is currently disabled");
         return;
     }

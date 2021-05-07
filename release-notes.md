@@ -1,5 +1,5 @@
 ## Svelte Dnd Action - Release Notes
-### [0.9.7](https://github.com/isaacHagoel/svelte-dnd-action/pull/*)
+### [0.9.7](https://github.com/isaacHagoel/svelte-dnd-action/pull/290)
 
 bugfix - works properly now when dropFromOtherDisabled is set to true while the shadow element is in the zone 
 

@@ -378,6 +378,9 @@ export function dndzone(node, options) {
         const currentIdx = elToIdx.get(originalDragTarget);
         originIndex = currentIdx;
         originDropZone = originalDragTarget.parentElement;
+        /** @type {ShadowRoot | HTMLDocument} */
+        const rootNode = originDropZone.getRootNode();
+        const originDropZoneRoot = rootNode.body || rootNode;
         const {items, type, centreDraggedOnCursor} = config;
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
@@ -390,12 +393,12 @@ export function dndzone(node, options) {
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
             if (!draggedEl.parentElement) {
-                document.body.appendChild(draggedEl);
+                originDropZoneRoot.appendChild(draggedEl);
                 // to prevent the outline from disappearing
                 draggedEl.focus();
                 watchDraggedElement();
                 hideOriginalDragTarget(originalDragTarget);
-                document.body.appendChild(originalDragTarget);
+                originDropZoneRoot.appendChild(originalDragTarget);
             } else {
                 window.requestAnimationFrame(keepOriginalElementInDom);
             }

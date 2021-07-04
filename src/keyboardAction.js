@@ -290,11 +290,12 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
 
         node.tabIndex =
-            isDragging &&
-            (node === focusedDz ||
-                focusedItem.contains(node) ||
-                config.dropFromOthersDisabled ||
-                (focusedDz && config.type !== dzToConfig.get(focusedDz).type))
+            (!isDragging && config.items.length === 0) ||
+            (isDragging &&
+                (node === focusedDz ||
+                    focusedItem.contains(node) ||
+                    config.dropFromOthersDisabled ||
+                    (focusedDz && config.type !== dzToConfig.get(focusedDz).type)))
                 ? -1
                 : 0;
         node.addEventListener("focus", handleZoneFocus);

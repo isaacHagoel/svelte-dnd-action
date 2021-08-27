@@ -266,6 +266,7 @@ export function dndzone(node, options) {
         items = [],
         type: newType = DEFAULT_DROP_ZONE_TYPE,
         dragDisabled = false,
+        zoneTabIndex = 0,
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
@@ -274,6 +275,7 @@ export function dndzone(node, options) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.dropFromOthersDisabled = dropFromOthersDisabled;
+        config.zoneTabIndex = zoneTabIndex;
         config.dropTargetStyle = dropTargetStyle;
         config.dropTargetClasses = dropTargetClasses;
         config.autoAriaDisabled = autoAriaDisabled;
@@ -289,14 +291,18 @@ export function dndzone(node, options) {
         registerDropZone(node, newType);
         dzToConfig.set(node, config);
 
-        node.tabIndex =
-            isDragging &&
-            (node === focusedDz ||
+        if (isDragging) {
+            node.tabIndex =
+                node === focusedDz ||
                 focusedItem.contains(node) ||
                 config.dropFromOthersDisabled ||
-                (focusedDz && config.type !== dzToConfig.get(focusedDz).type))
+                (focusedDz && config.type !== dzToConfig.get(focusedDz).type)
                 ? -1
                 : 0;
+        } else {
+            node.tabIndex = config.zoneTabIndex;
+        }
+
         node.addEventListener("focus", handleZoneFocus);
 
         for (let i = 0; i < node.children.length; i++) {

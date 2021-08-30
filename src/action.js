@@ -72,7 +72,7 @@ function validateOptions(options) {
     if (dropTargetClasses && !Array.isArray(dropTargetClasses)) {
         throw new Error(`dropTargetClasses should be an array but instead it is a ${typeof dropTargetClasses}, ${toString(dropTargetClasses)}`);
     }
-    if (!isInt(zoneTabIndex)) {
+    if (zoneTabIndex && !isInt(zoneTabIndex)) {
         throw new Error(`zoneTabIndex should be a number but instead it is a ${typeof zoneTabIndex}, ${toString(zoneTabIndex)}`);
     }
 }

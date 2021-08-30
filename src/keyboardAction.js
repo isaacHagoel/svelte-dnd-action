@@ -153,7 +153,7 @@ export function dndzone(node, options) {
         items: undefined,
         type: undefined,
         dragDisabled: false,
-        zoneTabIndex = 0,
+        zoneTabIndex: 0,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],

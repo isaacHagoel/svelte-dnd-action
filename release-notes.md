@@ -1,8 +1,12 @@
 ## Svelte Dnd Action - Release Notes
 
-### [0.9.10](https://github.com/isaacHagoel/svelte-dnd-action/pull/315/)
+### [0.9.11](https://github.com/isaacHagoel/svelte-dnd-action/pull/315/)
 
 added a new option, `zoneTabIndex`, that allows to set custom tabindex in the list container.
+
+### 0.9.10 
+
+Please do not use. It was deployed with unintended changes
 
 ### [0.9.9](https://github.com/isaacHagoel/svelte-dnd-action/pull/301)
 

@@ -16,6 +16,7 @@ import {toString} from "./helpers/util";
  * @property {boolean} [dragDisabled]
  * @property {boolean} [morphDisabled] - whether dragged element should morph to zone dimensions
  * @property {boolean} [dropFromOthersDisabled]
+ * @property {number} [zoneTabIndex] - set the tabindex of the list container when not dragging
  * @property {object} [dropTargetStyle]
  * @property {string[]} [dropTargetClasses]
  * @property {function} [transformDraggedElement]
@@ -49,6 +50,7 @@ function validateOptions(options) {
         dragDisabled,
         morphDisabled,
         dropFromOthersDisabled,
+        zoneTabIndex,
         dropTargetStyle,
         dropTargetClasses,
         transformDraggedElement,
@@ -70,4 +72,11 @@ function validateOptions(options) {
     if (dropTargetClasses && !Array.isArray(dropTargetClasses)) {
         throw new Error(`dropTargetClasses should be an array but instead it is a ${typeof dropTargetClasses}, ${toString(dropTargetClasses)}`);
     }
+    if (zoneTabIndex && !isInt(zoneTabIndex)) {
+        throw new Error(`zoneTabIndex should be a number but instead it is a ${typeof zoneTabIndex}, ${toString(zoneTabIndex)}`);
+    }
+}
+
+function isInt(value) {
+    return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value));
 }

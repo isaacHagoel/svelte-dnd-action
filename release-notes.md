@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.10](https://github.com/isaacHagoel/svelte-dnd-action/pull/315/)
+
+added a new option, `zoneTabIndex`, that allows to set custom tabindex in the list container.
+
 ### [0.9.9](https://github.com/isaacHagoel/svelte-dnd-action/pull/301)
 
 bugfix - works properly when under shadow dom

@@ -1,68 +1,38 @@
-import {isCenterOfAInsideB, calcDistanceBetweenCenters, getAbsoluteRectNoTransforms, isPointInsideRect, findCenterOfElement} from "./intersection";
-import {printDebug, SHADOW_ELEMENT_ATTRIBUTE_NAME} from "../constants";
+import { isCenterOfAInsideB, calcDistanceBetweenCenters } from "./intersection";
+import { SHADOW_ELEMENT_ATTRIBUTE_NAME } from "../constants";
 
-let dzToShadowIndexToRect;
-
-/**
- * Resets the cache that allows for smarter "would be index" resolution. Should be called after every drag operation
- */
-export function resetIndexesCache() {
-    printDebug(() => "resetting indexes cache");
-    dzToShadowIndexToRect = new Map();
-}
-resetIndexesCache();
-
-/**
- * Caches the coordinates of the shadow element when it's in a certain index in a certain dropzone.
- * Helpful in order to determine "would be index" more effectively
- * @param {HTMLElement} dz
- * @return {number} - the shadow element index
- */
-function cacheShadowRect(dz) {
-    const shadowElIndex = Array.from(dz.children).findIndex(child => child.getAttribute(SHADOW_ELEMENT_ATTRIBUTE_NAME));
-    if (shadowElIndex >= 0) {
-        if (!dzToShadowIndexToRect.has(dz)) {
-            dzToShadowIndexToRect.set(dz, new Map());
-        }
-        dzToShadowIndexToRect.get(dz).set(shadowElIndex, getAbsoluteRectNoTransforms(dz.children[shadowElIndex]));
-        return shadowElIndex;
-    }
-    return undefined;
-}
-
-/**
- * @typedef {Object} Index
- * @property {number} index - the would be index
- * @property {boolean} isProximityBased - false if the element is actually over the index, true if it is not over it but this index is the closest
- */
 /**
  * Find the index for the dragged element in the list it is dragged over
  * @param {HTMLElement} floatingAboveEl
  * @param {HTMLElement} collectionBelowEl
  * @returns {Index|null} -  if the element is over the container the Index object otherwise null
  */
-export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
+export function findWouldBeIndex(floatingAboveEl, collectionBelowEl, directionChanged) {
     if (!isCenterOfAInsideB(floatingAboveEl, collectionBelowEl)) {
         return null;
     }
     const children = collectionBelowEl.children;
     // the container is empty, floating element should be the first
     if (children.length === 0) {
-        return {index: 0, isProximityBased: true};
+        return { index: 0, isProximityBased: true };
     }
-    const shadowElIndex = cacheShadowRect(collectionBelowEl);
-
+    const shadowElIndex = getShadowIdx(collectionBelowEl);
     // the search could be more efficient but keeping it simple for now
     // a possible improvement: pass in the lastIndex it was found in and check there first, then expand from there
     for (let i = 0; i < children.length; i++) {
         if (isCenterOfAInsideB(floatingAboveEl, children[i])) {
-            const cachedShadowRect = dzToShadowIndexToRect.has(collectionBelowEl) && dzToShadowIndexToRect.get(collectionBelowEl).get(i);
-            if (cachedShadowRect) {
-                if (!isPointInsideRect(findCenterOfElement(floatingAboveEl), cachedShadowRect)) {
-                    return {index: shadowElIndex, isProximityBased: false};
-                }
+            // if last dragged
+
+            let bellowEl = children[i];
+            let lastBellowEl = getLastBellowEl(collectionBelowEl);
+            memLastBellowEl(collectionBelowEl, bellowEl);
+            let bellowElChanged = lastBellowEl !== bellowEl;
+
+            if (directionChanged || (lastBellowEl !== undefined && bellowElChanged)) {
+                return { index: i, isProximityBased: false };
+            } else {
+                return { index: shadowElIndex, isProximityBased: false };
             }
-            return {index: i, isProximityBased: false};
         }
     }
     // this can happen if there is space around the children so the floating element has
@@ -77,5 +47,27 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
             indexOfMin = i;
         }
     }
-    return {index: indexOfMin, isProximityBased: true};
+    return { index: indexOfMin, isProximityBased: true };
+}
+
+let cache = new Map();
+export function resetCache() {
+    cache = new Map();
+}
+
+function getShadowIdx(dz) {
+    const shadowElIndex = Array.from(dz.children).findIndex(child => child.getAttribute(SHADOW_ELEMENT_ATTRIBUTE_NAME));
+    return shadowElIndex;
+}
+function memLastBellowEl(dz, bellowEl) {
+    if (!cache.has(dz)) {
+        cache.set(dz, new Map());
+    }
+    cache.get(dz).set('lastBellowEl', bellowEl);
+}
+function getLastBellowEl(dz) {
+    if (!cache.has(dz)) {
+        cache.set(dz, new Map());
+    }
+    return cache.get(dz).get('lastBellowEl');
 }

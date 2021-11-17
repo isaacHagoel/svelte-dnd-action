@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.12](https://github.com/isaacHagoel/svelte-dnd-action/pull/328/)
+
+added a link example for a basic implementation of multi-drag in the README
+
 ### [0.9.11](https://github.com/isaacHagoel/svelte-dnd-action/pull/315/)
 
 added a new option, `zoneTabIndex`, that allows to set custom tabindex in the list container.

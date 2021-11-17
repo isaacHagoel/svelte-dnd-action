@@ -189,6 +189,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   [Generic List Component (Alternative to Slots)](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)
 -   [Maitaining internal scroll poisition on scrollable dragabble](https://svelte.dev/repl/eb2f5988bd2f46488810606c1fb13392?version=3.29.4)
 -   [Scrabble like board using over a 100 single slot dnd-zones](https://svelte.dev/repl/ed2e138417094281be6db1aef23d7859?version=3.37.0)
+-   [Select multiple elements to drag (multi-drag) with mouse or keyboard](https://svelte.dev/repl/c4eb917bb8df42c4b17402a7dda54856?version=3.24.1)
 
 -   [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
 -   [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)

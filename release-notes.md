@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.13](https://github.com/isaacHagoel/svelte-dnd-action/pull/331/)
+
+fixed the typescript type for dropTargetClasses
+
 ### [0.9.12](https://github.com/isaacHagoel/svelte-dnd-action/pull/328/)
 
 added a link example for a basic implementation of multi-drag in the README
@@ -8,7 +12,7 @@ added a link example for a basic implementation of multi-drag in the README
 
 added a new option, `zoneTabIndex`, that allows to set custom tabindex in the list container.
 
-### 0.9.10 
+### 0.9.10
 
 Please do not use. It was deployed with unintended changes
 

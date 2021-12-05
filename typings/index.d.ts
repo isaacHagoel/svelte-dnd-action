@@ -27,7 +27,7 @@ export interface Options {
     morphDisabled?: boolean;
     dropFromOthersDisabled?: boolean;
     zoneTabIndex?: number; // set the tabindex of the list container when not dragging
-    dropTargetClasses?: [string];
+    dropTargetClasses?: string[];
     dropTargetStyle?: Record<string, string>;
     transformDraggedElement?: TransformDraggedElementFunction;
     autoAriaDisabled?: boolean;

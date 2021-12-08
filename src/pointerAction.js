@@ -372,10 +372,15 @@ export function dndzone(node, options) {
 
     function handleDragStart() {
         printDebug(() => [`drag start config: ${toString(config)}`, originalDragTarget]);
+        if (originalDragTarget.getAttribute("data-dndzone-drag-disabled") === "true") {
+            printDebug(() => "drag disabled for element: ", originalDragTarget);
+            return;
+        }
         isWorkingOnPreviousDrag = true;
 
         // initialising globals
         const currentIdx = elToIdx.get(originalDragTarget);
+        console.log({originalDragTarget});
         originIndex = currentIdx;
         originDropZone = originalDragTarget.parentElement;
         /** @type {ShadowRoot | HTMLDocument} */

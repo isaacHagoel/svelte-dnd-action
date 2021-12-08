@@ -284,6 +284,10 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 function cleanupPostDrop() {
     draggedEl.remove();
     originalDragTarget.remove();
+    cleanVariables();
+}
+
+function cleanVariables() {
     draggedEl = undefined;
     originalDragTarget = undefined;
     draggedElData = undefined;
@@ -344,7 +348,7 @@ export function dndzone(node, options) {
             Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX
         ) {
             removeMaybeListeners();
-            handleDragStart();
+            handleDragStart(e);
         }
     }
     function handleMouseDown(e) {
@@ -372,21 +376,24 @@ export function dndzone(node, options) {
 
     function handleDragStart() {
         printDebug(() => [`drag start config: ${toString(config)}`, originalDragTarget]);
-        if (originalDragTarget.getAttribute("data-dndzone-drag-disabled") === "true") {
-            printDebug(() => "drag disabled for element: ", originalDragTarget);
-            return;
-        }
+        const {items, type, centreDraggedOnCursor} = config;
         isWorkingOnPreviousDrag = true;
 
         // initialising globals
         const currentIdx = elToIdx.get(originalDragTarget);
-        console.log({originalDragTarget});
+        if (!items[currentIdx]) {
+            cleanVariables();
+            return;
+        }
+        if (items[currentIdx].dragDisabled === true) {
+            cleanVariables();
+            return;
+        }
         originIndex = currentIdx;
         originDropZone = originalDragTarget.parentElement;
         /** @type {ShadowRoot | HTMLDocument} */
         const rootNode = originDropZone.getRootNode();
         const originDropZoneRoot = rootNode.body || rootNode;
-        const {items, type, centreDraggedOnCursor} = config;
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
         shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true};

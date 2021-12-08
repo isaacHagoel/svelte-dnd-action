@@ -51,7 +51,7 @@
                         {item.name}
                     </div>
                 {/each}
-                <div class="card nonmovingcard" data-dndzone-drag-disabled="true">
+                <div class="card nonmovingcard">
                     <input bind:value={newItem} />
                     <button on:click={() => pushItem(column.id)}> Add </button>
                 </div>
@@ -102,13 +102,10 @@
     .nonmovingcard {
         background-color: #dddddf;
         padding: 10px;
+        cursor: default !important;
     }
 
     .nonmovingcard input {
         max-width: 50%;
-    }
-
-    [data-dndzone-drag-disabled="true"] {
-        cursor: default !important;
     }
 </style>

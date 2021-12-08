@@ -7,7 +7,8 @@
             items: [
                 {id: 41, name: "item41"},
                 {id: 42, name: "item42"},
-                {id: 43, name: "item43"}
+                {id: 43, name: "item43"},
+                {id: 44, name: "item44", dragDisabled: true}
             ]
         },
         {

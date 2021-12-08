@@ -6,9 +6,6 @@ import {toString} from "./helpers/util";
 import {printDebug} from "./constants";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
-const DEFAULT_DROP_TARGET_STYLE = {
-    outline: "rgba(255, 255, 102, 0.7) solid 2px"
-};
 
 let isDragging = false;
 let draggedItemType;
@@ -155,7 +152,7 @@ export function dndzone(node, options) {
         dragDisabled: false,
         zoneTabIndex: 0,
         dropFromOthersDisabled: false,
-        dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
+        dropTargetStyle: {},
         dropTargetClasses: [],
         autoAriaDisabled: false
     };
@@ -269,7 +266,7 @@ export function dndzone(node, options) {
         dragDisabled = false,
         zoneTabIndex = 0,
         dropFromOthersDisabled = false,
-        dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
+        dropTargetStyle = {},
         dropTargetClasses = [],
         autoAriaDisabled = false
     }) {
@@ -298,8 +295,8 @@ export function dndzone(node, options) {
                 focusedItem.contains(node) ||
                 config.dropFromOthersDisabled ||
                 (focusedDz && config.type !== dzToConfig.get(focusedDz).type)
-                ? -1
-                : 0;
+                    ? -1
+                    : 0;
         } else {
             node.tabIndex = config.zoneTabIndex;
         }

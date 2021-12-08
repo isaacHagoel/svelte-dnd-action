@@ -284,10 +284,10 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 function cleanupPostDrop() {
     draggedEl.remove();
     originalDragTarget.remove();
-    cleanVariables();
+    cleanupVariables();
 }
 
-function cleanVariables() {
+function cleanupVariables() {
     draggedEl = undefined;
     originalDragTarget = undefined;
     draggedElData = undefined;
@@ -376,19 +376,21 @@ export function dndzone(node, options) {
 
     function handleDragStart() {
         printDebug(() => [`drag start config: ${toString(config)}`, originalDragTarget]);
-        const {items, type, centreDraggedOnCursor} = config;
-        isWorkingOnPreviousDrag = true;
-
         // initialising globals
+        const {items, type, centreDraggedOnCursor} = config;
+
         const currentIdx = elToIdx.get(originalDragTarget);
         if (!items[currentIdx]) {
-            cleanVariables();
+            cleanupVariables();
             return;
         }
         if (items[currentIdx].dragDisabled === true) {
-            cleanVariables();
+            cleanupVariables();
             return;
         }
+
+        isWorkingOnPreviousDrag = true;
+
         originIndex = currentIdx;
         originDropZone = originalDragTarget.parentElement;
         /** @type {ShadowRoot | HTMLDocument} */

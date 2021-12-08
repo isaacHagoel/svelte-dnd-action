@@ -384,10 +384,6 @@ export function dndzone(node, options) {
             cleanupVariables();
             return;
         }
-        if (items[currentIdx].dragDisabled === true) {
-            cleanupVariables();
-            return;
-        }
 
         isWorkingOnPreviousDrag = true;
 

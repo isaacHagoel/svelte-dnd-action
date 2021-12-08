@@ -2,7 +2,7 @@
 
 ### [0.9.14](https://github.com/isaacHagoel/svelte-dnd-action/pull/{number}/)
 
-added the `dragDisabled` option
+allows non-draggable elements on the dropdzoe
 
 ### [0.9.13](https://github.com/isaacHagoel/svelte-dnd-action/pull/331/)
 

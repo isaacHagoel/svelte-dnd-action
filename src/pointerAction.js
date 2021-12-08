@@ -348,7 +348,7 @@ export function dndzone(node, options) {
             Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX
         ) {
             removeMaybeListeners();
-            handleDragStart(e);
+            handleDragStart();
         }
     }
     function handleMouseDown(e) {

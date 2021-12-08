@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.14](https://github.com/isaacHagoel/svelte-dnd-action/pull/{number}/)
+
+allows non-draggable elements on the dropdzoe
+
 ### [0.9.13](https://github.com/isaacHagoel/svelte-dnd-action/pull/331/)
 
 fixed the typescript type for dropTargetClasses

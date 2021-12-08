@@ -174,6 +174,12 @@ export function dndzone(node, options) {
                 if ((e.target.disabled !== undefined || e.target.href || e.target.isContentEditable) && !allDragTargets.has(e.target)) {
                     return;
                 }
+                const {items} = dzToConfig.get(node);
+                const children = Array.from(node.children);
+                const idx = children.indexOf(e.currentTarget);
+                if (!items[idx]) {
+                    break;
+                }
                 e.preventDefault(); // preventing scrolling on spacebar
                 e.stopPropagation();
                 if (isDragging) {
@@ -193,12 +199,18 @@ export function dndzone(node, options) {
                 const {items} = dzToConfig.get(node);
                 const children = Array.from(node.children);
                 const idx = children.indexOf(e.currentTarget);
+                if (!items[idx]) {
+                    break;
+                }
                 printDebug(() => ["arrow down", idx]);
                 if (idx < children.length - 1) {
+                    if (!items[idx + 1]) {
+                        break;
+                    }
+                    swap(items, idx, idx + 1);
                     if (!config.autoAriaDisabled) {
                         alertToScreenReader(`Moved item ${focusedItemLabel} to position ${idx + 2} in the list ${focusedDzLabel}`);
                     }
-                    swap(items, idx, idx + 1);
                     dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
                 }
                 break;
@@ -211,8 +223,14 @@ export function dndzone(node, options) {
                 const {items} = dzToConfig.get(node);
                 const children = Array.from(node.children);
                 const idx = children.indexOf(e.currentTarget);
+                if (!items[idx]) {
+                    break;
+                }
                 printDebug(() => ["arrow up", idx]);
                 if (idx > 0) {
+                    if (!items[idx - 1]) {
+                        break;
+                    }
                     if (!config.autoAriaDisabled) {
                         alertToScreenReader(`Moved item ${focusedItemLabel} to position ${idx} in the list ${focusedDzLabel}`);
                     }
@@ -225,7 +243,14 @@ export function dndzone(node, options) {
     }
     function handleDragStart(e) {
         printDebug(() => "drag start");
-        setCurrentFocusedItem(e.currentTarget);
+        const {items, children, focusedItemIdx} = setCurrentFocusedItem(e.currentTarget);
+        focusedItemId = items[focusedItemIdx][ITEM_ID_KEY];
+        if (!focusedItemId) {
+            return;
+        }
+        focusedItem = e.currentTarget;
+        focusedItem.tabIndex = 0;
+        focusedItemLabel = children[focusedItemIdx].getAttribute("aria-label") || "";
         focusedDz = node;
         draggedItemType = config.type;
         isDragging = true;
@@ -253,14 +278,13 @@ export function dndzone(node, options) {
         handleDrop(false);
         handleDragStart(e);
     }
+
     function setCurrentFocusedItem(draggableEl) {
         const {items} = dzToConfig.get(node);
         const children = Array.from(node.children);
         const focusedItemIdx = children.indexOf(draggableEl);
-        focusedItem = draggableEl;
-        focusedItem.tabIndex = 0;
-        focusedItemId = items[focusedItemIdx][ITEM_ID_KEY];
-        focusedItemLabel = children[focusedItemIdx].getAttribute("aria-label") || "";
+
+        return {items, children, focusedItemIdx};
     }
 
     function configure({
@@ -298,8 +322,8 @@ export function dndzone(node, options) {
                 focusedItem.contains(node) ||
                 config.dropFromOthersDisabled ||
                 (focusedDz && config.type !== dzToConfig.get(focusedDz).type)
-                ? -1
-                : 0;
+                    ? -1
+                    : 0;
         } else {
             node.tabIndex = config.zoneTabIndex;
         }
@@ -321,7 +345,7 @@ export function dndzone(node, options) {
                 draggableEl.addEventListener("click", handleClick);
                 elToFocusListeners.set(draggableEl, handleClick);
             }
-            if (isDragging && config.items[i][ITEM_ID_KEY] === focusedItemId) {
+            if (isDragging && config.items[i] && config.items[i][ITEM_ID_KEY] === focusedItemId) {
                 printDebug(() => ["focusing on", {i, focusedItemId}]);
                 // if it is a nested dropzone, it was re-rendered and we need to refresh our pointer
                 focusedItem = draggableEl;

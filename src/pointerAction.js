@@ -284,6 +284,10 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 function cleanupPostDrop() {
     draggedEl.remove();
     originalDragTarget.remove();
+    cleanupVariables();
+}
+
+function cleanupVariables() {
     draggedEl = undefined;
     originalDragTarget = undefined;
     draggedElData = undefined;
@@ -372,16 +376,22 @@ export function dndzone(node, options) {
 
     function handleDragStart() {
         printDebug(() => [`drag start config: ${toString(config)}`, originalDragTarget]);
+        // initialising globals
+        const {items, type, centreDraggedOnCursor} = config;
+
+        const currentIdx = elToIdx.get(originalDragTarget);
+        if (!items[currentIdx]) {
+            cleanupVariables();
+            return;
+        }
+
         isWorkingOnPreviousDrag = true;
 
-        // initialising globals
-        const currentIdx = elToIdx.get(originalDragTarget);
         originIndex = currentIdx;
         originDropZone = originalDragTarget.parentElement;
         /** @type {ShadowRoot | HTMLDocument} */
         const rootNode = originDropZone.getRootNode();
         const originDropZoneRoot = rootNode.body || rootNode;
-        const {items, type, centreDraggedOnCursor} = config;
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
         shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true};

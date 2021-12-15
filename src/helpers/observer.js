@@ -1,5 +1,5 @@
-import {findWouldBeIndex, resetIndexesCache} from "./listUtil";
-import {findCenterOfElement, isElementOffDocument} from "./intersection";
+import { findWouldBeIndex, resetCache } from "./listUtil";
+import { findCenterOfElement, isElementOffDocument } from "./intersection";
 import {
     dispatchDraggedElementEnteredContainer,
     dispatchDraggedElementLeftContainerForAnother,
@@ -7,13 +7,13 @@ import {
     dispatchDraggedLeftDocument,
     dispatchDraggedElementIsOverIndex
 } from "./dispatcher";
-import {makeScroller} from "./scroller";
-import {getDepth} from "./util";
-import {printDebug} from "../constants";
+import { makeScroller } from "./scroller";
+import { getDepth } from "./util";
+import { printDebug } from "../constants";
 
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
-const {scrollIfNeeded, resetScrolling} = makeScroller();
+const { scrollIfNeeded, resetScrolling } = makeScroller();
 let next;
 
 /**
@@ -24,12 +24,30 @@ let next;
  */
 export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
     // initialization
+    resetCache();
     let lastDropZoneFound;
     let lastIndexFound;
     let lastIsDraggedInADropZone = false;
     let lastCentrePositionOfDragged;
     // We are sorting to make sure that in case of nested zones of the same type the one "on top" is considered first
     const dropZonesFromDeepToShallow = Array.from(dropZones).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
+
+    let lastDirection = {
+        y: undefined,
+        x: undefined
+    };
+    function directionInversed(direction) {
+        let result = false;
+
+        if (lastDirection.y === 0 || lastDirection.y === undefined ) {
+            result = false;
+        } else if (lastDirection.y !== direction.y) {
+            result = true;
+        }
+
+        lastDirection = direction;
+        return result;
+    }
 
     /**
      * The main function in this module. Tracks where everything is/ should be a take the actions
@@ -47,6 +65,13 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
             next = window.setTimeout(andNow, intervalMs);
             return;
         }
+        
+        const dragDirection = resolveDirection(currentCenterOfDragged, lastCentrePositionOfDragged ?? currentCenterOfDragged);
+        
+        const isDirectionInversed = directionInversed(dragDirection);
+        const hasDirectionChanged = dragDirection.y === 0 || isDirectionInversed;
+
+
         if (isElementOffDocument(draggedEl)) {
             printDebug(() => "off document");
             dispatchDraggedLeftDocument(draggedEl);
@@ -57,12 +82,12 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
-            const indexObj = findWouldBeIndex(draggedEl, dz);
+            const indexObj = findWouldBeIndex(draggedEl, dz, hasDirectionChanged);
             if (indexObj === null) {
                 // it is not inside
                 continue;
             }
-            const {index} = indexObj;
+            const { index } = indexObj;
             isDraggedInADropZone = true;
             // the element is over a container
             if (dz !== lastDropZoneFound) {
@@ -90,10 +115,29 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
     andNow();
 }
 
+function resolveDirection(currentCenterOfDragged, lastCentrePositionOfDragged) {
+    let result = {
+        x: undefined,
+        y: undefined
+    };
+
+    for (const axis of ['x', 'y']) {
+        if (currentCenterOfDragged[axis] === lastCentrePositionOfDragged[axis]) {
+            result[axis] = 0;
+        } else {
+            result[axis] = currentCenterOfDragged[axis] > lastCentrePositionOfDragged[axis]
+                ? 1
+                : -1;
+        }
+    }
+
+    return result;
+}
+
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
 export function unobserve() {
     printDebug(() => "unobserving");
     clearTimeout(next);
     resetScrolling();
-    resetIndexesCache();
+    resetCache();
 }

@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.14](https://github.com/isaacHagoel/svelte-dnd-action/pull/340/)
+
+fixed an issue with items sometimes not making way for the dragged element after autoscroll
+
 ### [0.9.13](https://github.com/isaacHagoel/svelte-dnd-action/pull/331/)
 
 fixed the typescript type for dropTargetClasses

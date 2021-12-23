@@ -1,4 +1,4 @@
-import {findWouldBeIndex, resetIndexesCache} from "./listUtil";
+import {findWouldBeIndex, resetIndexesCache, resetIndexesCacheForDz} from "./listUtil";
 import {findCenterOfElement, isElementOffDocument} from "./intersection";
 import {
     dispatchDraggedElementEnteredContainer,
@@ -57,6 +57,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
+            if (scrolled) resetIndexesCacheForDz(lastDropZoneFound);
             const indexObj = findWouldBeIndex(draggedEl, dz);
             if (indexObj === null) {
                 // it is not inside

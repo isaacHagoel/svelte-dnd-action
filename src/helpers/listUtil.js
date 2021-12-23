@@ -13,6 +13,15 @@ export function resetIndexesCache() {
 resetIndexesCache();
 
 /**
+ * Resets the cache that allows for smarter "would be index" resolution for a specific dropzone, should be called after the zone was scrolled
+ * @param {HTMLElement} dz
+ */
+export function resetIndexesCacheForDz(dz) {
+    printDebug(() => "resetting indexes cache for dz");
+    dzToShadowIndexToRect.delete(dz);
+}
+
+/**
  * Caches the coordinates of the shadow element when it's in a certain index in a certain dropzone.
  * Helpful in order to determine "would be index" more effectively
  * @param {HTMLElement} dz

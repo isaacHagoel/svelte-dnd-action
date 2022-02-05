@@ -47,6 +47,15 @@ export function initAria() {
     }
     return {...INSTRUCTION_IDs};
 }
+
+/**
+ * Removes all the artifacts (dom elements) added by this module
+ * @return {null}
+ */
+export function destroyAria() {
+    if (isOnServer) return null;
+    [ALERT_DIV_ID, ...INSTRUCTION_IDs].forEach(id => document.getElementById(id)?.remove());
+}
 function instructionToHiddenDiv(id, txt) {
     const div = document.createElement("div");
     div.id = id;

@@ -1,7 +1,7 @@
 import {decrementActiveDropZoneCount, incrementActiveDropZoneCount, ITEM_ID_KEY, SOURCES, TRIGGERS} from "./constants";
 import {styleActiveDropZones, styleInactiveDropZones} from "./helpers/styler";
 import {dispatchConsiderEvent, dispatchFinalizeEvent} from "./helpers/dispatcher";
-import {initAria, alertToScreenReader} from "./helpers/aria";
+import {initAria, alertToScreenReader, destroyAria} from "./helpers/aria";
 import {toString} from "./helpers/util";
 import {printDebug} from "./constants";
 
@@ -29,13 +29,14 @@ const typeToDropZones = new Map();
  * maybe keep focus on the last dragged item upon drop?
  */
 
-const INSTRUCTION_IDs = initAria();
+let INSTRUCTION_IDs;
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
     printDebug(() => "registering drop-zone if absent");
     if (typeToDropZones.size === 0) {
         printDebug(() => "adding global keydown and click handlers");
+        INSTRUCTION_IDs = initAria();
         window.addEventListener("keydown", globalKeyDownHandler);
         window.addEventListener("click", globalClickHandler);
     }
@@ -61,6 +62,8 @@ function unregisterDropZone(dropZoneEl, type) {
         printDebug(() => "removing global keydown and click handlers");
         window.removeEventListener("keydown", globalKeyDownHandler);
         window.removeEventListener("click", globalClickHandler);
+        INSTRUCTION_IDs = undefined;
+        destroyAria();
     }
 }
 
@@ -280,16 +283,16 @@ export function dndzone(node, options) {
         config.dropTargetStyle = dropTargetStyle;
         config.dropTargetClasses = dropTargetClasses;
         config.autoAriaDisabled = autoAriaDisabled;
-        if (!autoAriaDisabled) {
-            node.setAttribute("aria-disabled", dragDisabled);
-            node.setAttribute("role", "list");
-            node.setAttribute("aria-describedby", dragDisabled ? INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED : INSTRUCTION_IDs.DND_ZONE_ACTIVE);
-        }
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
         }
         config.type = newType;
         registerDropZone(node, newType);
+        if (!autoAriaDisabled) {
+            node.setAttribute("aria-disabled", dragDisabled);
+            node.setAttribute("role", "list");
+            node.setAttribute("aria-describedby", dragDisabled ? INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED : INSTRUCTION_IDs.DND_ZONE_ACTIVE);
+        }
         dzToConfig.set(node, config);
 
         if (isDragging) {
@@ -298,8 +301,8 @@ export function dndzone(node, options) {
                 focusedItem.contains(node) ||
                 config.dropFromOthersDisabled ||
                 (focusedDz && config.type !== dzToConfig.get(focusedDz).type)
-                ? -1
-                : 0;
+                    ? -1
+                    : 0;
         } else {
             node.tabIndex = config.zoneTabIndex;
         }

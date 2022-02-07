@@ -54,8 +54,9 @@ export function initAria() {
  */
 export function destroyAria() {
     if (isOnServer) return null;
-    [ALERT_DIV_ID, ...INSTRUCTION_IDs].forEach(id => document.getElementById(id)?.remove());
+    [ALERT_DIV_ID, ...Object.keys(ID_TO_INSTRUCTION)].forEach(id => document.getElementById(id)?.remove());
 }
+
 function instructionToHiddenDiv(id, txt) {
     const div = document.createElement("div");
     div.id = id;

@@ -13,6 +13,10 @@ const ALERT_DIV_ID = "dnd-action-aria-alert";
 let alertsDiv;
 
 function initAriaOnBrowser() {
+    if (alertsDiv) {
+        // it is already initialized
+        return;
+    }
     // setting the dynamic alerts
     alertsDiv = document.createElement("div");
     (function initAlertsDiv() {
@@ -50,11 +54,12 @@ export function initAria() {
 
 /**
  * Removes all the artifacts (dom elements) added by this module
- * @return {null}
  */
 export function destroyAria() {
-    if (isOnServer) return null;
-    [ALERT_DIV_ID, ...Object.keys(ID_TO_INSTRUCTION)].forEach(id => document.getElementById(id)?.remove());
+    if (isOnServer || !alertsDiv) return;
+    Object.keys(ID_TO_INSTRUCTION).forEach(id => document.getElementById(id)?.remove());
+    alertsDiv.remove();
+    alertsDiv = undefined;
 }
 
 function instructionToHiddenDiv(id, txt) {
@@ -72,6 +77,10 @@ function instructionToHiddenDiv(id, txt) {
  * @param {string} txt
  */
 export function alertToScreenReader(txt) {
+    if (isOnServer) return;
+    if (!alertsDiv) {
+        initAriaOnBrowser();
+    }
     alertsDiv.innerHTML = "";
     const alertText = document.createTextNode(txt);
     alertsDiv.appendChild(alertText);

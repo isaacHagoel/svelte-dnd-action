@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.15](https://github.com/isaacHagoel/svelte-dnd-action/pull/350)
+
+made the aria support more friendly for multi-page apps (ex: SvelteKit) by having the lib lazy init and clean up the aria divs when the last instance is removed
+
 ### [0.9.14](https://github.com/isaacHagoel/svelte-dnd-action/pull/340/)
 
 fixed an issue with items sometimes not making way for the dragged element after autoscroll

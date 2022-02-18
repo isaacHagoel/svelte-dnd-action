@@ -206,7 +206,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   The host component must refresh the items that are passed in to the custom-action when receiving consider and finalize events (do not omit any handler).
 -   FYI, the library assumes it is okay to add a temporary item to the items list in any of the dnd-zones while an element is dragged around.
 -   If you want dragged items to be able to scroll the container, make sure the scroll-container (the element with overflow:scroll) is the dnd-zone (the element decorated with this custom action)
--   Svelte's built-in transitions might not play nice with this library. Luckily, it is an easy issue to work around. There are examples below.
+-   Svelte's built-in transitions might not play nice with this library. Luckily, it is an easy issue to work around. There are examples above.
 
 ### Overriding the item id key name
 

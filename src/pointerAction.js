@@ -301,6 +301,7 @@ function cleanupPostDrop() {
 }
 
 export function dndzone(node, options) {
+    let initialized = false;
     const config = {
         items: undefined,
         type: undefined,
@@ -442,7 +443,6 @@ export function dndzone(node, options) {
         }
         config.type = newType;
         registerDropZone(node, newType);
-
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.morphDisabled = morphDisabled;
@@ -451,6 +451,7 @@ export function dndzone(node, options) {
 
         // realtime update for dropTargetStyle
         if (
+            initialized &&
             isWorkingOnPreviousDrag &&
             !finalizingPreviousDrag &&
             (!areObjectsShallowEqual(dropTargetStyle, config.dropTargetStyle) ||
@@ -474,7 +475,7 @@ export function dndzone(node, options) {
         function getConfigProp(dz, propName) {
             return dzToConfig.get(dz) ? dzToConfig.get(dz)[propName] : config[propName];
         }
-        if (isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
+        if (initialized && isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
             if (dropFromOthersDisabled) {
                 styleInactiveDropZones(
                     [node],
@@ -514,6 +515,10 @@ export function dndzone(node, options) {
             }
             // updating the idx
             elToIdx.set(draggableEl, idx);
+
+            if (!initialized) {
+                initialized = true;
+            }
         }
     }
     configure(options);

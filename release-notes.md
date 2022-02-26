@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.16](https://github.com/isaacHagoel/svelte-dnd-action/pull/356)
+
+fixed a bug that made dropTargetClasses and dropTarget styles work incorrectly when applied to nested zones
+
 ### [0.9.15](https://github.com/isaacHagoel/svelte-dnd-action/pull/350)
 
 made the aria support more friendly for multi-page apps (ex: SvelteKit) by having the lib lazy init and clean up the aria divs when the last instance is removed

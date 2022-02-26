@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.17](https://github.com/isaacHagoel/svelte-dnd-action/pull/320)
+
+fix: dropdowns (select elements) will now maintain their value during drag
+
 ### [0.9.16](https://github.com/isaacHagoel/svelte-dnd-action/pull/356)
 
 fixed a bug that made dropTargetClasses and dropTarget styles work incorrectly when applied to nested zones

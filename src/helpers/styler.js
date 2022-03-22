@@ -136,7 +136,7 @@ export function styleDraggable(draggableEl, dragDisabled) {
  * Hides the provided element so that it can stay in the dom without interrupting
  * @param {HTMLElement} dragTarget
  */
-export function hideOriginalDragTarget(dragTarget) {
+export function hideElement(dragTarget) {
     dragTarget.style.display = "none";
     dragTarget.style.position = "fixed";
     dragTarget.style.zIndex = "-5";

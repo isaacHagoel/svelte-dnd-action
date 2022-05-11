@@ -207,7 +207,7 @@ function handleDraggedIsOverIndex(e) {
     const shadowElIdx = findShadowElementIdx(items);
     items.splice(shadowElIdx, 1);
     items.splice(index, 0, shadowElData);
-    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
+    dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER, index});
 }
 
 // Global mouse/touch-events handlers

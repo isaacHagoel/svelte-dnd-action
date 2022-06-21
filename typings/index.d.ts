@@ -70,8 +70,8 @@ export interface DndEventInfo {
     source: SOURCES; // the type of interaction that the user used to perform the dnd operation
 }
 
-export type DndEvent = {
-    items: Item[];
+export type DndEvent<T = Item> = {
+    items: T[];
     info: DndEventInfo;
 };
 

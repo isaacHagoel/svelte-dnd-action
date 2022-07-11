@@ -1,5 +1,8 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.19](https://github.com/isaacHagoel/svelte-dnd-action/pull/382)
+enhancement: DndEvent now allows the use of generics.
+
 ### [0.9.18](https://github.com/isaacHagoel/svelte-dnd-action/pull/365)
 fix: if a drop zone is removed mid-drag it was causing the lib to throw errors
 

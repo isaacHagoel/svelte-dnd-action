@@ -285,6 +285,35 @@ Then you will be able to use the library with type safety as follows (Typescript
 </section>
 ```
 
+#### Custom types with `DndEvent<T>`
+
+You can use generics to set the type of `items` you are expecting in `DndEvent`. Simply add a type to it like so: `DndEvent<Dog>`. For example:
+
+```html
+<script lang="ts">
+    import {dndzone} from "svelte-dnd-action";
+    import {flip} from "svelte/animate";
+
+    interface Dog {
+        id: number;
+        name: string;
+        breed: string;
+    }
+
+    function handleSort(e: CustomEvent<DndEvent<Dog>>) {
+        //e.detail.items now evaluates to type Dog.
+        items = e.detail.items;
+    }
+
+	let items: Dog[] = [
+		{ id: 1, name: 'Fido', breed: 'bulldog' },
+		{ id: 2, name: 'Spot', breed: 'labrador' },
+		{ id: 3, name: 'Jacky', breed: 'golden retriever' }
+	];
+</script>
+```
+
+
 ### Contributing [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/isaacHagoel/svelte-dnd-action/issues)
 
 There is still quite a lot to do. If you'd like to contribute please get in touch (raise an issue or comment on an existing one).

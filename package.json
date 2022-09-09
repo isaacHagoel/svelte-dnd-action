@@ -40,7 +40,7 @@
         "dist"
     ],
     "description": "*An awesome drag and drop library for Svelte 3 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
-    "version": "0.9.19",
+    "version": "0.9.20",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"

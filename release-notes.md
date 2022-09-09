@@ -1,5 +1,8 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.20](https://github.com/isaacHagoel/svelte-dnd-action/pull/401)
+update README to fix global.d.ts example
+
 ### [0.9.19](https://github.com/isaacHagoel/svelte-dnd-action/pull/382)
 enhancement: DndEvent now allows the use of generics.
 

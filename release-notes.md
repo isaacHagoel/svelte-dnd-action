@@ -1,12 +1,19 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.21](https://github.com/isaacHagoel/svelte-dnd-action/pull/405)
+
+transformDraggedElement is called even if morphing is disabled and a bug that has to do with morphing is now fixed (it was moving the element before styling it)
+
 ### [0.9.20](https://github.com/isaacHagoel/svelte-dnd-action/pull/401)
+
 update README to fix global.d.ts example
 
 ### [0.9.19](https://github.com/isaacHagoel/svelte-dnd-action/pull/382)
+
 enhancement: DndEvent now allows the use of generics.
 
 ### [0.9.18](https://github.com/isaacHagoel/svelte-dnd-action/pull/365)
+
 fix: if a drop zone is removed mid-drag it was causing the lib to throw errors
 
 ### [0.9.17](https://github.com/isaacHagoel/svelte-dnd-action/pull/320)

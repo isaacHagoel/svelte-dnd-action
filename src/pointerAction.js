@@ -297,7 +297,7 @@ function cleanupPostDrop() {
         scheduledForRemovalAfterDrop.forEach(({dz, destroy}) => {
             destroy();
             dz.remove();
-        })
+        });
         scheduledForRemovalAfterDrop = [];
     }
     draggedEl = undefined;
@@ -514,10 +514,9 @@ export function dndzone(node, options) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (idx === shadowElIdx) {
+                config.transformDraggedElement(draggedEl, draggedElData, idx);
                 if (!morphDisabled) {
-                    morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y, () =>
-                        config.transformDraggedElement(draggedEl, draggedElData, idx)
-                    );
+                    morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
                 }
                 decorateShadowEl(draggableEl);
                 continue;
@@ -554,7 +553,7 @@ export function dndzone(node, options) {
                 printDebug(() => "pointer dndzone will be scheduled for destruction");
                 scheduleDZForRemovalAfterDrop(node, destroyDz);
             } else {
-               destroyDz();
+                destroyDz();
             }
         }
     };

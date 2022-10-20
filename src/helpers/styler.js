@@ -1,6 +1,6 @@
 import {SHADOW_ELEMENT_ATTRIBUTE_NAME, DRAGGED_ELEMENT_ID} from "../constants";
 import {findCenter} from "./intersection";
-import { svelteNodeClone } from "./svelteNodeClone";
+import {svelteNodeClone} from "./svelteNodeClone";
 
 const TRANSITION_DURATION_SECONDS = 0.2;
 
@@ -65,9 +65,9 @@ export function moveDraggedElementToWasDroppedState(draggedEl) {
  * @param {HTMLElement} copyFromEl - the element the dragged element should look like, typically the shadow element
  * @param {number} currentMouseX
  * @param {number} currentMouseY
- * @param {function} transformDraggedElement - function to transform the dragged element, does nothing by default.
  */
-export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY, transformDraggedElement) {
+export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY) {
+    copyStylesFromTo(copyFromEl, draggedEl);
     const newRect = copyFromEl.getBoundingClientRect();
     const draggedElRect = draggedEl.getBoundingClientRect();
     const widthChange = newRect.width - draggedElRect.width;
@@ -82,10 +82,6 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
         draggedEl.style.left = `${parseFloat(draggedEl.style.left) - relativeDistanceOfMousePointerFromDraggedSides.left * widthChange}px`;
         draggedEl.style.top = `${parseFloat(draggedEl.style.top) - relativeDistanceOfMousePointerFromDraggedSides.top * heightChange}px`;
     }
-
-    /// other properties
-    copyStylesFromTo(copyFromEl, draggedEl);
-    transformDraggedElement();
 }
 
 /**

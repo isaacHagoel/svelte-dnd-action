@@ -26,6 +26,9 @@
         "rollup-plugin-babel": "^4.3.2",
         "rollup-plugin-copy": "^3.3.0"
     },
+    "peerDependencies": {
+        "svelte": ">=3.23.0"
+    },
     "keywords": [
         "svelte",
         "drag and drop",
@@ -40,7 +43,7 @@
         "dist"
     ],
     "description": "*An awesome drag and drop library for Svelte 3 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
-    "version": "0.9.21",
+    "version": "0.9.22",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"

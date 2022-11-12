@@ -6,7 +6,7 @@ See full features list below. <br />
 
 ![dnd_demo2](https://user-images.githubusercontent.com/20507787/81682367-267eb780-9498-11ea-8dbc-5c9582033522.gif)
 
-[Play with this example in the REPL](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3.22.2).
+[Play with this example in the REPL](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3).
 
 ### Current Status
 
@@ -30,11 +30,11 @@ It is being actively maintained.
 ### Why a svelte action rather than a higher order component?
 
 A custom action allows for a much more elegant API (no slot props thanks god) as well as more control. <br />
-If you prefer a generic dnd list component that accepts different child components as your abstraction, you can very easily wrap this library with one (see [here](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)).
+If you prefer a generic dnd list component that accepts different child components as your abstraction, you can very easily wrap this library with one (see [here](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3)).
 
 ### Installation
 
-**Pre-requisites**: svelte-3
+**Pre-requisites**: svelte-3 (>=3.23.0)
 
 ```bash
 yarn add -D svelte-dnd-action
@@ -123,7 +123,7 @@ An options-object with the following attributes:
 The action dispatches two custom events:
 
 -   `consider` - dispatched whenever the dragged element needs to make room for itself in a new position in the items list and when it leaves. The host (your component) is expected to update the items list (you can keep a copy of the original list if you need to)
--   `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position. This is the event you want to use to [save the items to the server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3.32.0) for example.
+-   `finalize` - dispatched on the target and origin dnd-zones when the dragged element is dropped into position. This is the event you want to use to [save the items to the server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3) for example.
 
 The expectation is the same for both event handlers - update the list of items.
 In both cases the payload (within e.detail) is the same: an object with two attributes: `items` and `info`.
@@ -137,7 +137,7 @@ In both cases the payload (within e.detail) is the same: an object with two attr
 You have to listen for both events and update the list of items in order for this library to work correctly.
 
 For advanced use-cases (ex: [custom styling for the placeholder element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)) you might also need to import `SHADOW_ITEM_MARKER_PROPERTY_NAME`, which marks the placeholder element that is temporarily added to the list the dragged element hovers over.
-For use cases that have recursively nested zones (ex: [crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3.35.0)), you might want to import `SHADOW_PLACEHOLDER_ITEM_ID` in order to filter the placeholder out when passing the items in to the nested component.
+For use cases that have recursively nested zones (ex: [crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3)), you might want to import `SHADOW_PLACEHOLDER_ITEM_ID` in order to filter the placeholder out when passing the items in to the nested component.
 If you need to manipulate the dragged element either dynamically (and don't want to use the `transformDraggedElement` option), or statically targeting it or its children with CSS, you can import and use `DRAGGED_ELEMENT_ID`;
 
 ### Accessibility (beta)
@@ -156,7 +156,7 @@ For example:
 
 If you don't provide the aria-labels everything will still work, but the messages to the user will be less informative.
 _Note_: in general you probably want to use semantic-html (ex: `ol` and `li` elements rather than `section` and `div`) but the library is screen readers friendly regardless (or at least that's the goal :)).
-If you want to implement your own custom screen-reader alerts, roles and instructions, you can use the `autoAriaDisabled` options and wire everything up yourself using markup and the `consider` and `finalize` handlers (for example: [unsortable list](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)).
+If you want to implement your own custom screen-reader alerts, roles and instructions, you can use the `autoAriaDisabled` options and wire everything up yourself using markup and the `consider` and `finalize` handlers (for example: [unsortable list](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3)).
 
 ##### Keyboard support
 
@@ -171,28 +171,28 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 
 ### Examples and Recipes
 
--   [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3.24.1)
--   [Super basic, single list, with animation](https://svelte.dev/repl/3d544791e5c24fd4aa1eb983d749f776?version=3.24.1)
--   [Multiple dndzones, multiple types](https://svelte.dev/repl/4d23eb3b9e184b90b58f0867010ad258?version=3.24.1)
--   [Board (nested zones and multiple types), scrolling containers, scrolling page](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3.22.2)
+-   [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3)
+-   [Super basic, single list, with animation](https://svelte.dev/repl/3d544791e5c24fd4aa1eb983d749f776?version=3)
+-   [Multiple dndzones, multiple types](https://svelte.dev/repl/4d23eb3b9e184b90b58f0867010ad258?version=3)
+-   [Board (nested zones and multiple types), scrolling containers, scrolling page](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3)
 -   [Selectively enable/disable drag/drop](https://svelte.dev/repl/44c9229556f3456e9883c10fc0aa0ee9?version=3)
--   [Custom active dropzone styling](https://svelte.dev/repl/4ceecc5bae54490b811bd62d4d613e59?version=3.24.1)
+-   [Custom active dropzone styling](https://svelte.dev/repl/4ceecc5bae54490b811bd62d4d613e59?version=3)
 -   [Customizing the dragged element](https://svelte.dev/repl/438fca28bb1f4eb1b34eff9dc6a728dc?version=3)
--   [Styling the dragged element](https://svelte.dev/repl/3d8be94b2bbd407c8a706d5054c8df6a?version=3.22.2)
+-   [Styling the dragged element](https://svelte.dev/repl/3d8be94b2bbd407c8a706d5054c8df6a?version=3)
 -   [Customizing the placeholder(shadow) element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)
 
--   [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3.24.1)
--   [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3.24.1), courtesy of @gleuch
--   [Interaction (save/get items) with an asynchronous server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3.32.0)
--   [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3.29.0)
+-   [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3)
+-   [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3), courtesy of @gleuch
+-   [Interaction (save/get items) with an asynchronous server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3)
+-   [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3)
 -   [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
--   [Generic List Component (Alternative to Slots)](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3.31.0)
--   [Maitaining internal scroll poisition on scrollable dragabble](https://svelte.dev/repl/eb2f5988bd2f46488810606c1fb13392?version=3.29.4)
--   [Scrabble like board using over a 100 single slot dnd-zones](https://svelte.dev/repl/ed2e138417094281be6db1aef23d7859?version=3.37.0)
--   [Select multiple elements to drag (multi-drag) with mouse or keyboard](https://svelte.dev/repl/c4eb917bb8df42c4b17402a7dda54856?version=3.24.1)
+-   [Generic List Component (Alternative to Slots)](https://svelte.dev/repl/028674733f67409c94bd52995d5906f1?version=3)
+-   [Maitaining internal scroll poisition on scrollable dragabble](https://svelte.dev/repl/eb2f5988bd2f46488810606c1fb13392?version=3)
+-   [Scrabble like board using over a 100 single slot dnd-zones](https://svelte.dev/repl/ed2e138417094281be6db1aef23d7859?version=3)
+-   [Select multiple elements to drag (multi-drag) with mouse or keyboard](https://svelte.dev/repl/c4eb917bb8df42c4b17402a7dda54856?version=3)
 
--   [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3.24.1)
--   [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3.24.1)
+-   [Fade in/out but without using Svelte transitions](https://svelte.dev/repl/3f1e68203ef140969a8240eba3475a8d?version=3)
+-   [Nested fade in/out without using Svelte transitions](https://svelte.dev/repl/49b09aedfe0543b4bc8f575c8dbf9a53?version=3)
 
 ### Rules/ assumptions to keep in mind
 

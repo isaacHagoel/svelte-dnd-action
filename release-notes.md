@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.22](https://github.com/isaacHagoel/svelte-dnd-action/pull/410)
+
+Fix repl examples in Readme. Add svelte >=3.23.0 as peerDependency  
+
 ### [0.9.21](https://github.com/isaacHagoel/svelte-dnd-action/pull/405)
 
 transformDraggedElement is called even if morphing is disabled and a bug that has to do with morphing is now fixed (it was moving the element before styling it)

@@ -46,8 +46,10 @@ export function makeScroller() {
                 scrollingInfo.directionObj = {x: 0, y: -1};
                 scrollingInfo.stepPx = calcScrollStepPx(distances.top);
             }
-            if (!isAlreadyScrolling && scrollingVertically) {
-                scrollContainer(elementToScroll);
+            if (scrollingVertically) {
+                if (!isAlreadyScrolling) {
+                    scrollContainer(elementToScroll);
+                }
                 return true;
             }
         }
@@ -62,8 +64,10 @@ export function makeScroller() {
                 scrollingInfo.directionObj = {x: -1, y: 0};
                 scrollingInfo.stepPx = calcScrollStepPx(distances.left);
             }
-            if (!isAlreadyScrolling && scrollingHorizontally) {
-                scrollContainer(elementToScroll);
+            if (scrollingHorizontally) {
+                if (!isAlreadyScrolling) {
+                    scrollContainer(elementToScroll);
+                }
                 return true;
             }
         }

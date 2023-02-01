@@ -12,6 +12,10 @@ import {toString} from "./helpers/util";
  * @typedef {object} Options
  * @property {array} items - the list of items that was used to generate the children of the given node (the list used in the #each block
  * @property {string} [type] - the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, default to a base type
+ * @property {string} [cursorStartDrag]
+ * @property {string} [cursorDragging]
+ * @property {string} [cursorDrop]
+ * @property {string} [cursorHover]
  * @property {number} [flipDurationMs] - if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
  * @property {boolean} [dragDisabled]
  * @property {boolean} [morphDisabled] - whether dragged element should morph to zone dimensions
@@ -47,6 +51,10 @@ function validateOptions(options) {
         items,
         flipDurationMs,
         type,
+        cursorStartDrag,
+        cursorDragging,
+        cursorDrop,
+        cursorHover,
         dragDisabled,
         morphDisabled,
         dropFromOthersDisabled,
@@ -78,5 +86,10 @@ function validateOptions(options) {
 }
 
 function isInt(value) {
-    return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value));
+    return (
+        !isNaN(value) &&
+        (function (x) {
+            return (x | 0) === x;
+        })(parseFloat(value))
+    );
 }

@@ -18,7 +18,7 @@ function trs(property) {
  * @param {Point} [positionCenterOnXY]
  * @return {Node} - the cloned, styled element
  */
-export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
+export function createDraggedElementFrom(originalElement, positionCenterOnXY, cursorStyle) {
     const rect = originalElement.getBoundingClientRect();
     const draggedEl = svelteNodeClone(originalElement);
     copyStylesFromTo(originalElement, draggedEl);
@@ -46,7 +46,7 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
     window.setTimeout(() => (draggedEl.style.transition += `, ${trs("width")}, ${trs("height")}`), 0);
     draggedEl.style.zIndex = "9999";
-    draggedEl.style.cursor = "grabbing";
+    draggedEl.style.cursor = cursorStyle;
 
     return draggedEl;
 }
@@ -55,8 +55,8 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
  * styles the dragged element to a 'dropped' state
  * @param {HTMLElement} draggedEl
  */
-export function moveDraggedElementToWasDroppedState(draggedEl) {
-    draggedEl.style.cursor = "grab";
+export function moveDraggedElementToWasDroppedState(draggedEl, cursorStyle) {
+    draggedEl.style.cursor = cursorStyle;
 }
 
 /**
@@ -114,13 +114,13 @@ function copyStylesFromTo(copyFromEl, copyToEl) {
  * @param {HTMLElement} draggableEl
  * @param {boolean} dragDisabled
  */
-export function styleDraggable(draggableEl, dragDisabled) {
+export function styleDraggable(draggableEl, dragDisabled, cursorStyle) {
     draggableEl.draggable = false;
     draggableEl.ondragstart = () => false;
     if (!dragDisabled) {
         draggableEl.style.userSelect = "none";
         draggableEl.style.WebkitUserSelect = "none";
-        draggableEl.style.cursor = "grab";
+        draggableEl.style.cursor = cursorStyle;
     } else {
         draggableEl.style.userSelect = "";
         draggableEl.style.WebkitUserSelect = "";

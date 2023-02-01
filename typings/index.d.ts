@@ -23,6 +23,8 @@ export interface Options {
     items: Item[]; // the list of items that was used to generate the children of the given node
     type?: string; // the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, defaults to a base type
     flipDurationMs?: number; // if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict
+    constrainAxisX?: boolean; // Constrain dragging by X axis. Drag will be allowed only by Y axis.
+    constrainAxisY?: boolean; // Constrain dragging by Y axis. Drag will be allowed only by X axis.
     dragDisabled?: boolean;
     morphDisabled?: boolean;
     dropFromOthersDisabled?: boolean;

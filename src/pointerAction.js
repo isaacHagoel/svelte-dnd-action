@@ -214,7 +214,7 @@ function handleDraggedIsOverIndex(e) {
 function handleMouseMove(e) {
     e.preventDefault();
     const c = e.touches ? e.touches[0] : e;
-    const {constrainAxisX, constrainAxisY} = dzToConfig.get(e.currentTarget) || dzToConfig.get(originDropZone);
+    const {constrainAxisX, constrainAxisY} = dzToConfig.get(originDropZone);
     currentMousePosition = {
         x: constrainAxisX ? dragStartMousePosition.x : c.clientX,
         y: constrainAxisY ? dragStartMousePosition.y : c.clientY

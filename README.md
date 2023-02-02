@@ -104,16 +104,22 @@ npm install --save-dev svelte-dnd-action
 
 An options-object with the following attributes:
 | Name | Type | Required? | Default Value | Description |
-| ------------------------- | -------------- | ------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
+| ------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `items` | Array&lt;Object&gt; | Yes. Each object in the array **has to have** an `id` property (key name can be overridden globally) with a unique value (within all dnd-zones of the same type) | N/A | The data array that is used to produce the list with the draggable items (the same thing you run your #each block on). The dndzone should not have children that don't originate in `items` |
 | `flipDurationMs` | Number | No | `0` | The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations |
 | `type` | String | No | Internal | dnd-zones that share the same type can have elements from one dragged into another. By default, all dnd-zones have the same type |
+| `cursorStartDrag` | String | No | `grab` | cursor style when click on drag item occur |
+| `cursorDragging` | String | No | `grabbing` | cursor style when the drag occurs |
+| `cursorDrop` | String | No | `grab` | cursor style when the drag ends |
+| `cursorHover` | String | No | `grab` | cursor style when mouse hover over draggable element |
+| `constrainAxisX` | Boolean | No | `false` | Constrain dragging by X axis. Drag will be allowed only by Y axis. |
+| `constrainAxisY` | Boolean | No | `false` | Constrain dragging by Y axis. Drag will be allowed only by X axis. |
 | `dragDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly |
 | `morphDisabled` | Boolean | No | `false` | By default, when dragging over a zone, the dragged element is morphed to look like it would if dropped. You can prevent it by setting this option. |
 | `dropFromOthersDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drop elements from other dnd-zones of the same type. Can be useful if you want to limit the max number of items for example. You can change it at any time, and the zone will adjust on the fly |
 | `zoneTabIndex` | Number | No | `0` | Allow user to set custom tabindex to the list container when not dragging. Can be useful if you want to make the screen reader to skip the list container. You can change it at any time. |
 | `dropTargetStyle` | Object&lt;String&gt; | No | `{outline: 'rgba(255, 255, 102, 0.7) solid 2px'}` | An object of styles to apply to the dnd-zone when items can be dragged into it. Note: the styles override any inline styles applied to the dnd-zone. When the styles are removed, any original inline styles will be lost |
-| `dropTargetClasses`| Array&lt;String&gt; | No | `[]` | A list of classes to apply to the dnd-zone when items can be dragged into it. Note: make sure the classes you use are global. |
+| `dropTargetClasses` | Array&lt;String&gt; | No | `[]` | A list of classes to apply to the dnd-zone when items can be dragged into it. Note: make sure the classes you use are global. |
 | `transformDraggedElement` | Function | No | `() => {}` | A function that is invoked when the draggable element enters the dnd-zone or hover overs a new index in the current dnd-zone. <br />Signature:<br />function(element, data, index) {}<br />**element**: The dragged element. <br />**data**: The data of the item from the items array.<br />**index**: The index the dragged element will become in the new dnd-zone.<br /><br />This allows you to override properties on the dragged element, such as innerHTML to change how it displays. If what you are after is altering styles, do it to the children, not to the dragged element itself |
 | `autoAriaDisabled` | Boolean | No | `false` | Setting it to true will disable all the automatically added aria attributes and aria alerts (for example when the user starts/ stops dragging using the keyboard).<br /> **Use it only if you intend to implement your own custom instructions, roles and alerts.** In such a case, you might find the exported function `alertToScreenReader(string)` useful. |
 | `centreDraggedOnCursor` | Boolean | No | `false` | Setting it to true will cause elements from this dnd-zone to position their center on the cursor on drag start, effectively turning the cursor to the focal point that triggers all the dnd events (ex: entering another zone). Useful for dnd-zones with large items that can be dragged over small items. |
@@ -235,15 +241,14 @@ setDebugMode(true);
 If you are using Typescript, you will need to add the following block to your `global.d.ts` (at least until [this svelte issue](https://github.com/sveltejs/language-tools/issues/431) is resolved):
 
 ```typescript
-declare type Item = import('svelte-dnd-action').Item;
-declare type DndEvent<ItemType = Item> = import('svelte-dnd-action').DndEvent<ItemType>;
+declare type Item = import("svelte-dnd-action").Item;
+declare type DndEvent<ItemType = Item> = import("svelte-dnd-action").DndEvent<ItemType>;
 declare namespace svelte.JSX {
-	interface HTMLAttributes<T> {
-		onconsider?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void;
-		onfinalize?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void;
-	}
+    interface HTMLAttributes<T> {
+        onconsider?: (event: CustomEvent<DndEvent<ItemType>> & {target: EventTarget & T}) => void;
+        onfinalize?: (event: CustomEvent<DndEvent<ItemType>> & {target: EventTarget & T}) => void;
+    }
 }
-
 ```
 
 You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't already: "include": ["src/**/*", "global.d.ts"].
@@ -307,14 +312,13 @@ You can use generics to set the type of `items` you are expecting in `DndEvent`.
         items = e.detail.items;
     }
 
-	let items: Dog[] = [
-		{ id: 1, name: 'Fido', breed: 'bulldog' },
-		{ id: 2, name: 'Spot', breed: 'labrador' },
-		{ id: 3, name: 'Jacky', breed: 'golden retriever' }
-	];
+    let items: Dog[] = [
+        {id: 1, name: "Fido", breed: "bulldog"},
+        {id: 2, name: "Spot", breed: "labrador"},
+        {id: 3, name: "Jacky", breed: "golden retriever"}
+    ];
 </script>
 ```
-
 
 ### Contributing [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/isaacHagoel/svelte-dnd-action/issues)
 

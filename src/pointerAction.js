@@ -35,6 +35,10 @@ import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, toString} from "
 import {getBoundingRectNoTransforms} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
+const DEFAULT_START_DRAG_CURSOR_TYPE = "grab";
+const DEFAULT_DRAGGING_CURSOR_TYPE = "grabbing";
+const DEFAULT_DROP_CURSOR_TYPE = "grab";
+const DEFAULT_HOVER_CURSOR_TYPE = "grab";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
 const DEFAULT_DROP_TARGET_STYLE = {
@@ -214,7 +218,11 @@ function handleDraggedIsOverIndex(e) {
 function handleMouseMove(e) {
     e.preventDefault();
     const c = e.touches ? e.touches[0] : e;
-    currentMousePosition = {x: c.clientX, y: c.clientY};
+    const {constrainAxisX, constrainAxisY} = dzToConfig.get(e.currentTarget) || dzToConfig.get(originDropZone);
+    currentMousePosition = {
+        x: constrainAxisX ? dragStartMousePosition.x : c.clientX,
+        y: constrainAxisY ? dragStartMousePosition.y : c.clientY
+    };
     draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${
         currentMousePosition.y - dragStartMousePosition.y
     }px, 0)`;
@@ -229,14 +237,14 @@ function handleDrop() {
     window.removeEventListener("mouseup", handleDrop);
     window.removeEventListener("touchend", handleDrop);
     unWatchDraggedElement();
-    moveDraggedElementToWasDroppedState(draggedEl);
 
     if (!shadowElDropZone) {
         printDebug(() => "element was dropped right after it left origin but before entering somewhere else");
         shadowElDropZone = originDropZone;
     }
     printDebug(() => ["dropped in dz", shadowElDropZone]);
-    let {items, type} = dzToConfig.get(shadowElDropZone);
+    let {items, type, cursorDrop} = dzToConfig.get(shadowElDropZone);
+    moveDraggedElementToWasDroppedState(draggedEl, cursorDrop);
     styleInactiveDropZones(
         typeToDropZones.get(type),
         dz => dzToConfig.get(dz).dropTargetStyle,
@@ -321,7 +329,13 @@ export function dndzone(node, options) {
     const config = {
         items: undefined,
         type: undefined,
+        cursorStartDrag: DEFAULT_START_DRAG_CURSOR_TYPE,
+        cursorDragging: DEFAULT_DRAGGING_CURSOR_TYPE,
+        cursorDrop: DEFAULT_DROP_CURSOR_TYPE,
+        cursorHover: DEFAULT_HOVER_CURSOR_TYPE,
         flipDurationMs: 0,
+        constrainAxisX: false,
+        constrainAxisY: false,
         dragDisabled: false,
         morphDisabled: false,
         dropFromOthersDisabled: false,
@@ -384,6 +398,14 @@ export function dndzone(node, options) {
         dragStartMousePosition = {x: c.clientX, y: c.clientY};
         currentMousePosition = {...dragStartMousePosition};
         originalDragTarget = e.currentTarget;
+        const {cursorStartDrag} = dzToConfig.get(originalDragTarget) || dzToConfig.get(node);
+        moveDraggedElementToWasDroppedState(originalDragTarget, cursorStartDrag);
+        addMaybeListeners();
+    }
+    function handleMouseUp(e) {
+        originalDragTarget = e.currentTarget;
+        const {cursorHover} = dzToConfig.get(originalDragTarget) || dzToConfig.get(node);
+        moveDraggedElementToWasDroppedState(originalDragTarget, cursorHover);
         addMaybeListeners();
     }
 
@@ -406,7 +428,7 @@ export function dndzone(node, options) {
         const placeHolderElData = {...shadowElData, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
 
         // creating the draggable element
-        draggedEl = createDraggedElementFrom(originalDragTarget, centreDraggedOnCursor && currentMousePosition);
+        draggedEl = createDraggedElementFrom(originalDragTarget, centreDraggedOnCursor && currentMousePosition, config.cursorDragging);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
             if (!draggedEl.parentElement) {
@@ -445,6 +467,12 @@ export function dndzone(node, options) {
         items = undefined,
         flipDurationMs: dropAnimationDurationMs = 0,
         type: newType = DEFAULT_DROP_ZONE_TYPE,
+        cursorStartDrag = DEFAULT_START_DRAG_CURSOR_TYPE,
+        cursorDragging = DEFAULT_DRAGGING_CURSOR_TYPE,
+        cursorDrop = DEFAULT_DROP_CURSOR_TYPE,
+        cursorHover = DEFAULT_HOVER_CURSOR_TYPE,
+        constrainAxisX = false,
+        constrainAxisY = false,
         dragDisabled = false,
         morphDisabled = false,
         dropFromOthersDisabled = false,
@@ -458,8 +486,14 @@ export function dndzone(node, options) {
             unregisterDropZone(node, config.type);
         }
         config.type = newType;
+        config.cursorStartDrag = cursorStartDrag;
+        config.cursorDragging = cursorDragging;
+        config.cursorDrop = cursorDrop;
+        config.cursorHover = cursorHover;
         registerDropZone(node, newType);
         config.items = [...items];
+        config.constrainAxisX = constrainAxisX;
+        config.constrainAxisY = constrainAxisY;
         config.dragDisabled = dragDisabled;
         config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;
@@ -512,7 +546,8 @@ export function dndzone(node, options) {
         const shadowElIdx = findShadowElementIdx(config.items);
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];
-            styleDraggable(draggableEl, dragDisabled);
+            const {cursorHover} = dzToConfig.get(draggableEl) || dzToConfig.get(node);
+            styleDraggable(draggableEl, dragDisabled, cursorHover);
             if (idx === shadowElIdx) {
                 config.transformDraggedElement(draggedEl, draggedElData, idx);
                 if (!morphDisabled) {
@@ -525,8 +560,10 @@ export function dndzone(node, options) {
             draggableEl.removeEventListener("touchstart", elToMouseDownListener.get(draggableEl));
             if (!dragDisabled) {
                 draggableEl.addEventListener("mousedown", handleMouseDown);
+                draggableEl.addEventListener("mouseup", handleMouseUp);
                 draggableEl.addEventListener("touchstart", handleMouseDown);
                 elToMouseDownListener.set(draggableEl, handleMouseDown);
+                elToMouseDownListener.set(draggableEl, handleMouseUp);
             }
             // updating the idx
             elToIdx.set(draggableEl, idx);

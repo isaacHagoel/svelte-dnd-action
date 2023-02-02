@@ -218,7 +218,11 @@ function handleDraggedIsOverIndex(e) {
 function handleMouseMove(e) {
     e.preventDefault();
     const c = e.touches ? e.touches[0] : e;
-    currentMousePosition = {x: c.clientX, y: c.clientY};
+    const {constrainAxisX, constrainAxisY} = dzToConfig.get(e.currentTarget) || dzToConfig.get(originDropZone);
+    currentMousePosition = {
+        x: constrainAxisX ? dragStartMousePosition.x : c.clientX,
+        y: constrainAxisY ? dragStartMousePosition.y : c.clientY
+    };
     draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${
         currentMousePosition.y - dragStartMousePosition.y
     }px, 0)`;
@@ -330,6 +334,8 @@ export function dndzone(node, options) {
         cursorDrop: DEFAULT_DROP_CURSOR_TYPE,
         cursorHover: DEFAULT_HOVER_CURSOR_TYPE,
         flipDurationMs: 0,
+        constrainAxisX: false,
+        constrainAxisY: false,
         dragDisabled: false,
         morphDisabled: false,
         dropFromOthersDisabled: false,
@@ -465,6 +471,8 @@ export function dndzone(node, options) {
         cursorDragging = DEFAULT_DRAGGING_CURSOR_TYPE,
         cursorDrop = DEFAULT_DROP_CURSOR_TYPE,
         cursorHover = DEFAULT_HOVER_CURSOR_TYPE,
+        constrainAxisX = false,
+        constrainAxisY = false,
         dragDisabled = false,
         morphDisabled = false,
         dropFromOthersDisabled = false,
@@ -484,6 +492,8 @@ export function dndzone(node, options) {
         config.cursorHover = cursorHover;
         registerDropZone(node, newType);
         config.items = [...items];
+        config.constrainAxisX = constrainAxisX;
+        config.constrainAxisY = constrainAxisY;
         config.dragDisabled = dragDisabled;
         config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;

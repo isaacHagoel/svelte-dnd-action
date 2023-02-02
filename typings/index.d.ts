@@ -27,6 +27,8 @@ export interface Options {
     cursorDrop?: string; //
     cursorHover?: string; //
     flipDurationMs?: number; // if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict
+    constrainAxisX?: boolean; // Constrain dragging by X axis. Drag will be allowed only by Y axis.
+    constrainAxisY?: boolean; // Constrain dragging by Y axis. Drag will be allowed only by X axis.
     dragDisabled?: boolean;
     morphDisabled?: boolean;
     dropFromOthersDisabled?: boolean;

@@ -112,6 +112,8 @@ An options-object with the following attributes:
 | `cursorDragging` | String | No | `grabbing` | cursor style when the drag occurs |
 | `cursorDrop` | String | No | `grab` | cursor style when the drag ends |
 | `cursorHover` | String | No | `grab` | cursor style when mouse hover over draggable element |
+| `constrainAxisX` | Boolean | No | `false` | Constrain dragging by X axis. Drag will be allowed only by Y axis. |
+| `constrainAxisY` | Boolean | No | `false` | Constrain dragging by Y axis. Drag will be allowed only by X axis. |
 | `dragDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly |
 | `morphDisabled` | Boolean | No | `false` | By default, when dragging over a zone, the dragged element is morphed to look like it would if dropped. You can prevent it by setting this option. |
 | `dropFromOthersDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drop elements from other dnd-zones of the same type. Can be useful if you want to limit the max number of items for example. You can change it at any time, and the zone will adjust on the fly |

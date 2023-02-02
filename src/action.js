@@ -17,6 +17,8 @@ import {toString} from "./helpers/util";
  * @property {string} [cursorDrop]
  * @property {string} [cursorHover]
  * @property {number} [flipDurationMs] - if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict, defaults to zero
+ * @property {boolean} [constrainAxisX] - Constrain dragging by X axis. Drag will be allowed only by Y axis.
+ * @property {boolean} [constrainAxisY] - Constrain dragging by Y axis. Drag will be allowed only by X axis.
  * @property {boolean} [dragDisabled]
  * @property {boolean} [morphDisabled] - whether dragged element should morph to zone dimensions
  * @property {boolean} [dropFromOthersDisabled]
@@ -55,6 +57,8 @@ function validateOptions(options) {
         cursorDragging,
         cursorDrop,
         cursorHover,
+        constrainAxisX,
+        constrainAxisY,
         dragDisabled,
         morphDisabled,
         dropFromOthersDisabled,

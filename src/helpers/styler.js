@@ -40,8 +40,8 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     draggedEl.style.margin = "0";
     // we can't have relative or automatic height and width or it will break the illusion
     draggedEl.style.boxSizing = "border-box";
-    draggedEl.style.height = `${rect.height}px`;
-    draggedEl.style.width = `${rect.width}px`;
+    // draggedEl.style.height = `${rect.height}px`;
+    // draggedEl.style.width = `${rect.width}px`;
     draggedEl.style.transition = `${trs("top")}, ${trs("left")}, ${trs("background-color")}, ${trs("opacity")}, ${trs("color")} `;
     // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
     window.setTimeout(() => (draggedEl.style.transition += `, ${trs("width")}, ${trs("height")}`), 0);
@@ -104,7 +104,9 @@ function copyStylesFromTo(copyFromEl, copyToEl) {
                 s.startsWith("border") ||
                 s === "opacity" ||
                 s === "color" ||
-                s === "list-style-type"
+                s === "list-style-type" ||
+                s === "width" ||
+                s === "height"
         )
         .forEach(s => copyToEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s)));
 }

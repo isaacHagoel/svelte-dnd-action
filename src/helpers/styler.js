@@ -40,8 +40,8 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     draggedEl.style.margin = "0";
     // we can't have relative or automatic height and width or it will break the illusion
     draggedEl.style.boxSizing = "border-box";
-    // draggedEl.style.height = `${rect.height}px`;
-    // draggedEl.style.width = `${rect.width}px`;
+    draggedEl.style.height = `${rect.height}px`;
+    draggedEl.style.width = `${rect.width}px`;
     draggedEl.style.transition = `${trs("top")}, ${trs("left")}, ${trs("background-color")}, ${trs("opacity")}, ${trs("color")} `;
     // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
     window.setTimeout(() => (draggedEl.style.transition += `, ${trs("width")}, ${trs("height")}`), 0);
@@ -77,8 +77,8 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
             left: (currentMouseX - draggedElRect.left) / draggedElRect.width,
             top: (currentMouseY - draggedElRect.top) / draggedElRect.height
         };
-        draggedEl.style.height = `${newRect.height}px`;
-        draggedEl.style.width = `${newRect.width}px`;
+        // draggedEl.style.height = `${newRect.height}px`;
+        // draggedEl.style.width = `${newRect.width}px`;
         draggedEl.style.left = `${parseFloat(draggedEl.style.left) - relativeDistanceOfMousePointerFromDraggedSides.left * widthChange}px`;
         draggedEl.style.top = `${parseFloat(draggedEl.style.top) - relativeDistanceOfMousePointerFromDraggedSides.top * heightChange}px`;
     }
@@ -105,6 +105,7 @@ function copyStylesFromTo(copyFromEl, copyToEl) {
                 s === "opacity" ||
                 s === "color" ||
                 s === "list-style-type" ||
+                // copying with and height to make up for rect update timing issues in some browsers
                 s === "width" ||
                 s === "height"
         )

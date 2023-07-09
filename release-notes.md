@@ -1,4 +1,7 @@
 ## Svelte Dnd Action - Release Notes
+### [0.9.23](https://github.com/isaacHagoel/svelte-dnd-action/pull/457)
+
+Fix morphing when within css grid
 
 ### [0.9.22](https://github.com/isaacHagoel/svelte-dnd-action/pull/410)
 

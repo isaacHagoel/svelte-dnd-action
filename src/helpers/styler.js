@@ -77,8 +77,9 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
             left: (currentMouseX - draggedElRect.left) / draggedElRect.width,
             top: (currentMouseY - draggedElRect.top) / draggedElRect.height
         };
-        draggedEl.style.height = `${newRect.height}px`;
-        draggedEl.style.width = `${newRect.width}px`;
+        // The lines below are commented out because of issue 454 - seems like these rect values take time to update when in grid layout, therefore this gets copied from the computed styles now
+        // draggedEl.style.height = `${newRect.height}px`;
+        // draggedEl.style.width = `${newRect.width}px`;
         draggedEl.style.left = `${parseFloat(draggedEl.style.left) - relativeDistanceOfMousePointerFromDraggedSides.left * widthChange}px`;
         draggedEl.style.top = `${parseFloat(draggedEl.style.top) - relativeDistanceOfMousePointerFromDraggedSides.top * heightChange}px`;
     }
@@ -104,7 +105,10 @@ function copyStylesFromTo(copyFromEl, copyToEl) {
                 s.startsWith("border") ||
                 s === "opacity" ||
                 s === "color" ||
-                s === "list-style-type"
+                s === "list-style-type" ||
+                // copying with and height to make up for rect update timing issues in some browsers
+                s === "width" ||
+                s === "height"
         )
         .forEach(s => copyToEl.style.setProperty(s, computedStyle.getPropertyValue(s), computedStyle.getPropertyPriority(s)));
 }

@@ -233,7 +233,7 @@ setDebugMode(true);
 ### Typescript
 
 If you are using Typescript, you will need to add the following block to your `global.d.ts` (at least until [this svelte issue](https://github.com/sveltejs/language-tools/issues/431) is resolved):
-
+#### Svelte 3 or below
 ```typescript
 declare type Item = import('svelte-dnd-action').Item;
 declare type DndEvent<ItemType = Item> = import('svelte-dnd-action').DndEvent<ItemType>;
@@ -244,6 +244,17 @@ declare namespace svelte.JSX {
 	}
 }
 
+```
+#### Svelte 4:
+```typescript
+declare type Item = import('svelte-dnd-action').Item;
+declare type DndEvent<ItemType = Item> = import('svelte-dnd-action').DndEvent<ItemType>;
+declare namespace svelteHTML {
+   interface HTMLAttributes<T> {
+     'on:consider'?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void;
+     'on:finalize'?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void;
+   }
+ }
 ```
 
 You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't already: "include": ["src/**/*", "global.d.ts"].

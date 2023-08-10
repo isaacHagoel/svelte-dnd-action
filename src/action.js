@@ -19,6 +19,7 @@ import {toString} from "./helpers/util";
  * @property {number} [zoneTabIndex] - set the tabindex of the list container when not dragging
  * @property {object} [dropTargetStyle]
  * @property {string[]} [dropTargetClasses]
+ * @property {boolean} [dropOnly]
  * @property {function} [transformDraggedElement]
  * @param {HTMLElement} node - the element to enhance
  * @param {Options} options
@@ -53,6 +54,7 @@ function validateOptions(options) {
         zoneTabIndex,
         dropTargetStyle,
         dropTargetClasses,
+        dropOnly,
         transformDraggedElement,
         autoAriaDisabled,
         centreDraggedOnCursor,
@@ -62,12 +64,14 @@ function validateOptions(options) {
     if (Object.keys(rest).length > 0) {
         console.warn(`dndzone will ignore unknown options`, rest);
     }
-    if (!items) {
+    if (!items && !dropOnly) {
         throw new Error("no 'items' key provided to dndzone");
     }
-    const itemWithMissingId = items.find(item => !{}.hasOwnProperty.call(item, ITEM_ID_KEY));
-    if (itemWithMissingId) {
-        throw new Error(`missing '${ITEM_ID_KEY}' property for item ${toString(itemWithMissingId)}`);
+    if (!dropOnly){
+        const itemWithMissingId = items.find(item => !{}.hasOwnProperty.call(item, ITEM_ID_KEY));
+        if (itemWithMissingId) {
+            throw new Error(`missing '${ITEM_ID_KEY}' property for item ${toString(itemWithMissingId)}`);
+        }
     }
     if (dropTargetClasses && !Array.isArray(dropTargetClasses)) {
         throw new Error(`dropTargetClasses should be an array but instead it is a ${typeof dropTargetClasses}, ${toString(dropTargetClasses)}`);

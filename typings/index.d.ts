@@ -83,3 +83,9 @@ export declare const DRAGGED_ELEMENT_ID: "dnd-action-dragged-el";
  * Allows the user to show/hide console debug output
  */
 export declare function setDebugMode(isDebug: boolean): void;
+
+export enum FEATURE_FLAG_NAMES {
+    // Default value: false, This flag exists as a workaround for issue 454 (basically a browser bug) - seems like these rect values take time to update when in grid layout. Setting it to true can cause strange behaviour in the REPL for non-grid zones, see issue 470
+    USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT = "FEATURE_FLAG_NAMES.USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT"
+}
+export declare function setFeatureFlag(flagName: FEATURE_FLAG_NAMES, flagValue: boolean);

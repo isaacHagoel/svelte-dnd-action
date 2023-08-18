@@ -1,5 +1,11 @@
 ## Svelte Dnd Action - Release Notes
+
+### [0.9.25](https://github.com/isaacHagoel/svelte-dnd-action/pull/472)
+
+Made the fix that was introduced in version 0.9.23 available via feature flag but inactive by default
+
 ### [0.9.24](https://github.com/isaacHagoel/svelte-dnd-action/pull/459)
+
 Updated readme with Svelte 4 types configuration
 
 ### [0.9.23](https://github.com/isaacHagoel/svelte-dnd-action/pull/457)
@@ -8,7 +14,7 @@ Fix morphing when within css grid
 
 ### [0.9.22](https://github.com/isaacHagoel/svelte-dnd-action/pull/410)
 
-Fix repl examples in Readme. Add svelte >=3.23.0 as peerDependency  
+Fix repl examples in Readme. Add svelte >=3.23.0 as peerDependency
 
 ### [0.9.21](https://github.com/isaacHagoel/svelte-dnd-action/pull/405)
 

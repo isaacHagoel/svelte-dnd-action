@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### [0.9.25](https://github.com/isaacHagoel/svelte-dnd-action/pull/472)
+### [0.9.25](https://github.com/isaacHagoel/svelte-dnd-action/pull/473)
 
 Made the fix that was introduced in version 0.9.23 available via feature flag but inactive by default
 

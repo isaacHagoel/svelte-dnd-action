@@ -9,3 +9,5 @@ export {
     overrideItemIdKeyNameBeforeInitialisingDndZones,
     setDebugMode
 } from "./constants";
+
+export {setFeatureFlag, FEATURE_FLAG_NAMES} from "./featureFlags";

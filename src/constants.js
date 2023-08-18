@@ -58,7 +58,7 @@ export let printDebug = () => {};
 
 /**
  * Allows the user to show/hide console debug output
- * * @param {Boolean} isDebug
+ * * @param {boolean} isDebug
  */
 export function setDebugMode(isDebug) {
     if (isDebug) {

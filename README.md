@@ -223,7 +223,25 @@ It applies globally (as in, all of your items everywhere are expected to have a 
 
 ### Debug output
 
-By default no debug output will be logged to the console. If you want to see internal debug messages, you can enable the debug output like this:
+By default, no debug output will be logged to the console. If you want to see internal debug messages, you can enable the debug output like this:
+
+```javascript
+import {setDebugMode} from "svelte-dnd-action";
+setDebugMode(true);
+```
+
+### Feature Flags
+
+Feature flags allow controlling global optional behaviour. They were originally introduced as a way to enable a workaround for a browser bug that helps in certain scenarios but comes with unwanted side effects in others.
+In order to set a feature flag use:
+
+```javascript
+import {setFeatueFlag, FEATURE_FLAG_NAMES} from "svelte-dnd-action";
+setFeatueFlag(FEATURE_FLAG_NAMES.MY_FLAG, true);
+```
+
+Currently, there is only one flag: USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT, which defaults to false.
+See issues [454](https://github.com/isaacHagoel/svelte-dnd-action/issues/454) and [470](https://github.com/isaacHagoel/svelte-dnd-action/issues/470) for details about why it is needed and when (most users don't need to care about this)
 
 ```javascript
 import {setDebugMode} from "svelte-dnd-action";
@@ -233,28 +251,31 @@ setDebugMode(true);
 ### Typescript
 
 If you are using Typescript, you will need to add the following block to your `global.d.ts` (at least until [this svelte issue](https://github.com/sveltejs/language-tools/issues/431) is resolved):
-#### Svelte 3 or below
-```typescript
-declare type Item = import('svelte-dnd-action').Item;
-declare type DndEvent<ItemType = Item> = import('svelte-dnd-action').DndEvent<ItemType>;
-declare namespace svelte.JSX {
-	interface HTMLAttributes<T> {
-		onconsider?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void;
-		onfinalize?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void;
-	}
-}
 
-```
-#### Svelte 4:
+#### Svelte 3 or below
+
 ```typescript
-declare type Item = import('svelte-dnd-action').Item;
-declare type DndEvent<ItemType = Item> = import('svelte-dnd-action').DndEvent<ItemType>;
+declare type Item = import("svelte-dnd-action").Item;
+declare type DndEvent<ItemType = Item> = import("svelte-dnd-action").DndEvent<ItemType>;
+declare namespace svelte.JSX {
+    interface HTMLAttributes<T> {
+        onconsider?: (event: CustomEvent<DndEvent<ItemType>> & {target: EventTarget & T}) => void;
+        onfinalize?: (event: CustomEvent<DndEvent<ItemType>> & {target: EventTarget & T}) => void;
+    }
+}
+```
+
+#### Svelte 4:
+
+```typescript
+declare type Item = import("svelte-dnd-action").Item;
+declare type DndEvent<ItemType = Item> = import("svelte-dnd-action").DndEvent<ItemType>;
 declare namespace svelteHTML {
-   interface HTMLAttributes<T> {
-     'on:consider'?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void;
-     'on:finalize'?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void;
-   }
- }
+    interface HTMLAttributes<T> {
+        "on:consider"?: (event: CustomEvent<DndEvent<ItemType>> & {target: EventTarget & T}) => void;
+        "on:finalize"?: (event: CustomEvent<DndEvent<ItemType>> & {target: EventTarget & T}) => void;
+    }
+}
 ```
 
 You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't already: "include": ["src/**/*", "global.d.ts"].
@@ -318,14 +339,13 @@ You can use generics to set the type of `items` you are expecting in `DndEvent`.
         items = e.detail.items;
     }
 
-	let items: Dog[] = [
-		{ id: 1, name: 'Fido', breed: 'bulldog' },
-		{ id: 2, name: 'Spot', breed: 'labrador' },
-		{ id: 3, name: 'Jacky', breed: 'golden retriever' }
-	];
+    let items: Dog[] = [
+        {id: 1, name: "Fido", breed: "bulldog"},
+        {id: 2, name: "Spot", breed: "labrador"},
+        {id: 3, name: "Jacky", breed: "golden retriever"}
+    ];
 </script>
 ```
-
 
 ### Contributing [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/isaacHagoel/svelte-dnd-action/issues)
 

@@ -241,7 +241,7 @@ setFeatueFlag(FEATURE_FLAG_NAMES.MY_FLAG, true);
 ```
 
 Currently, there is only one flag: USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT, which defaults to false.
-See issues [466](https://github.com/isaacHagoel/svelte-dnd-action/issues/466) and [470](https://github.com/isaacHagoel/svelte-dnd-action/issues/470) for details about why it is needed and when (most users don't need to care about this)
+See issues [454](https://github.com/isaacHagoel/svelte-dnd-action/issues/454) and [470](https://github.com/isaacHagoel/svelte-dnd-action/issues/470) for details about why it is needed and when (most users don't need to care about this)
 
 ```javascript
 import {setDebugMode} from "svelte-dnd-action";

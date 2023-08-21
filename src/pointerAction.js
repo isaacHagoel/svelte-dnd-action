@@ -125,8 +125,16 @@ function findShadowElementIdx(items) {
 
 /* custom drag-events handlers */
 function handleDraggedEntered(e) {
-    printDebug(() => ["dragged entered", e.currentTarget, e.detail]);
-    let {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    printDebug("dragged entered", e.currentTarget, e.detail);
+    let {items, dropFromOthersDisabled, dropOnly} = dzToConfig.get(e.currentTarget);
+
+    shadowElDropZone = e.currentTarget;
+
+    if (dropOnly) {
+        printDebug(() => "ignoring DraggedEntered because dropOnly is enabled");
+        return;
+    }
+
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         printDebug(() => "ignoring dragged entered because drop is currently disabled");
         return;
@@ -155,7 +163,6 @@ function handleDraggedEntered(e) {
 
     const {index, isProximityBased} = e.detail.indexObj;
     const shadowElIdx = isProximityBased && index === e.currentTarget.children.length - 1 ? index + 1 : index;
-    shadowElDropZone = e.currentTarget;
     items.splice(shadowElIdx, 0, shadowElData);
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_ENTERED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
@@ -164,13 +171,15 @@ function handleDraggedLeft(e) {
     // dealing with a rare race condition on extremely rapid clicking and dropping
     if (!isWorkingOnPreviousDrag) return;
     printDebug(() => ["dragged left", e.currentTarget, e.detail]);
-    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    const {items, dropFromOthersDisabled, dropOnly} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone && e.currentTarget !== shadowElDropZone) {
         printDebug(() => "drop is currently disabled");
         return;
     }
-    const shadowElIdx = findShadowElementIdx(items);
-    const shadowItem = items.splice(shadowElIdx, 1)[0];
+    if (!dropOnly){
+        const shadowElIdx = findShadowElementIdx(items);
+        const shadowItem = items.splice(shadowElIdx, 1)[0];
+    }
     shadowElDropZone = undefined;
     const {type, theOtherDz} = e.detail;
     if (
@@ -181,7 +190,8 @@ function handleDraggedLeft(e) {
         isDraggedOutsideOfAnyDz = true;
         shadowElDropZone = originDropZone;
         const originZoneItems = dzToConfig.get(originDropZone).items;
-        originZoneItems.splice(originIndex, 0, shadowItem);
+        if (!dropOnly && typeof shadowItem !== 'undefined')
+            originZoneItems.splice(originIndex, 0, shadowItem);
         dispatchConsiderEvent(originDropZone, originZoneItems, {
             trigger: TRIGGERS.DRAGGED_LEFT_ALL,
             id: draggedElData[ITEM_ID_KEY],
@@ -197,7 +207,11 @@ function handleDraggedLeft(e) {
 }
 function handleDraggedIsOverIndex(e) {
     printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
-    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    const {items, dropFromOthersDisabled, dropOnly} = dzToConfig.get(e.currentTarget);
+    if (dropOnly){
+        printDebug(() => "ignoring DraggedIsOver because dropOnly is enabled");
+        return;
+    }
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         printDebug(() => "drop is currently disabled");
         return;
@@ -236,13 +250,18 @@ function handleDrop() {
         shadowElDropZone = originDropZone;
     }
     printDebug(() => ["dropped in dz", shadowElDropZone]);
-    let {items, type} = dzToConfig.get(shadowElDropZone);
+    let {items, type, dropOnly} = dzToConfig.get(shadowElDropZone);
     styleInactiveDropZones(
         typeToDropZones.get(type),
         dz => dzToConfig.get(dz).dropTargetStyle,
         dz => dzToConfig.get(dz).dropTargetClasses
     );
+
+    if (dropOnly)
+        items = dzToConfig.get(originDropZone).items
+
     let shadowElIdx = findShadowElementIdx(items);
+    
     // the handler might remove the shadow element, ex: dragula like copy on drag
     if (shadowElIdx === -1) shadowElIdx = originIndex;
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
@@ -264,11 +283,18 @@ function handleDrop() {
         unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    animateDraggedToFinalPosition(dropOnly, shadowElIdx, finalizeWithinZone);
 }
 
 // helper function for handleDrop
-function animateDraggedToFinalPosition(shadowElIdx, callback) {
+function animateDraggedToFinalPosition(dropOnly, shadowElIdx, callback) {
+    if (dropOnly){
+        const {dropAnimationDurationMs} = dzToConfig.get(shadowElDropZone);
+        const transition = `transform ${dropAnimationDurationMs}ms ease`;
+        draggedEl.style.transition = draggedEl.style.transition ? draggedEl.style.transition + "," + transition : transition;
+        window.setTimeout(callback, dropAnimationDurationMs);
+        return
+    }
     const shadowElRect = getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx]);
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
@@ -327,6 +353,7 @@ export function dndzone(node, options) {
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
+        dropOnly: false,
         transformDraggedElement: () => {},
         centreDraggedOnCursor: false
     };
@@ -450,6 +477,7 @@ export function dndzone(node, options) {
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
+        dropOnly = false,
         transformDraggedElement = () => {},
         centreDraggedOnCursor = false
     }) {
@@ -459,8 +487,10 @@ export function dndzone(node, options) {
         }
         config.type = newType;
         registerDropZone(node, newType);
-        config.items = [...items];
+        if (!dropOnly)
+            config.items = [...items];
         config.dragDisabled = dragDisabled;
+        config.dropOnly = dropOnly;
         config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;
         config.centreDraggedOnCursor = centreDraggedOnCursor;
@@ -509,30 +539,32 @@ export function dndzone(node, options) {
         config.dropFromOthersDisabled = dropFromOthersDisabled;
 
         dzToConfig.set(node, config);
-        const shadowElIdx = findShadowElementIdx(config.items);
-        for (let idx = 0; idx < node.children.length; idx++) {
-            const draggableEl = node.children[idx];
-            styleDraggable(draggableEl, dragDisabled);
-            if (idx === shadowElIdx) {
-                config.transformDraggedElement(draggedEl, draggedElData, idx);
-                if (!morphDisabled) {
-                    morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
+        if (!dropOnly){
+            const shadowElIdx = findShadowElementIdx(config.items);
+            for (let idx = 0; idx < node.children.length; idx++) {
+                const draggableEl = node.children[idx];
+                styleDraggable(draggableEl, dragDisabled);
+                if (idx === shadowElIdx) {
+                    config.transformDraggedElement(draggedEl, draggedElData, idx);
+                    if (!morphDisabled) {
+                        morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
+                    }
+                    decorateShadowEl(draggableEl);
+                    continue;
                 }
-                decorateShadowEl(draggableEl);
-                continue;
-            }
-            draggableEl.removeEventListener("mousedown", elToMouseDownListener.get(draggableEl));
-            draggableEl.removeEventListener("touchstart", elToMouseDownListener.get(draggableEl));
-            if (!dragDisabled) {
-                draggableEl.addEventListener("mousedown", handleMouseDown);
-                draggableEl.addEventListener("touchstart", handleMouseDown);
-                elToMouseDownListener.set(draggableEl, handleMouseDown);
-            }
-            // updating the idx
-            elToIdx.set(draggableEl, idx);
+                draggableEl.removeEventListener("mousedown", elToMouseDownListener.get(draggableEl));
+                draggableEl.removeEventListener("touchstart", elToMouseDownListener.get(draggableEl));
+                if (!dragDisabled || dropOnly) {
+                    draggableEl.addEventListener("mousedown", handleMouseDown);
+                    draggableEl.addEventListener("touchstart", handleMouseDown);
+                    elToMouseDownListener.set(draggableEl, handleMouseDown);
+                }
+                // updating the idx
+                elToIdx.set(draggableEl, idx);
 
-            if (!initialized) {
-                initialized = true;
+                if (!initialized) {
+                    initialized = true;
+                }
             }
         }
     }

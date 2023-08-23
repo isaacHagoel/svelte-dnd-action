@@ -236,8 +236,8 @@ Feature flags allow controlling global optional behaviour. They were originally 
 In order to set a feature flag use:
 
 ```javascript
-import {setFeatueFlag, FEATURE_FLAG_NAMES} from "svelte-dnd-action";
-setFeatueFlag(FEATURE_FLAG_NAMES.MY_FLAG, true);
+import {setFeatureFlag, FEATURE_FLAG_NAMES} from "svelte-dnd-action";
+setFeatureFlag(FEATURE_FLAG_NAMES.MY_FLAG, true);
 ```
 
 Currently, there is only one flag: USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT, which defaults to false.

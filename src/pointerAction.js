@@ -73,6 +73,10 @@ function registerDropZone(dropZoneEl, type) {
     if (!typeToDropZones.get(type).has(dropZoneEl)) {
         typeToDropZones.get(type).add(dropZoneEl);
         incrementActiveDropZoneCount();
+        if (isWorkingOnPreviousDrag) {
+            unWatchDraggedElement();
+            watchDraggedElement();
+        }
     }
 }
 function unregisterDropZone(dropZoneEl, type) {
@@ -458,7 +462,6 @@ export function dndzone(node, options) {
             unregisterDropZone(node, config.type);
         }
         config.type = newType;
-        registerDropZone(node, newType);
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.morphDisabled = morphDisabled;
@@ -509,6 +512,7 @@ export function dndzone(node, options) {
         config.dropFromOthersDisabled = dropFromOthersDisabled;
 
         dzToConfig.set(node, config);
+        registerDropZone(node, newType);
         const shadowElIdx = findShadowElementIdx(config.items);
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];

@@ -33,7 +33,7 @@ let INSTRUCTION_IDs;
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
-    printDebug(() => "registering drop-zone if absent");
+    printDebug(() => "registering drop-zone if absent in keyboard dnd");
     if (typeToDropZones.size === 0) {
         printDebug(() => "adding global keydown and click handlers");
         INSTRUCTION_IDs = initAria();

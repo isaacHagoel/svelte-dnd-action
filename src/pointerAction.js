@@ -8,7 +8,7 @@ import {
     SOURCES,
     TRIGGERS
 } from "./constants";
-import {observe, unobserve} from "./helpers/observer";
+import {observe, setObserverNeedsUpdate, unobserve} from "./helpers/observer";
 import {armWindowScroller, disarmWindowScroller} from "./helpers/windowScroller";
 import {
     createDraggedElementFrom,
@@ -51,6 +51,7 @@ let shadowElData;
 let shadowElDropZone;
 let dragStartMousePosition;
 let currentMousePosition;
+let currentObservationIntervalMs;
 let isWorkingOnPreviousDrag = false;
 let finalizingPreviousDrag = false;
 let unlockOriginDzMinDimensions;
@@ -66,13 +67,20 @@ const elToMouseDownListener = new WeakMap();
 
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
-    printDebug(() => "registering drop-zone if absent");
+    printDebug(() => "registering drop-zone if absent in pointer dnd");
     if (!typeToDropZones.has(type)) {
         typeToDropZones.set(type, new Set());
     }
     if (!typeToDropZones.get(type).has(dropZoneEl)) {
         typeToDropZones.get(type).add(dropZoneEl);
         incrementActiveDropZoneCount();
+    }
+    if (isWorkingOnPreviousDrag && type === draggedElType) {
+        printDebug(() => "updating observer")
+        currentObservationIntervalMs = Math.max(currentObservationIntervalMs, dzToConfig.get(dropZoneEl).dropAnimationDurationMs * 1.07);
+        addDragEventListenersTo(dropZoneEl)
+        const newDropZones = typeToDropZones.get(draggedElType);
+        setObserverNeedsUpdate(newDropZones);
     }
 }
 function unregisterDropZone(dropZoneEl, type) {
@@ -83,24 +91,29 @@ function unregisterDropZone(dropZoneEl, type) {
     }
 }
 
+
 /* functions to manage observing the dragged element and trigger custom drag-events */
 function watchDraggedElement() {
     printDebug(() => "watching dragged element");
     armWindowScroller();
     const dropZones = typeToDropZones.get(draggedElType);
     for (const dz of dropZones) {
-        dz.addEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
-        dz.addEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
-        dz.addEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
+        addDragEventListenersTo(dz);
     }
     window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
-    const observationIntervalMs = Math.max(
+    currentObservationIntervalMs = Math.max(
         MIN_OBSERVATION_INTERVAL_MS,
         ...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs)
-    );
-    observe(draggedEl, dropZones, observationIntervalMs * 1.07);
+    ) * 1.07;
+    observe(draggedEl, dropZones, currentObservationIntervalMs);
 }
+function addDragEventListenersTo(dropZone) {
+    dropZone.addEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
+    dropZone.addEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
+    dropZone.addEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
+}
+
 function unWatchDraggedElement() {
     printDebug(() => "unwatching dragged element");
     disarmWindowScroller();
@@ -111,6 +124,7 @@ function unWatchDraggedElement() {
         dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
     window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
+    currentObservationIntervalMs = undefined;
     unobserve();
 }
 
@@ -458,7 +472,6 @@ export function dndzone(node, options) {
             unregisterDropZone(node, config.type);
         }
         config.type = newType;
-        registerDropZone(node, newType);
         config.items = [...items];
         config.dragDisabled = dragDisabled;
         config.morphDisabled = morphDisabled;
@@ -509,6 +522,7 @@ export function dndzone(node, options) {
         config.dropFromOthersDisabled = dropFromOthersDisabled;
 
         dzToConfig.set(node, config);
+        registerDropZone(node, newType);
         const shadowElIdx = findShadowElementIdx(config.items);
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];

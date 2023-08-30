@@ -15,6 +15,9 @@ const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
 const {scrollIfNeeded, resetScrolling} = makeScroller();
 let next;
+let dropZonesFromDeepToShallow;
+let needsUpdate = false;
+let newDropZones;
 
 /**
  * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
@@ -29,12 +32,18 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
     let lastIsDraggedInADropZone = false;
     let lastCentrePositionOfDragged;
     // We are sorting to make sure that in case of nested zones of the same type the one "on top" is considered first
-    const dropZonesFromDeepToShallow = Array.from(dropZones).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
+    dropZonesFromDeepToShallow = Array.from(dropZones).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
 
     /**
      * The main function in this module. Tracks where everything is/ should be a take the actions
      */
     function andNow() {
+        if (needsUpdate && newDropZones !== undefined) {
+            dropZonesFromDeepToShallow = Array.from(newDropZones).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
+            needsUpdate = false;
+            newDropZones = undefined;
+        }
+
         const currentCenterOfDragged = findCenterOfElement(draggedEl);
         const scrolled = scrollIfNeeded(currentCenterOfDragged, lastDropZoneFound);
         // we only want to make a new decision after the element was moved a bit to prevent flickering
@@ -89,6 +98,15 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         next = window.setTimeout(andNow, intervalMs);
     }
     andNow();
+}
+
+/**
+ * Telling the observer that the drop zones have changed.
+ * @param {Set<HTMLElement>} dropZones the updated drop zone list
+ */
+export function setObserverNeedsUpdate(dropZones) {
+    newDropZones = dropZones;
+    needsUpdate = true;
 }
 
 // assumption - we can only observe one dragged element at a time, this could be changed in the future

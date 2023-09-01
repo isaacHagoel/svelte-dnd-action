@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.27](https://github.com/isaacHagoel/svelte-dnd-action/pull/481)
+
+Fixing a problem that occurs when a drop zone is being created mid-drag. It is now possible to use this new drop zone in the same drag it was created in.
+
 ### [0.9.26](https://github.com/isaacHagoel/svelte-dnd-action/pull/476)
 
 Readme typo fix in an example: setFeatueFlag -> setFeatureFlag

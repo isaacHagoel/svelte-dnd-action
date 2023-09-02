@@ -37,9 +37,6 @@ import {getBoundingRectNoTransforms} from "./helpers/intersection";
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
-const DEFAULT_DROP_TARGET_STYLE = {
-    outline: "rgba(255, 255, 102, 0.7) solid 2px"
-};
 
 let originalDragTarget;
 let draggedEl;
@@ -329,7 +326,7 @@ export function dndzone(node, options) {
         dragDisabled: false,
         morphDisabled: false,
         dropFromOthersDisabled: false,
-        dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
+        dropTargetStyle: {},
         dropTargetClasses: [],
         transformDraggedElement: () => {},
         centreDraggedOnCursor: false
@@ -452,7 +449,7 @@ export function dndzone(node, options) {
         dragDisabled = false,
         morphDisabled = false,
         dropFromOthersDisabled = false,
-        dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
+        dropTargetStyle = {},
         dropTargetClasses = [],
         transformDraggedElement = () => {},
         centreDraggedOnCursor = false

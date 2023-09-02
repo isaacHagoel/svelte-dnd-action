@@ -73,10 +73,6 @@ function registerDropZone(dropZoneEl, type) {
     if (!typeToDropZones.get(type).has(dropZoneEl)) {
         typeToDropZones.get(type).add(dropZoneEl);
         incrementActiveDropZoneCount();
-        if (isWorkingOnPreviousDrag) {
-            unWatchDraggedElement();
-            watchDraggedElement();
-        }
     }
 }
 function unregisterDropZone(dropZoneEl, type) {

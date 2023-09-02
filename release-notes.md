@@ -1,8 +1,11 @@
 ## Svelte Dnd Action - Release Notes
 
-### [0.9.27](https://github.com/isaacHagoel/svelte-dnd-action/pull/481)
+### [0.9.28](https://github.com/isaacHagoel/svelte-dnd-action/pull/484)
+A revert of the problematic part in 0.9.27. This version is functionally equal to 0.9.26
 
-Fixing a problem that occurs when a drop zone is being created mid-drag. It is now possible to use this new drop zone in the same drag it was created in.
+### [0.9.27](https://github.com/isaacHagoel/svelte-dnd-action/pull/481)
+PLEASE DON'T USE THIS VERSION
+An unsuccessful attempt to support for dropzone being added mid-drag. It breaks in nested scenarios.
 
 ### [0.9.26](https://github.com/isaacHagoel/svelte-dnd-action/pull/476)
 

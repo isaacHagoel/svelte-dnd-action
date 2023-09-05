@@ -9,7 +9,7 @@ import {
 } from "./dispatcher";
 import {makeScroller} from "./scroller";
 import {getDepth} from "./util";
-import {printDebug} from "../constants";
+import {SHADOW_ELEMENT_ATTRIBUTE_NAME, printDebug} from "../constants";
 
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
@@ -56,7 +56,9 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         lastCentrePositionOfDragged = currentCenterOfDragged;
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false;
-        for (const dz of dropZonesFromDeepToShallow) {
+        // We don't care about zones that are themselves or nested inside the shadow item
+        const relevantZones = dropZonesFromDeepToShallow.filter(dz => !dz.closest(`[${SHADOW_ELEMENT_ATTRIBUTE_NAME}]`));
+        for (const dz of relevantZones) {
             if (scrolled) resetIndexesCacheForDz(lastDropZoneFound);
             const indexObj = findWouldBeIndex(draggedEl, dz);
             if (indexObj === null) {

@@ -119,8 +119,7 @@ function findShadowPlaceHolderIdx(items) {
     return items.findIndex(item => item[ITEM_ID_KEY] === SHADOW_PLACEHOLDER_ITEM_ID);
 }
 function findShadowElementIdx(items) {
-    // checking that the id is not the placeholder's for Dragula like usecases
-    return items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME] && item[ITEM_ID_KEY] !== SHADOW_PLACEHOLDER_ITEM_ID);
+    return items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 }
 
 /* custom drag-events handlers */
@@ -196,10 +195,12 @@ function handleDraggedLeft(e) {
     });
 }
 function handleDraggedIsOverIndex(e) {
-    printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
+    // printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
     const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    console.error("dragged is over index", e.currentTarget, {items, dropFromOthersDisabled});
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
-        printDebug(() => "drop is currently disabled");
+        // printDebug(() => "drop is currently disabled");
+         console.error("drop is currently disabled");
         return;
     }
     isDraggedOutsideOfAnyDz = false;
@@ -510,6 +511,7 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
         registerDropZone(node, newType);
         const shadowElIdx = findShadowElementIdx(config.items);
+        console.error("SHADOW EL IDX", shadowElIdx);
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);

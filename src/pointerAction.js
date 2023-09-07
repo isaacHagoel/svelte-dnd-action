@@ -224,25 +224,6 @@ function handleMouseMove(e) {
 function handleDrop() {
     printDebug(() => "dropped");
     finalizingPreviousDrag = true;
-    if (!shadowElDropZone) {
-        printDebug(() => "element was dropped right after it left origin but before entering somewhere else");
-        shadowElDropZone = originDropZone;
-    }
-    printDebug(() => ["dropped in dz", shadowElDropZone]);
-    let {items, type} = dzToConfig.get(shadowElDropZone);
-    let shadowElIdx = findShadowElementIdx(items);
-    // the handler might remove the shadow element, ex: dragula like copy on drag
-    if (shadowElIdx === -1) shadowElIdx = originIndex;
-
-    // We want any nested zones that are within the dropped element to be forced to re-register (re-render) after the finalize event, so we swap the id to
-    dispatchConsiderEvent(
-        shadowElDropZone,
-        items.map((item, idx) => idx === shadowElIdx ? {...item, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID } : item), {
-        trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
-        id: draggedElData[ITEM_ID_KEY],
-        source: SOURCES.POINTER
-    });
-
     // cleanup
     window.removeEventListener("mousemove", handleMouseMove);
     window.removeEventListener("touchmove", handleMouseMove);
@@ -251,14 +232,31 @@ function handleDrop() {
     unWatchDraggedElement();
     moveDraggedElementToWasDroppedState(draggedEl);
 
+    if (!shadowElDropZone) {
+        printDebug(() => "element was dropped right after it left origin but before entering somewhere else");
+        shadowElDropZone = originDropZone;
+    }
+    printDebug(() => ["dropped in dz", shadowElDropZone]);
+    let {items, type} = dzToConfig.get(shadowElDropZone);
     styleInactiveDropZones(
         typeToDropZones.get(type),
         dz => dzToConfig.get(dz).dropTargetStyle,
         dz => dzToConfig.get(dz).dropTargetClasses
     );
+    let shadowElIdx = findShadowElementIdx(items);
+    // the handler might remove the shadow element, ex: dragula like copy on drag
+    if (shadowElIdx === -1) shadowElIdx = originIndex;
 
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
     function finalizeWithinZone() {
+        // We want any nested zones that are within the dropped element to be forced to re-register (re-render) after the finalize event, so we swap the id to
+        dispatchConsiderEvent(
+            shadowElDropZone,
+            items.map((item, idx) => idx === shadowElIdx ? {...item, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID } : item), {
+                trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
+                id: draggedElData[ITEM_ID_KEY],
+                source: SOURCES.POINTER
+        });
         unlockOriginDzMinDimensions();
         dispatchFinalizeEvent(shadowElDropZone, items, {
             trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,

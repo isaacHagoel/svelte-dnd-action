@@ -40,6 +40,7 @@ const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
 const DEFAULT_DROP_TARGET_STYLE = {
     outline: "rgba(255, 255, 102, 0.7) solid 2px"
 };
+const ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE = "data-dnd-hidden-original-dragged-item";
 
 let originalDragTarget;
 let draggedEl;
@@ -223,6 +224,25 @@ function handleMouseMove(e) {
 function handleDrop() {
     printDebug(() => "dropped");
     finalizingPreviousDrag = true;
+    if (!shadowElDropZone) {
+        printDebug(() => "element was dropped right after it left origin but before entering somewhere else");
+        shadowElDropZone = originDropZone;
+    }
+    printDebug(() => ["dropped in dz", shadowElDropZone]);
+    let {items, type} = dzToConfig.get(shadowElDropZone);
+    let shadowElIdx = findShadowElementIdx(items);
+    // the handler might remove the shadow element, ex: dragula like copy on drag
+    if (shadowElIdx === -1) shadowElIdx = originIndex;
+
+    // We want any nested zones that are within the dropped element to be forced to re-register (re-render) after the finalize event, so we swap the id to
+    dispatchConsiderEvent(
+        shadowElDropZone,
+        items.map((item, idx) => idx === shadowElIdx ? {...item, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID } : item), {
+        trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
+        id: draggedElData[ITEM_ID_KEY],
+        source: SOURCES.POINTER
+    });
+
     // cleanup
     window.removeEventListener("mousemove", handleMouseMove);
     window.removeEventListener("touchmove", handleMouseMove);
@@ -231,20 +251,12 @@ function handleDrop() {
     unWatchDraggedElement();
     moveDraggedElementToWasDroppedState(draggedEl);
 
-    if (!shadowElDropZone) {
-        printDebug(() => "element was dropped right after it left origin but before entering somewhere else");
-        shadowElDropZone = originDropZone;
-    }
-    printDebug(() => ["dropped in dz", shadowElDropZone]);
-    let {items, type} = dzToConfig.get(shadowElDropZone);
     styleInactiveDropZones(
         typeToDropZones.get(type),
         dz => dzToConfig.get(dz).dropTargetStyle,
         dz => dzToConfig.get(dz).dropTargetClasses
     );
-    let shadowElIdx = findShadowElementIdx(items);
-    // the handler might remove the shadow element, ex: dragula like copy on drag
-    if (shadowElIdx === -1) shadowElIdx = originIndex;
+
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
     function finalizeWithinZone() {
         unlockOriginDzMinDimensions();
@@ -282,6 +294,7 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 }
 
 function scheduleDZForRemovalAfterDrop(dz, destroy) {
+    console.error("SCHEDULING FOR REMOVAL", dz);
     scheduledForRemovalAfterDrop.push({dz, destroy});
     window.requestAnimationFrame(() => {
         hideElement(dz);
@@ -388,6 +401,7 @@ export function dndzone(node, options) {
     }
 
     function handleDragStart() {
+        console.error("DRAG START");
         printDebug(() => [`drag start config: ${toString(config)}`, originalDragTarget]);
         isWorkingOnPreviousDrag = true;
 
@@ -407,6 +421,8 @@ export function dndzone(node, options) {
 
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget, centreDraggedOnCursor && currentMousePosition);
+        originalDragTarget.setAttribute(ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE, true);
+
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
             if (!draggedEl.parentElement) {
@@ -549,7 +565,7 @@ export function dndzone(node, options) {
                 unregisterDropZone(node, dzToConfig.get(node).type);
                 dzToConfig.delete(node);
             }
-            if (isWorkingOnPreviousDrag) {
+            if (isWorkingOnPreviousDrag && !node.closest(`[${ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE}]`)) {
                 printDebug(() => "pointer dndzone will be scheduled for destruction");
                 scheduleDZForRemovalAfterDrop(node, destroyDz);
             } else {

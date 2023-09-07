@@ -78,6 +78,7 @@ export type DndEvent<T = Item> = {
 export declare const SHADOW_ITEM_MARKER_PROPERTY_NAME: "isDndShadowItem";
 export declare const SHADOW_PLACEHOLDER_ITEM_ID: "id:dnd-shadow-placeholder-0000";
 export declare const DRAGGED_ELEMENT_ID: "dnd-action-dragged-el";
+export declare const SHADOW_ELEMENT_HINT_ATTRIBUTE_NAME = "data-is-dnd-shadow-item-hint";
 
 /**
  * Allows the user to show/hide console debug output

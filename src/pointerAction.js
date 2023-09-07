@@ -257,22 +257,25 @@ function handleDrop() {
                 id: draggedElData[ITEM_ID_KEY],
                 source: SOURCES.POINTER
         });
-        unlockOriginDzMinDimensions();
-        dispatchFinalizeEvent(shadowElDropZone, items, {
-            trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
-            id: draggedElData[ITEM_ID_KEY],
-            source: SOURCES.POINTER
-        });
-        if (shadowElDropZone !== originDropZone) {
-            // letting the origin drop zone know the element was permanently taken away
-            dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {
-                trigger: TRIGGERS.DROPPED_INTO_ANOTHER,
+        // We want to make sure the placeholder indeed trigger a re-render
+        window.requestAnimationFrame(() => {
+            unlockOriginDzMinDimensions();
+            dispatchFinalizeEvent(shadowElDropZone, items, {
+                trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
                 id: draggedElData[ITEM_ID_KEY],
                 source: SOURCES.POINTER
             });
-        }
-        unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
-        cleanupPostDrop();
+            if (shadowElDropZone !== originDropZone) {
+                // letting the origin drop zone know the element was permanently taken away
+                dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {
+                    trigger: TRIGGERS.DROPPED_INTO_ANOTHER,
+                    id: draggedElData[ITEM_ID_KEY],
+                    source: SOURCES.POINTER
+                });
+            }
+            unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
+            cleanupPostDrop();
+        });
     }
     animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
 }

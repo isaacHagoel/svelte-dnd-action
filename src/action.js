@@ -26,13 +26,11 @@ import {toString} from "./helpers/util";
  */
 export function dndzone(node, options) {
     if (shouldIgnoreZone(node)) {
-        console.error("IGNORING", node);
         return {
-            update: (newOptions) => {console.warn("IGNORED UPDATE", newOptions)},
-            destroy: () => {console.warn("IGNORED DESTROY")}
+            update: () => {},
+            destroy: () => {}
         };
     }
-    console.error("NOT IGNORING", node);
     validateOptions(options);
     const pointerZone = pointerDndZone(node, options);
     const keyboardZone = keyboardDndZone(node, options);
@@ -43,7 +41,6 @@ export function dndzone(node, options) {
             keyboardZone.update(newOptions);
         },
         destroy: () => {
-            console.error("DESTROY", node, options);
             pointerZone.destroy();
             keyboardZone.destroy();
         }

@@ -271,7 +271,6 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 }
 
 function scheduleDZForRemovalAfterDrop(dz, destroy) {
-    console.error("SCHEDULING FOR REMOVAL", dz);
     scheduledForRemovalAfterDrop.push({dz, destroy});
     window.requestAnimationFrame(() => {
         hideElement(dz);
@@ -378,7 +377,6 @@ export function dndzone(node, options) {
     }
 
     function handleDragStart() {
-        console.error("DRAG START");
         printDebug(() => [`drag start config: ${toString(config)}`, originalDragTarget]);
         isWorkingOnPreviousDrag = true;
 
@@ -393,8 +391,6 @@ export function dndzone(node, options) {
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
         shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
-        // The initial shadow element. We need a different id at first in order to avoid conflicts and timing issues
-        //const placeHolderElData = {...shadowElData, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
 
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget, centreDraggedOnCursor && currentMousePosition);

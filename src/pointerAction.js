@@ -115,13 +115,8 @@ function unWatchDraggedElement() {
     unobserve();
 }
 
-// finds the initial placeholder that is placed there on drag start
-function findShadowPlaceHolderIdx(items) {
-    return items.findIndex(item => item[ITEM_ID_KEY] === SHADOW_PLACEHOLDER_ITEM_ID);
-}
 function findShadowElementIdx(items) {
-    // checking that the id is not the placeholder's for Dragula like usecases
-    return items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME] && item[ITEM_ID_KEY] !== SHADOW_PLACEHOLDER_ITEM_ID);
+    return items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 }
 
 /* custom drag-events handlers */
@@ -145,15 +140,7 @@ function handleDraggedEntered(e) {
             id: draggedElData[ITEM_ID_KEY],
             source: SOURCES.POINTER
         });
-    } else {
-        const shadowPlaceHolderIdx = findShadowPlaceHolderIdx(items);
-        if (shadowPlaceHolderIdx !== -1) {
-            // only happens right after drag start, on the first drag entered event
-            printDebug(() => "removing placeholder item from origin dz");
-            items.splice(shadowPlaceHolderIdx, 1);
-        }
     }
-
     const {index, isProximityBased} = e.detail.indexObj;
     const shadowElIdx = isProximityBased && index === e.currentTarget.children.length - 1 ? index + 1 : index;
     shadowElDropZone = e.currentTarget;
@@ -249,33 +236,22 @@ function handleDrop() {
 
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
     function finalizeWithinZone() {
-        // We want any nested zones that are within the dropped element to be forced to re-register (re-render) after the finalize event, so we swap the id to
-        dispatchConsiderEvent(
-            shadowElDropZone,
-            items.map((item, idx) => idx === shadowElIdx ? {...item, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID } : item), {
-                trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
-                id: draggedElData[ITEM_ID_KEY],
-                source: SOURCES.POINTER
+        unlockOriginDzMinDimensions();
+        dispatchFinalizeEvent(shadowElDropZone, items, {
+            trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
+            id: draggedElData[ITEM_ID_KEY],
+            source: SOURCES.POINTER
         });
-        // We want to make sure the placeholder indeed trigger a re-render
-        window.requestAnimationFrame(() => {
-            unlockOriginDzMinDimensions();
-            dispatchFinalizeEvent(shadowElDropZone, items, {
-                trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
+        if (shadowElDropZone !== originDropZone) {
+            // letting the origin drop zone know the element was permanently taken away
+            dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {
+                trigger: TRIGGERS.DROPPED_INTO_ANOTHER,
                 id: draggedElData[ITEM_ID_KEY],
                 source: SOURCES.POINTER
             });
-            if (shadowElDropZone !== originDropZone) {
-                // letting the origin drop zone know the element was permanently taken away
-                dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {
-                    trigger: TRIGGERS.DROPPED_INTO_ANOTHER,
-                    id: draggedElData[ITEM_ID_KEY],
-                    source: SOURCES.POINTER
-                });
-            }
-            unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
-            cleanupPostDrop();
-        });
+        }
+        unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
+        cleanupPostDrop();
     }
     animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
 }
@@ -416,9 +392,9 @@ export function dndzone(node, options) {
         const {items, type, centreDraggedOnCursor} = config;
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
-        shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true};
+        shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
         // The initial shadow element. We need a different id at first in order to avoid conflicts and timing issues
-        const placeHolderElData = {...shadowElData, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
+        //const placeHolderElData = {...shadowElData, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
 
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget, centreDraggedOnCursor && currentMousePosition);
@@ -446,7 +422,7 @@ export function dndzone(node, options) {
         );
 
         // removing the original element by removing its data entry
-        items.splice(currentIdx, 1, placeHolderElData);
+        items.splice(currentIdx, 1, shadowElData);
         unlockOriginDzMinDimensions = preventShrinking(originDropZone);
 
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});

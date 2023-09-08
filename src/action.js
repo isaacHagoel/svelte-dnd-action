@@ -32,6 +32,7 @@ export function dndzone(node, options) {
             destroy: () => {console.warn("IGNORED DESTROY")}
         };
     }
+    console.error("NOT IGNORING", node);
     validateOptions(options);
     const pointerZone = pointerDndZone(node, options);
     const keyboardZone = keyboardDndZone(node, options);

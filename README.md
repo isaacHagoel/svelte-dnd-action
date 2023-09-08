@@ -348,11 +348,14 @@ You can use generics to set the type of `items` you are expecting in `DndEvent`.
 ```
 
 ### Nested Zones Optional Optimization (experimental)
+
 This is an experimental feature added in version 0.9.29. If you have multiple levels of nesting, the lib might do unnecessary work when dragging an element that has nested zones inside.
 Specifically, it allows nested zones within the shadow element (the placeholder under the dragged element) to register and destroy.
 This is because Svelte calls nested actions before the parent action (opposite to the rendering order).
 You can use a data attribute **on the items** to help the lib prevent this: `data-is-dnd-shadow-item-hint={item[SHADOW_ITEM_MARKER_PROPERTY_NAME]} `
+
 #### Simplified Example (just shows where to place the attribute):
+
 ```html
 <script>
     import {dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME} from 'svelte-dnd-action';

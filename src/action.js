@@ -1,6 +1,6 @@
 import {dndzone as pointerDndZone} from "./pointerAction";
 import {dndzone as keyboardDndZone} from "./keyboardAction";
-import {ITEM_ID_KEY} from "./constants";
+import {ITEM_ID_KEY, SHADOW_ELEMENT_HINT_ATTRIBUTE_NAME} from "./constants";
 import {toString} from "./helpers/util";
 
 /**
@@ -25,6 +25,12 @@ import {toString} from "./helpers/util";
  * @return {{update: function, destroy: function}}
  */
 export function dndzone(node, options) {
+    if (shouldIgnoreZone(node)) {
+        return {
+            update: () => {},
+            destroy: () => {}
+        };
+    }
     validateOptions(options);
     const pointerZone = pointerDndZone(node, options);
     const keyboardZone = keyboardDndZone(node, options);
@@ -39,6 +45,16 @@ export function dndzone(node, options) {
             keyboardZone.destroy();
         }
     };
+}
+
+/**
+ * If the user marked something in the ancestry of our node as shadow element, we can ignore it
+ * We need the user to mark it for us because svelte updates the action from deep to shallow (but renders top down)
+ * @param {HTMLElement} node
+ * @return {boolean}
+ */
+function shouldIgnoreZone(node) {
+    return !!node.closest(`[${SHADOW_ELEMENT_HINT_ATTRIBUTE_NAME}="true"]`);
 }
 
 function validateOptions(options) {

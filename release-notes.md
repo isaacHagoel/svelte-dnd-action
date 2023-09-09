@@ -1,9 +1,16 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.29](https://github.com/isaacHagoel/svelte-dnd-action/pull/488)
+
+This version addresses some issues around nested zones. By-default the shadow element now has a temporary id until it's dropped.
+This version also adds the option to provide a hint data attribute (`data-is-dnd-shadow-item-hint`) that helps the lib optimise when there is a lot of nesting (see readme).
+
 ### [0.9.28](https://github.com/isaacHagoel/svelte-dnd-action/pull/484)
+
 A revert of the problematic part in 0.9.27. This version is functionally equal to 0.9.26
 
 ### [0.9.27](https://github.com/isaacHagoel/svelte-dnd-action/pull/481)
+
 PLEASE DON'T USE THIS VERSION
 An unsuccessful attempt to support for dropzone being added mid-drag. It breaks in nested scenarios.
 

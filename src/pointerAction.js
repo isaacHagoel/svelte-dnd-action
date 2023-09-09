@@ -40,7 +40,7 @@ const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
 const DEFAULT_DROP_TARGET_STYLE = {
     outline: "rgba(255, 255, 102, 0.7) solid 2px"
 };
-const ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE = "data-dnd-original-dragged-item";
+const ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE = "data-is-dnd-original-dragged-item";
 
 let originalDragTarget;
 let draggedEl;

@@ -35,7 +35,7 @@ import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, toString} from "
 import {getBoundingRectNoTransforms} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
-const MIN_OBSERVATION_INTERVAL_MS = 100;
+const MIN_OBSERVATION_INTERVAL_MS = 20;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
 const DEFAULT_DROP_TARGET_STYLE = {
     outline: "rgba(255, 255, 102, 0.7) solid 2px"

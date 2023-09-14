@@ -157,6 +157,7 @@ export function dndzone(node, options) {
         type: undefined,
         dragDisabled: false,
         zoneTabIndex: 0,
+        zoneItemTabIndex: 0,
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
@@ -271,6 +272,7 @@ export function dndzone(node, options) {
         type: newType = DEFAULT_DROP_ZONE_TYPE,
         dragDisabled = false,
         zoneTabIndex = 0,
+        zoneItemTabIndex = 0,
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
@@ -280,6 +282,7 @@ export function dndzone(node, options) {
         config.dragDisabled = dragDisabled;
         config.dropFromOthersDisabled = dropFromOthersDisabled;
         config.zoneTabIndex = zoneTabIndex;
+        config.zoneItemTabIndex = zoneItemTabIndex;
         config.dropTargetStyle = dropTargetStyle;
         config.dropTargetClasses = dropTargetClasses;
         config.autoAriaDisabled = autoAriaDisabled;
@@ -312,7 +315,7 @@ export function dndzone(node, options) {
         for (let i = 0; i < node.children.length; i++) {
             const draggableEl = node.children[i];
             allDragTargets.add(draggableEl);
-            draggableEl.tabIndex = isDragging ? -1 : 0;
+            draggableEl.tabIndex = isDragging ? -1 : config.zoneItemTabIndex;
             if (!autoAriaDisabled) {
                 draggableEl.setAttribute("role", "listitem");
             }

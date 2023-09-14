@@ -17,7 +17,7 @@ import {toString} from "./helpers/util";
  * @property {boolean} [morphDisabled] - whether dragged element should morph to zone dimensions
  * @property {boolean} [dropFromOthersDisabled]
  * @property {number} [zoneTabIndex] - set the tabindex of the list container when not dragging
- * @property {number} [zoneItemTabIndex] - set the tabindex of the list item when not dragging
+ * @property {number} [zoneItemTabIndex] - set the tabindex of the list container items when not dragging
  * @property {object} [dropTargetStyle]
  * @property {string[]} [dropTargetClasses]
  * @property {function} [transformDraggedElement]

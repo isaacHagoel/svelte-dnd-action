@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.30](https://github.com/isaacHagoel/svelte-dnd-action/pull/496)
+
+Introduce zoneItemTabindex - It allows the user to set custom tabindex to the list container items when not dragging. Can be useful if you use [Drag handles](https://github.com/isaacHagoel/svelte-dnd-action#examples-and-recipes)
+
 ### [0.9.29](https://github.com/isaacHagoel/svelte-dnd-action/pull/488)
 
 This version addresses some issues around nested zones. By-default the shadow element now has a temporary id until it's dropped.

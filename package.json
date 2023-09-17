@@ -8,8 +8,8 @@
         "test": "cypress run",
         "lint": "eslint .",
         "format": "prettier --write .",
-        "build": "yarn lint && rollup -c",
-        "prepublishOnly": "yarn build"
+        "build": "npm run lint && rollup -c",
+        "prepublishOnly": "npm build"
     },
     "dependencies": {},
     "devDependencies": {
@@ -43,7 +43,7 @@
         "dist"
     ],
     "description": "*An awesome drag and drop library for Svelte 3 and 4 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
-    "version": "0.9.29",
+    "version": "0.9.30",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"

@@ -8,8 +8,8 @@
         "test": "cypress run",
         "lint": "eslint .",
         "format": "prettier --write .",
-        "build": "npm run lint && rollup -c",
-        "prepublishOnly": "npm build"
+        "build": "yarn lint && rollup -c",
+        "prepublishOnly": "yarn build"
     },
     "dependencies": {},
     "devDependencies": {

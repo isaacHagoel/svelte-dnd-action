@@ -97,7 +97,7 @@ function watchDraggedElement() {
     window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
     const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
-    const observationIntervalMs = setIntervalMs || MIN_OBSERVATION_INTERVAL_MS; //Min_observation only kicks in if setIntervalMs is 0 here.
+    const observationIntervalMs = setIntervalMs === 0 ? 20 : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); //if setintervalms is 0 it goes to 20, otherwise it is max between it and min observation.
     observe(draggedEl, dropZones, observationIntervalMs * 1.07);
 }
 function unWatchDraggedElement() {

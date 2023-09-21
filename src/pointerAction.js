@@ -36,6 +36,7 @@ import {getBoundingRectNoTransforms} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
+const DISABLED_OBSERVATION_INTERVAL_MS = 20;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
 const DEFAULT_DROP_TARGET_STYLE = {
     outline: "rgba(255, 255, 102, 0.7) solid 2px"
@@ -97,7 +98,7 @@ function watchDraggedElement() {
     window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
     const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
-    const observationIntervalMs = setIntervalMs === 0 ? 20 : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); //if setintervalms is 0 it goes to 20, otherwise it is max between it and min observation.
+    const observationIntervalMs = setIntervalMs === 0 ? DISABLED_OBSERVATION_INTERVAL_MS : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); //if setintervalms is 0 it goes to 20, otherwise it is max between it and min observation.
     observe(draggedEl, dropZones, observationIntervalMs * 1.07);
 }
 function unWatchDraggedElement() {

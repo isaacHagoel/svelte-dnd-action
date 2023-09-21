@@ -106,7 +106,7 @@ An options-object with the following attributes:
 | Name | Type | Required? | Default Value | Description |
 | ------------------------- | -------------- | ------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
 | `items` | Array&lt;Object&gt; | Yes. Each object in the array **has to have** an `id` property (key name can be overridden globally) with a unique value (within all dnd-zones of the same type) | N/A | The data array that is used to produce the list with the draggable items (the same thing you run your #each block on). The dndzone should not have children that don't originate in `items` |
-| `flipDurationMs` | Number | No | `0` | The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero or leave out if you don't want animations |
+| `flipDurationMs` | Number | No | `0` | The same value you give the flip animation on the items (to make them animated as they "make space" for the dragged item). Set to zero if you dont want animations, if unset it defaults to 100ms |
 | `type` | String | No | Internal | dnd-zones that share the same type can have elements from one dragged into another. By default, all dnd-zones have the same type |
 | `dragDisabled` | Boolean | No | `false` | Setting it to true will make it impossible to drag elements out of the dnd-zone. You can change it at any time, and the zone will adjust on the fly |
 | `morphDisabled` | Boolean | No | `false` | By default, when dragging over a zone, the dragged element is morphed to look like it would if dropped. You can prevent it by setting this option. |

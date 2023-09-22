@@ -1,5 +1,10 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.30](https://github.com/isaacHagoel/svelte-dnd-action/pull/493)
+
+This version introduces a way for the user to set the flipdurationms to 0, and have it actually have 0 animation (20ms or 1 frame animation). Useful for gaming
+as before the 100ms minimum made it so that it was too slow.
+
 ### [0.9.29](https://github.com/isaacHagoel/svelte-dnd-action/pull/488)
 
 This version addresses some issues around nested zones. By-default the shadow element now has a temporary id until it's dropped.

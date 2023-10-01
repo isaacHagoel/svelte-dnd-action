@@ -262,7 +262,7 @@ export function dndzone(node, options) {
         const children = Array.from(node.children);
         const focusedItemIdx = children.indexOf(draggableEl);
         focusedItem = draggableEl;
-        focusedItem.tabIndex = 0;
+        focusedItem.tabIndex = config.zoneItemTabIndex;
         focusedItemId = items[focusedItemIdx][ITEM_ID_KEY];
         focusedItemLabel = children[focusedItemIdx].getAttribute("aria-label") || "";
     }
@@ -331,7 +331,7 @@ export function dndzone(node, options) {
                 printDebug(() => ["focusing on", {i, focusedItemId}]);
                 // if it is a nested dropzone, it was re-rendered and we need to refresh our pointer
                 focusedItem = draggableEl;
-                focusedItem.tabIndex = 0;
+                focusedItem.tabIndex = config.zoneItemTabIndex;
                 // without this the element loses focus if it moves backwards in the list
                 draggableEl.focus();
             }

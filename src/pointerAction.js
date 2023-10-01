@@ -383,8 +383,8 @@ export function dndzone(node, options) {
         const currentIdx = elToIdx.get(originalDragTarget);
         originIndex = currentIdx;
         originDropZone = originalDragTarget.parentElement;
-        /** @type {ShadowRoot | HTMLDocument} */
-        const rootNode = originDropZone.getRootNode();
+        /** @type {ShadowRoot | HTMLDocument | Element } */
+        const rootNode = originDropZone.closest("dialog") || originDropZone.getRootNode();
         const originDropZoneRoot = rootNode.body || rootNode;
         const {items, type, centreDraggedOnCursor} = config;
         draggedElData = {...items[currentIdx]};

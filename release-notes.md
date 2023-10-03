@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.31](https://github.com/isaacHagoel/svelte-dnd-action/pull/496)
+
+Introduce zoneItemTabindex - It allows the user to set custom tabindex to the list container items when not dragging. Can be useful if you use [Drag handles](https://github.com/isaacHagoel/svelte-dnd-action#examples-and-recipes)
+
 ### [0.9.30](https://github.com/isaacHagoel/svelte-dnd-action/pull/493)
 
 This version introduces a way for the user to set the flipdurationms to 0, and have it actually have 0 animation (20ms or 1 frame animation). Useful for gaming

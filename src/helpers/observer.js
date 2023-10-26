@@ -16,6 +16,22 @@ const TOLERANCE_PX = 10;
 const {scrollIfNeeded, resetScrolling} = makeScroller();
 let next;
 
+function findScrollableContainers(element) {
+    if (!element) {
+        return [];
+    }
+    const scrollableContainers = [];
+    let parent = element;
+    while (parent) {
+        const {overflow} = window.getComputedStyle(parent);
+        if (overflow.split(" ").some(o => o === "auto" || o === "scroll")) {
+            scrollableContainers.push(parent);
+        }
+        parent = parent.parentElement;
+    }
+    return scrollableContainers;
+}
+
 /**
  * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
  * @param {Set<HTMLElement>} dropZones
@@ -36,7 +52,12 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
      */
     function andNow() {
         const currentCenterOfDragged = findCenterOfElement(draggedEl);
-        const scrolled = scrollIfNeeded(currentCenterOfDragged, lastDropZoneFound);
+        const scrollableContainers = findScrollableContainers(lastDropZoneFound);
+        let scrolled = false;
+        for (const container of scrollableContainers) {
+            // scroll only the first container that needs to be scrolled
+            scrolled = scrolled || scrollIfNeeded(currentCenterOfDragged, container);
+        }
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         if (
             !scrolled &&

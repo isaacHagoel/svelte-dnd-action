@@ -17,17 +17,29 @@ export function svelteNodeClone(el) {
         values.push(select.value);
     }
 
-    if (selects.length <= 0) {
-        return cloned;
+    if (selects.length > 0) {
+        const clonedSelects = elIsSelect ? [cloned] : [...cloned.querySelectorAll("select")];
+        for (let i = 0; i < clonedSelects.length; i++) {
+            const select = clonedSelects[i];
+            const value = values[i];
+            const optionEl = select.querySelector(`option[value="${value}"`);
+            if (optionEl) {
+                optionEl.setAttribute("selected", true);
+            }
+        }
     }
 
-    const clonedSelects = elIsSelect ? [cloned] : [...cloned.querySelectorAll("select")];
-    for (let i = 0; i < clonedSelects.length; i++) {
-        const select = clonedSelects[i];
-        const value = values[i];
-        const optionEl = select.querySelector(`option[value="${value}"`);
-        if (optionEl) {
-            optionEl.setAttribute("selected", true);
+    const elIsCanvas = el.tagName === "CANVAS";
+    const canvases = elIsCanvas ? [el] : [...el.querySelectorAll("canvas")];
+    if(canvases.length > 0)
+    {
+        const clonedCanvases = elIsCanvas ? [cloned] : [...cloned.querySelectorAll("canvas")];
+        for (let i = 0; i < clonedCanvases.length; i++) {
+            const canvas = canvases[i];
+            const clonedCanvas = clonedCanvases[i];
+            clonedCanvas.width = canvas.width;
+            clonedCanvas.height = canvas.height;
+            clonedCanvas.getContext("2d").drawImage(canvas,0,0);
         }
     }
 

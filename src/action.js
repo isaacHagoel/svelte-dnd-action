@@ -17,6 +17,7 @@ import {toString} from "./helpers/util";
  * @property {boolean} [morphDisabled] - whether dragged element should morph to zone dimensions
  * @property {boolean} [dropFromOthersDisabled]
  * @property {number} [zoneTabIndex] - set the tabindex of the list container when not dragging
+ * @property {number} [zoneItemTabIndex] - set the tabindex of the list container items when not dragging
  * @property {object} [dropTargetStyle]
  * @property {string[]} [dropTargetClasses]
  * @property {function} [transformDraggedElement]
@@ -67,6 +68,7 @@ function validateOptions(options) {
         morphDisabled,
         dropFromOthersDisabled,
         zoneTabIndex,
+        zoneItemTabIndex,
         dropTargetStyle,
         dropTargetClasses,
         transformDraggedElement,
@@ -90,6 +92,9 @@ function validateOptions(options) {
     }
     if (zoneTabIndex && !isInt(zoneTabIndex)) {
         throw new Error(`zoneTabIndex should be a number but instead it is a ${typeof zoneTabIndex}, ${toString(zoneTabIndex)}`);
+    }
+    if (zoneItemTabIndex && !isInt(zoneItemTabIndex)) {
+        throw new Error(`zoneItemTabIndex should be a number but instead it is a ${typeof zoneItemTabIndex}, ${toString(zoneItemTabIndex)}`);
     }
 }
 

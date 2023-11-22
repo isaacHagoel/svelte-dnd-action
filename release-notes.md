@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.32](https://github.com/isaacHagoel/svelte-dnd-action/pull/517)
+
+Fixed canvas content not getting cloned on dragged node.
+
 ### [0.9.31](https://github.com/isaacHagoel/svelte-dnd-action/pull/496)
 
 Introduce zoneItemTabindex - It allows the user to set custom tabindex to the list container items when not dragging. Can be useful if you use [Drag handles](https://github.com/isaacHagoel/svelte-dnd-action#examples-and-recipes)

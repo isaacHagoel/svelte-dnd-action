@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.33](https://github.com/isaacHagoel/svelte-dnd-action/pull/499)
+
+bugfix - now works properly inside a `<dialog>` element
+
 ### [0.9.32](https://github.com/isaacHagoel/svelte-dnd-action/pull/517)
 
 Fixed canvas content not getting cloned on dragged node.

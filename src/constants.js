@@ -7,6 +7,7 @@ export const TRIGGERS = {
     DRAGGED_OVER_INDEX: DRAGGED_OVER_INDEX_EVENT_NAME,
     DRAGGED_LEFT: DRAGGED_LEFT_EVENT_NAME,
     DRAGGED_LEFT_ALL: "draggedLeftAll",
+    USER_DROPPED: "userDropped",
     DROPPED_INTO_ZONE: "droppedIntoZone",
     DROPPED_INTO_ANOTHER: "droppedIntoAnother",
     DROPPED_OUTSIDE_OF_ANY: "droppedOutsideOfAny",

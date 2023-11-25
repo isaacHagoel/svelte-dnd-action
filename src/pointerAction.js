@@ -207,8 +207,9 @@ function handleMouseMove(e) {
     }px, 0)`;
 }
 
-function handleDrop() {
+function handleDrop(e) {
     printDebug(() => "dropped");
+    const c = e.touches ? e.touches[0] : e;
     finalizingPreviousDrag = true;
     // cleanup
     window.removeEventListener("mousemove", handleMouseMove);
@@ -252,17 +253,32 @@ function handleDrop() {
         unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    let shouldCancelDropAnimation = !dispatchConsiderEvent(
+        originDropZone,
+        dzToConfig.get(originDropZone).items,
+        {
+            trigger: TRIGGERS.USER_DROPPED,
+            id: draggedElData[ITEM_ID_KEY],
+            draggedItemData: {...draggedElData},
+            source: SOURCES.POINTER,
+            draggedElement: draggedEl,
+            isDroppedOutsideOfAnyDzOfType: isDraggedOutsideOfAnyDz,
+            pointerClientXY: {x: c.clientX, y: c.clientY}
+        },
+        true
+    );
+    console.error({shouldCancelDropAnimation});
+    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone, shouldCancelDropAnimation ? 0 : undefined);
 }
 
 // helper function for handleDrop
-function animateDraggedToFinalPosition(shadowElIdx, callback) {
+function animateDraggedToFinalPosition(shadowElIdx, callback, durationOverrideMs) {
     const shadowElRect = getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx]);
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
         y: shadowElRect.top - parseFloat(draggedEl.style.top)
     };
-    const {dropAnimationDurationMs} = dzToConfig.get(shadowElDropZone);
+    const {dropAnimationDurationMs} = durationOverrideMs !== undefined ? durationOverrideMs : dzToConfig.get(shadowElDropZone);
     const transition = `transform ${dropAnimationDurationMs}ms ease`;
     draggedEl.style.transition = draggedEl.style.transition ? draggedEl.style.transition + "," + transition : transition;
     draggedEl.style.transform = `translate3d(${newTransform.x}px, ${newTransform.y}px, 0)`;

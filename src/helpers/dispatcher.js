@@ -24,10 +24,13 @@ export function dispatchFinalizeEvent(el, items, info) {
  * @param {Node} el
  * @param {Array} items
  * @param {Info} info
+ * @param {boolean} [cancelable] - should the event be cancelable. defaults to false
+ * @return {boolean} false if the event was cancelled
  */
-export function dispatchConsiderEvent(el, items, info) {
-    el.dispatchEvent(
+export function dispatchConsiderEvent(el, items, info, cancelable = false) {
+    return el.dispatchEvent(
         new CustomEvent(CONSIDER_EVENT_NAME, {
+            cancelable,
             detail: {items, info}
         })
     );

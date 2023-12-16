@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.34](https://github.com/isaacHagoel/svelte-dnd-action/pull/524)
+
+Added an export block to package.json to remove a Svelte 5 (actually vite) warning about the deprecated "svelte" entry 
+
 ### [0.9.33](https://github.com/isaacHagoel/svelte-dnd-action/pull/499)
 
 bugfix - now works properly inside a `<dialog>` element

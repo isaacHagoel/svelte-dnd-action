@@ -1,9 +1,26 @@
 {
     "name": "svelte-dnd-action",
-    "svelte": "src/index.js",
+    "description": "*An awesome drag and drop library for Svelte 3 and 4 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
+    "version": "0.9.34",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"
+    },
+    "author": "Isaac Hagoel",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/isaacHagoel/svelte-dnd-action/issues"
+    },
+    "homepage": "https://github.com/isaacHagoel/svelte-dnd-action#readme",
     "module": "dist/index.mjs",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "svelte": "src/index.js",
+    "exports": {
+        ".": {
+            "svelte": "./dist/index.js"
+        }
+    },
     "scripts": {
         "test": "cypress run",
         "lint": "eslint .",
@@ -42,18 +59,6 @@
         "src",
         "dist"
     ],
-    "description": "*An awesome drag and drop library for Svelte 3 and 4 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
-    "version": "0.9.33",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"
-    },
-    "author": "Isaac Hagoel",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/isaacHagoel/svelte-dnd-action/issues"
-    },
-    "homepage": "https://github.com/isaacHagoel/svelte-dnd-action#readme",
     "husky": {
         "hooks": {
             "pre-commit": "lint-staged"

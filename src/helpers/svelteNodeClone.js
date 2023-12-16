@@ -31,15 +31,14 @@ export function svelteNodeClone(el) {
 
     const elIsCanvas = el.tagName === "CANVAS";
     const canvases = elIsCanvas ? [el] : [...el.querySelectorAll("canvas")];
-    if(canvases.length > 0)
-    {
+    if (canvases.length > 0) {
         const clonedCanvases = elIsCanvas ? [cloned] : [...cloned.querySelectorAll("canvas")];
         for (let i = 0; i < clonedCanvases.length; i++) {
             const canvas = canvases[i];
             const clonedCanvas = clonedCanvases[i];
             clonedCanvas.width = canvas.width;
             clonedCanvas.height = canvas.height;
-            clonedCanvas.getContext("2d").drawImage(canvas,0,0);
+            clonedCanvas.getContext("2d").drawImage(canvas, 0, 0);
         }
     }
 

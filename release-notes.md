@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.36](https://github.com/isaacHagoel/svelte-dnd-action/pull/528)
+
+Added `import` and `require` to the export block in package.json so that types are properly resolved.
+
 ### [0.9.35](https://github.com/isaacHagoel/svelte-dnd-action/pull/527)
 
 Added an export block to package.json to remove a Svelte 5 (actually vite) warning about the deprecated "svelte" entry

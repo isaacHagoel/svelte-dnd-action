@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.37](https://github.com/isaacHagoel/svelte-dnd-action/pull/532)
+
+Added support for class instances as list items
+
 ### [0.9.36](https://github.com/isaacHagoel/svelte-dnd-action/pull/528)
 
 Added `import` and `require` to the export block in package.json so that types are properly resolved.

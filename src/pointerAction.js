@@ -387,7 +387,7 @@ export function dndzone(node, options) {
         const rootNode = originDropZone.closest("dialog") || originDropZone.getRootNode();
         const originDropZoneRoot = rootNode.body || rootNode;
         const {items, type, centreDraggedOnCursor} = config;
-        draggedElData = {...items[currentIdx]};
+        draggedElData = items[currentIdx];
         draggedElType = type;
         shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
 

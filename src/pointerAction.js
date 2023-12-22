@@ -231,7 +231,18 @@ function handleDrop() {
     );
     let shadowElIdx = findShadowElementIdx(items);
     // the handler might remove the shadow element, ex: dragula like copy on drag
-    if (shadowElIdx === -1) shadowElIdx = originIndex;
+    if (shadowElIdx === -1) {
+        if (shadowElDropZone === originDropZone) {
+            shadowElIdx = originIndex;
+        }
+        else if (shadowElDropZone.children.length > 0) {
+           shadowElIdx = shadowElDropZone.children.length - 1;
+        }
+        else {
+            // the target zone is empty
+            shadowElIdx = undefined;
+        }
+    }
 
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
     function finalizeWithinZone() {
@@ -249,10 +260,10 @@ function handleDrop() {
                 source: SOURCES.POINTER
             });
         }
-        unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
+        if (shadowElIdx) unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    if (shadowElIdx) animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
 }
 
 // helper function for handleDrop

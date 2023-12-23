@@ -117,6 +117,9 @@ function unWatchDraggedElement() {
 function findShadowElementIdx(items) {
     return items.findIndex(item => !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 }
+function createShadowElData(draggedElData) {
+    return {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
+}
 
 /* custom drag-events handlers */
 function handleDraggedEntered(e) {
@@ -157,7 +160,9 @@ function handleDraggedLeft(e) {
         return;
     }
     const shadowElIdx = findShadowElementIdx(items);
-    const shadowItem = items.splice(shadowElIdx, 1)[0];
+    if (shadowElIdx !== -1) {
+        items.splice(shadowElIdx, 1);
+    }
     shadowElDropZone = undefined;
     const {type, theOtherDz} = e.detail;
     if (
@@ -168,7 +173,7 @@ function handleDraggedLeft(e) {
         isDraggedOutsideOfAnyDz = true;
         shadowElDropZone = originDropZone;
         const originZoneItems = dzToConfig.get(originDropZone).items;
-        originZoneItems.splice(originIndex, 0, shadowItem);
+        originZoneItems.splice(originIndex, 0, shadowElData);
         dispatchConsiderEvent(originDropZone, originZoneItems, {
             trigger: TRIGGERS.DRAGGED_LEFT_ALL,
             id: draggedElData[ITEM_ID_KEY],
@@ -192,7 +197,9 @@ function handleDraggedIsOverIndex(e) {
     isDraggedOutsideOfAnyDz = false;
     const {index} = e.detail.indexObj;
     const shadowElIdx = findShadowElementIdx(items);
-    items.splice(shadowElIdx, 1);
+    if (shadowElIdx !== -1) {
+        items.splice(shadowElIdx, 1);
+    }
     items.splice(index, 0, shadowElData);
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
@@ -231,7 +238,13 @@ function handleDrop() {
     );
     let shadowElIdx = findShadowElementIdx(items);
     // the handler might remove the shadow element, ex: dragula like copy on drag
-    if (shadowElIdx === -1) shadowElIdx = originIndex;
+    if (shadowElIdx === -1) {
+        if (shadowElDropZone === originDropZone) {
+            shadowElIdx = originIndex;
+        } else if (shadowElDropZone.children.length > 0) {
+            shadowElIdx = shadowElDropZone.children.length - 1;
+        }
+    }
 
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
     function finalizeWithinZone() {
@@ -249,10 +262,10 @@ function handleDrop() {
                 source: SOURCES.POINTER
             });
         }
-        unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
+        if (shadowElIdx !== -1) unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    if (shadowElIdx !== -1) animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
 }
 
 // helper function for handleDrop
@@ -389,7 +402,7 @@ export function dndzone(node, options) {
         const {items, type, centreDraggedOnCursor} = config;
         draggedElData = items[currentIdx];
         draggedElType = type;
-        shadowElData = {...draggedElData, [SHADOW_ITEM_MARKER_PROPERTY_NAME]: true, [ITEM_ID_KEY]: SHADOW_PLACEHOLDER_ITEM_ID};
+        shadowElData = createShadowElData(draggedElData);
 
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget, centreDraggedOnCursor && currentMousePosition);

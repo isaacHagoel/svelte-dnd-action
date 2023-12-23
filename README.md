@@ -183,6 +183,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   [Customizing the placeholder(shadow) element](https://svelte.dev/repl/9c8db8b91b2142d19dcf9bc963a27838?version=3)
 
 -   [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3)
+-   [Copy on drop and a drop area with a single slot](https://svelte.dev/repl/b4e120c45c3e48e49a0d637f0cf097d9?version=3)
 -   [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3), courtesy of @gleuch
 -   [Interaction (save/get items) with an asynchronous server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3)
 -   [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3)

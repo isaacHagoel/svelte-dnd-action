@@ -1,7 +1,8 @@
 ## Svelte Dnd Action - Release Notes
+
 ### [0.9.38](https://github.com/isaacHagoel/svelte-dnd-action/pull/533)
 
-Added fault tolerance for use cases in which the user removes the shadow item from the list (e.g zones with limited slots) 
+Added fault tolerance for use cases in which the user removes the shadow item from the list (e.g zones with limited slots)
 
 ### [0.9.37](https://github.com/isaacHagoel/svelte-dnd-action/pull/532)
 

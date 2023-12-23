@@ -241,9 +241,8 @@ function handleDrop() {
     if (shadowElIdx === -1) {
         if (shadowElDropZone === originDropZone) {
             shadowElIdx = originIndex;
-        }
-        else if (shadowElDropZone.children.length > 0) {
-           shadowElIdx = shadowElDropZone.children.length - 1;
+        } else if (shadowElDropZone.children.length > 0) {
+            shadowElIdx = shadowElDropZone.children.length - 1;
         }
     }
 

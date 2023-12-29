@@ -24,7 +24,7 @@ function findScrollableContainers(element) {
     let parent = element;
     while (parent) {
         const {overflow} = window.getComputedStyle(parent);
-        if (overflow.split(" ").some(o => o === "auto" || o === "scroll")) {
+        if (overflow.split(" ").some(o => o.includes("auto") || o.includes("scroll"))) {
             scrollableContainers.push(parent);
         }
         parent = parent.parentElement;

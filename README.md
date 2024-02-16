@@ -288,7 +288,8 @@ You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't alre
 >   kit: {
 >     typescript: {
 >       config(config) {
->         config.include.push('global.d.ts');
+>          // This path is relative to the ".svelte-kit" folder
+>         config.include.push('../global.d.ts');
 >       },
 >     },
 >   },

@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.39](https://github.com/isaacHagoel/svelte-dnd-action/pull/538)
+
+Updated README to help set up sveltekit + typescript
+
 ### [0.9.38](https://github.com/isaacHagoel/svelte-dnd-action/pull/533)
 
 Added fault tolerance for use cases in which the user removes the shadow item from the list (e.g zones with limited slots)

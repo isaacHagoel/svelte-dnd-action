@@ -281,6 +281,21 @@ declare namespace svelteHTML {
 ```
 
 You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't already: "include": ["src/**/*", "global.d.ts"].
+
+> Note: If you are using Sveltekit you should use `svelte.config.js` to modify the generated `tsconfig.json` rather than adding the `include` element to the root `tsconfig.json`.  Adding `include` to the root file will cause issues because it will [override](https://www.typescriptlang.org/tsconfig#extends) the `include` array defined in `.svelte-kit/tsconfig.json`. Example:
+> ```javascript
+> const config = {
+>   kit: {
+>     typescript: {
+>       config(config) {
+>          // This path is relative to the ".svelte-kit" folder
+>         config.include.push('../global.d.ts');
+>       },
+>     },
+>   },
+> };
+> ```
+
 Then you will be able to use the library with type safety as follows (Typescript gurus out there, improvements are welcome :smile:):
 
 ```html

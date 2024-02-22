@@ -42,6 +42,8 @@ export interface Options<T extends Item = Item> {
 export interface DndZoneAttributes<T> {
     "on:consider"?: (e: CustomEvent<DndEvent<T>>) => void;
     "on:finalize"?: (e: CustomEvent<DndEvent<T>>) => void;
+    onconsider?: (e: CustomEvent<DndEvent<T>>) => void;
+    onfinalize?: (e: CustomEvent<DndEvent<T>>) => void;
 }
 
 /**

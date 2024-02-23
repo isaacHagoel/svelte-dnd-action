@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.40](https://github.com/isaacHagoel/svelte-dnd-action/pull/542)
+
+Added custom events typings with generics to support TypeScript out of the box.
+
 ### [0.9.39](https://github.com/isaacHagoel/svelte-dnd-action/pull/538)
 
 Updated README to help set up sveltekit + typescript

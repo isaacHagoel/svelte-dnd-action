@@ -252,9 +252,11 @@ setDebugMode(true);
 
 ### Typescript
 
-If you are using Typescript, you will need to add the following block to your `global.d.ts` (at least until [this svelte issue](https://github.com/sveltejs/language-tools/issues/431) is resolved):
+#### Setup (Optional)
 
-#### Svelte 3 or below
+TypeScript support has been added since version 0.9.40 and you do not need to set up any custom typings. However, in case you are using some older version or face some types issue, you will need to add the following block to your `global.d.ts` (at least until [this svelte issue](https://github.com/sveltejs/language-tools/issues/431) is resolved):
+
+##### Svelte 3 or below
 
 ```typescript
 declare type Item = import("svelte-dnd-action").Item;
@@ -267,7 +269,7 @@ declare namespace svelte.JSX {
 }
 ```
 
-#### Svelte 4:
+##### Svelte 4:
 
 ```typescript
 declare type Item = import("svelte-dnd-action").Item;
@@ -282,17 +284,18 @@ declare namespace svelteHTML {
 
 You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't already: "include": ["src/**/*", "global.d.ts"].
 
-> Note: If you are using Sveltekit you should use `svelte.config.js` to modify the generated `tsconfig.json` rather than adding the `include` element to the root `tsconfig.json`.  Adding `include` to the root file will cause issues because it will [override](https://www.typescriptlang.org/tsconfig#extends) the `include` array defined in `.svelte-kit/tsconfig.json`. Example:
+> Note: If you are using Sveltekit you should use `svelte.config.js` to modify the generated `tsconfig.json` rather than adding the `include` element to the root `tsconfig.json`. Adding `include` to the root file will cause issues because it will [override](https://www.typescriptlang.org/tsconfig#extends) the `include` array defined in `.svelte-kit/tsconfig.json`. Example:
+>
 > ```javascript
 > const config = {
->   kit: {
->     typescript: {
->       config(config) {
->          // This path is relative to the ".svelte-kit" folder
->         config.include.push('../global.d.ts');
->       },
->     },
->   },
+>     kit: {
+>         typescript: {
+>             config(config) {
+>                 // This path is relative to the ".svelte-kit" folder
+>                 config.include.push("../global.d.ts");
+>             }
+>         }
+>     }
 > };
 > ```
 

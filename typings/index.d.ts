@@ -1,14 +1,18 @@
+import type {ActionReturn} from "svelte/action";
+
 /**
  * A custom action to turn any container to a dnd zone and all of its direct children to draggables
  * Supports mouse, touch and keyboard interactions.
  * Dispatches two events that the container is expected to react to by modifying its list of items,
  * which will then feed back in to this action via the update function
  */
-export declare function dndzone(
+export declare function dndzone<T extends Item>(node: HTMLElement, options: Options<T>): ActionReturn<Options<T>, DndZoneAttributes<T>>;
+
+export declare function dndzone<T extends Item>(
     node: HTMLElement,
-    options: Options
+    options: Options<T>
 ): {
-    update: (newOptions: Options) => void;
+    update: (newOptions: Options<T>) => void;
     destroy: () => void;
 };
 
@@ -19,8 +23,8 @@ export type TransformDraggedElementFunction = (
 ) => void;
 
 export declare type Item = Record<string, any>;
-export interface Options {
-    items: Item[]; // the list of items that was used to generate the children of the given node
+export interface Options<T extends Item = Item> {
+    items: T[]; // the list of items that was used to generate the children of the given node
     type?: string; // the type of the dnd zone. children dragged from here can only be dropped in other zones of the same type, defaults to a base type
     flipDurationMs?: number; // if the list animated using flip (recommended), specifies the flip duration such that everything syncs with it without conflict
     dragDisabled?: boolean;
@@ -33,6 +37,13 @@ export interface Options {
     transformDraggedElement?: TransformDraggedElementFunction;
     autoAriaDisabled?: boolean;
     centreDraggedOnCursor?: boolean;
+}
+
+export interface DndZoneAttributes<T> {
+    "on:consider"?: (e: CustomEvent<DndEvent<T>>) => void;
+    "on:finalize"?: (e: CustomEvent<DndEvent<T>>) => void;
+    onconsider?: (e: CustomEvent<DndEvent<T>>) => void;
+    onfinalize?: (e: CustomEvent<DndEvent<T>>) => void;
 }
 
 /**

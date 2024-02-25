@@ -511,7 +511,7 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
         registerDropZone(node, newType);
         const shadowElIdx = findShadowElementIdx(config.items);
-        for (let idx = 0; idx < node.children.length; idx++) {
+        for (let idx = 0; idx < config.items.length; idx++) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (idx === shadowElIdx) {

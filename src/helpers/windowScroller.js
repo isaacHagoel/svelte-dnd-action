@@ -4,7 +4,7 @@ import {resetIndexesCache} from "./listUtil";
 
 const INTERVAL_MS = 300;
 let mousePosition;
-
+// TODO - FIX THE TESTS AND DELETE THIS FILE
 /**
  * Do not use this! it is visible for testing only until we get over the issue Cypress not triggering the mousemove listeners
  * // TODO - make private (remove export)

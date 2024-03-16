@@ -9,7 +9,7 @@ import {
     TRIGGERS
 } from "./constants";
 import {observe, unobserve} from "./helpers/observer";
-import {armWindowScroller, disarmWindowScroller} from "./helpers/windowScroller";
+import {armGlobalScroller, disarmGlobalScroller} from "./helpers/globalScroller";
 import {
     createDraggedElementFrom,
     decorateShadowEl,
@@ -88,7 +88,8 @@ function unregisterDropZone(dropZoneEl, type) {
 /* functions to manage observing the dragged element and trigger custom drag-events */
 function watchDraggedElement() {
     printDebug(() => "watching dragged element");
-    armWindowScroller();
+    //TODO - add support for and test changing type mid drag
+    armGlobalScroller(typeToDropZones.get(draggedElType));
     const dropZones = typeToDropZones.get(draggedElType);
     for (const dz of dropZones) {
         dz.addEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
@@ -103,7 +104,7 @@ function watchDraggedElement() {
 }
 function unWatchDraggedElement() {
     printDebug(() => "unwatching dragged element");
-    disarmWindowScroller();
+    disarmGlobalScroller();
     const dropZones = typeToDropZones.get(draggedElType);
     for (const dz of dropZones) {
         dz.removeEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);

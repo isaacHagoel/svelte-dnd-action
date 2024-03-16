@@ -157,6 +157,7 @@ export function isElementOffDocument(el) {
     return rect.right < 0 || rect.left > document.documentElement.scrollWidth || rect.bottom < 0 || rect.top > document.documentElement.scrollHeight;
 }
 
+// TODO - consider moving this to the scroller because it is the only consumer and it is not generic enough to be used by something else
 /**
  * If the point is inside the element returns its distances from the sides, otherwise returns null
  * @param {Point} point
@@ -164,7 +165,16 @@ export function isElementOffDocument(el) {
  * @return {null|{top: number, left: number, bottom: number, right: number}}
  */
 export function calcInnerDistancesBetweenPointAndSidesOfElement(point, el) {
-    const rect = getAbsoluteRect(el);
+    // Even if the scrolling element is small it acts as a scroller for the viewport
+    const rect =
+        el === document.scrollingElement
+            ? {
+                  top: 0,
+                  bottom: window.innerHeight,
+                  left: 0,
+                  right: window.innerWidth
+              }
+            : el.getBoundingClientRect();
     if (!isPointInsideRect(point, rect)) {
         return null;
     }
@@ -172,7 +182,6 @@ export function calcInnerDistancesBetweenPointAndSidesOfElement(point, el) {
         top: point.y - rect.top,
         bottom: rect.bottom - point.y,
         left: point.x - rect.left,
-        // TODO - figure out what is so special about right (why the rect is too big)
-        right: Math.min(rect.right, document.documentElement.clientWidth) - point.x
+        right: rect.right - point.x
     };
 }

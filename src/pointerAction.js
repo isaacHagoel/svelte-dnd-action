@@ -9,7 +9,7 @@ import {
     TRIGGERS
 } from "./constants";
 import {observe, unobserve} from "./helpers/observer";
-import {armGlobalScroller, disarmGlobalScroller} from "./helpers/globalScroller";
+import {armGlobalScroller, disarmGlobalScroller, didAnyContainerScrollDuringLastInterval} from "./helpers/globalScroller";
 import {
     createDraggedElementFrom,
     decorateShadowEl,
@@ -88,19 +88,20 @@ function unregisterDropZone(dropZoneEl, type) {
 /* functions to manage observing the dragged element and trigger custom drag-events */
 function watchDraggedElement() {
     printDebug(() => "watching dragged element");
-    //TODO - add support for and test changing type mid drag
-    armGlobalScroller(typeToDropZones.get(draggedElType));
     const dropZones = typeToDropZones.get(draggedElType);
+    // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
+    const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
+    const observationIntervalMs = setIntervalMs === 0 ? DISABLED_OBSERVATION_INTERVAL_MS : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); //if setintervalms is 0 it goes to 20, otherwise it is max between it and min observation.
+    const intervalMS = observationIntervalMs * 1.07;
+    armGlobalScroller(typeToDropZones.get(draggedElType), intervalMS);
+
     for (const dz of dropZones) {
         dz.addEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
         dz.addEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
         dz.addEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
     window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
-    // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
-    const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
-    const observationIntervalMs = setIntervalMs === 0 ? DISABLED_OBSERVATION_INTERVAL_MS : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); //if setintervalms is 0 it goes to 20, otherwise it is max between it and min observation.
-    observe(draggedEl, dropZones, observationIntervalMs * 1.07);
+    observe(draggedEl, dropZones, didAnyContainerScrollDuringLastInterval, intervalMS);
 }
 function unWatchDraggedElement() {
     printDebug(() => "unwatching dragged element");

@@ -4,39 +4,74 @@ import {resetIndexesCache} from "./listUtil";
 import {getDepth} from "./util";
 import {isPointInsideRect} from "./intersection";
 
-const INTERVAL_MS = 250;
+const DEFAULT_INTERVAL_MS = 150;
 let mousePosition;
 let scrollingContainersSet;
 let scrollingContainersDeepToShallow;
+let didScrollDuringLastInterval = false;
 
 /**
- * Do not use this! it is visible for testing only until we get over the issue Cypress not triggering the mousemove listeners
- * // TODO - make private (remove export)
+ * Will start watching the mouse pointer and scroll the elements if it goes next to the edges
+ * @param {HTMLElement[]} dropZonesForScrolling
+ * @param {number} intervalMs
+ */
+export function armGlobalScroller(dropZonesForScrolling = [], intervalMs = DEFAULT_INTERVAL_MS) {
+    printDebug(() => "arming super scroller");
+    scrollingContainersSet = findRelevantScrollContainers(dropZonesForScrolling);
+    if (scrollingContainersSet.size === 0) {
+        return;
+    }
+    scrollingContainersDeepToShallow = Array.from(scrollingContainersSet).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
+    window.addEventListener("mousemove", updateMousePosition);
+    window.addEventListener("touchmove", updateMousePosition);
+    loop(intervalMs);
+}
+
+/**
+ * will stop watching the mouse pointer and won't scroll the window anymore
+ */
+export function disarmGlobalScroller() {
+    printDebug(() => "disarming window scroller");
+    window.removeEventListener("mousemove", updateMousePosition);
+    window.removeEventListener("touchmove", updateMousePosition);
+    mousePosition = undefined;
+    scrollingContainersSet = undefined;
+    scrollingContainersDeepToShallow = undefined;
+    didScrollDuringLastInterval = false;
+    window.clearTimeout(next);
+    resetScrolling();
+}
+
+export function didAnyContainerScrollDuringLastInterval() {
+    return didScrollDuringLastInterval;
+}
+
+/**
  * @param {{clientX: number, clientY: number}} e
  */
-export function updateMousePosition(e) {
+function updateMousePosition(e) {
     const c = e.touches ? e.touches[0] : e;
     mousePosition = {x: c.clientX, y: c.clientY};
 }
 const {scrollIfNeeded, resetScrolling} = makeScroller();
 let next;
 
-function loop() {
+function loop(intervalMs) {
     if (mousePosition && scrollingContainersDeepToShallow) {
         const scrollContainersUnderCursor = scrollingContainersDeepToShallow.filter(
             el => isPointInsideRect(mousePosition, el.getBoundingClientRect()) || el === document.scrollingElement
         );
-        console.error({scrollContainersUnderCursor});
         for (let i = 0; i < scrollContainersUnderCursor.length; i++) {
             const scrolled = scrollIfNeeded(mousePosition, scrollContainersUnderCursor[i]);
-            console.error({container: scrollContainersUnderCursor[i], scrolled});
             if (scrolled) {
+                didScrollDuringLastInterval = true;
                 resetIndexesCache();
                 break;
             }
         }
+        didScrollDuringLastInterval = false;
     }
-    next = window.setTimeout(loop, INTERVAL_MS);
+    next = window.setTimeout(loop, intervalMs);
 }
 
 function findScrollableParents(element) {
@@ -67,34 +102,4 @@ function findRelevantScrollContainers(dropZones) {
         scrollingContainers.add(document.scrollingElement);
     }
     return scrollingContainers;
-}
-
-/**
- * will start watching the mouse pointer and scroll the window if it goes next to the edges
- */
-export function armGlobalScroller(dropZonesForScrolling) {
-    printDebug(() => "arming super scroller");
-    window.addEventListener("mousemove", updateMousePosition);
-    window.addEventListener("touchmove", updateMousePosition);
-    scrollingContainersSet = findRelevantScrollContainers(dropZonesForScrolling);
-    if (scrollingContainersSet.size === 0) {
-        return;
-    }
-    scrollingContainersDeepToShallow = Array.from(scrollingContainersSet).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
-    loop();
-}
-
-/**
- * will stop watching the mouse pointer and won't scroll the window anymore
- */
-export function disarmGlobalScroller() {
-    // TODO - consider returning this function from armSuperScroller
-    printDebug(() => "disarming window scroller");
-    window.removeEventListener("mousemove", updateMousePosition);
-    window.removeEventListener("touchmove", updateMousePosition);
-    mousePosition = undefined;
-    scrollingContainersSet = undefined;
-    scrollingContainersDeepToShallow = undefined;
-    window.clearTimeout(next);
-    resetScrolling();
 }

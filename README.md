@@ -22,7 +22,7 @@ It is being actively maintained.
 -   Rich animations (can be opted out of)
 -   Touch support
 -   Define what can be dropped where (dnd-zones optionally have a "type")
--   Scroll dnd-zones and/or the window horizontally or vertically by placing the dragged element next to the edge
+-   Scroll dnd-zones (of the relevant "type"), parent containers that contains them and/or the window horizontally or vertically by placing the dragged element next to the edge
 -   Supports advanced use-cases such as various flavours of copy-on-drag and custom drag handles (see examples below)
 -   Performant and small footprint (no external dependencies, no fluff code)
 -   Fully accessible (beta) - keyboard support, aria attributes and assistive instructions for screen readers
@@ -82,7 +82,7 @@ npm install --save-dev svelte-dnd-action
         width: 50%;
         padding: 0.3em;
         border: 1px solid black;
-        /* this will allow the dragged element to scroll the list */
+        /* this will allow the dragged element to scroll the list although starting in version 0.9.41 the lib would detect any scrollable parent*/
         overflow: scroll;
         height: 200px;
     }
@@ -207,7 +207,6 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   Any data that should "survive" when the items are dragged around and dropped should be included in the `items` array that is passed in.
 -   The host component must refresh the items that are passed in to the custom-action when receiving consider and finalize events (do not omit any handler).
 -   FYI, the library assumes it is okay to add a temporary item to the items list in any of the dnd-zones while an element is dragged around.
--   If you want dragged items to be able to scroll the container, make sure the scroll-container (the element with overflow:scroll) is the dnd-zone (the element decorated with this custom action)
 -   Svelte's built-in transitions might not play nice with this library. Luckily, it is an easy issue to work around. There are examples above.
 
 ### Overriding the item id key name

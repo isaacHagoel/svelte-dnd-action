@@ -155,11 +155,12 @@ function handleDraggedLeft(e) {
     // dealing with a rare race condition on extremely rapid clicking and dropping
     if (!isWorkingOnPreviousDrag) return;
     printDebug(() => ["dragged left", e.currentTarget, e.detail]);
-    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    const {items: originalItems, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone && e.currentTarget !== shadowElDropZone) {
         printDebug(() => "drop is currently disabled");
         return;
     }
+    const items = [...originalItems];
     const shadowElIdx = findShadowElementIdx(items);
     if (shadowElIdx !== -1) {
         items.splice(shadowElIdx, 1);
@@ -173,7 +174,7 @@ function handleDraggedLeft(e) {
         printDebug(() => "dragged left all, putting shadow element back in the origin dz");
         isDraggedOutsideOfAnyDz = true;
         shadowElDropZone = originDropZone;
-        const originZoneItems = dzToConfig.get(originDropZone).items;
+        const originZoneItems = [...dzToConfig.get(originDropZone).items];
         originZoneItems.splice(originIndex, 0, shadowElData);
         dispatchConsiderEvent(originDropZone, originZoneItems, {
             trigger: TRIGGERS.DRAGGED_LEFT_ALL,
@@ -190,11 +191,12 @@ function handleDraggedLeft(e) {
 }
 function handleDraggedIsOverIndex(e) {
     printDebug(() => ["dragged is over index", e.currentTarget, e.detail]);
-    const {items, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
+    const {items: originalItems, dropFromOthersDisabled} = dzToConfig.get(e.currentTarget);
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
         printDebug(() => "drop is currently disabled");
         return;
     }
+    const items = [...originalItems];
     isDraggedOutsideOfAnyDz = false;
     const {index} = e.detail.indexObj;
     const shadowElIdx = findShadowElementIdx(items);
@@ -242,8 +244,6 @@ function handleDrop() {
     if (shadowElIdx === -1) {
         if (shadowElDropZone === originDropZone) {
             shadowElIdx = originIndex;
-        } else if (shadowElDropZone.children.length > 0) {
-            shadowElIdx = shadowElDropZone.children.length - 1;
         }
     }
 
@@ -266,12 +266,13 @@ function handleDrop() {
         if (shadowElIdx !== -1) unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    if (shadowElIdx !== -1) animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
 }
 
 // helper function for handleDrop
 function animateDraggedToFinalPosition(shadowElIdx, callback) {
-    const shadowElRect = getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx]);
+    const shadowElRect =
+        shadowElIdx > -1 ? getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx]) : getBoundingRectNoTransforms(shadowElDropZone);
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
         y: shadowElRect.top - parseFloat(draggedEl.style.top)
@@ -400,7 +401,8 @@ export function dndzone(node, options) {
         /** @type {ShadowRoot | HTMLDocument | Element } */
         const rootNode = originDropZone.closest("dialog") || originDropZone.getRootNode();
         const originDropZoneRoot = rootNode.body || rootNode;
-        const {items, type, centreDraggedOnCursor} = config;
+        const {items: originalItems, type, centreDraggedOnCursor} = config;
+        const items = [...originalItems];
         draggedElData = items[currentIdx];
         draggedElType = type;
         shadowElData = createShadowElData(draggedElData);

@@ -150,29 +150,9 @@ export function calcDistanceBetweenCenters(elA, elB) {
 
 /**
  * @param {HTMLElement} el - the element to check
- * @returns {boolean} - true if the element in its entirety is off screen including the scrollable area (the normal dom events look at the mouse rather than the element)
+ * @returns {boolean} - true if the element in its entirety is off-screen including the scrollable area (the normal dom events look at the mouse rather than the element)
  */
 export function isElementOffDocument(el) {
     const rect = getAbsoluteRect(el);
     return rect.right < 0 || rect.left > document.documentElement.scrollWidth || rect.bottom < 0 || rect.top > document.documentElement.scrollHeight;
-}
-
-/**
- * If the point is inside the element returns its distances from the sides, otherwise returns null
- * @param {Point} point
- * @param {HTMLElement} el
- * @return {null|{top: number, left: number, bottom: number, right: number}}
- */
-export function calcInnerDistancesBetweenPointAndSidesOfElement(point, el) {
-    const rect = getAbsoluteRect(el);
-    if (!isPointInsideRect(point, rect)) {
-        return null;
-    }
-    return {
-        top: point.y - rect.top,
-        bottom: rect.bottom - point.y,
-        left: point.x - rect.left,
-        // TODO - figure out what is so special about right (why the rect is too big)
-        right: Math.min(rect.right, document.documentElement.clientWidth) - point.x
-    };
 }

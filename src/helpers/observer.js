@@ -1,4 +1,4 @@
-import {findWouldBeIndex, resetIndexesCache, resetIndexesCacheForDz} from "./listUtil";
+import {findWouldBeIndex, resetIndexesCache} from "./listUtil";
 import {findCenterOfElement, isElementOffDocument} from "./intersection";
 import {
     dispatchDraggedElementEnteredContainer,
@@ -7,13 +7,11 @@ import {
     dispatchDraggedLeftDocument,
     dispatchDraggedElementIsOverIndex
 } from "./dispatcher";
-import {makeScroller} from "./scroller";
 import {getDepth} from "./util";
 import {printDebug} from "../constants";
 
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
-const {scrollIfNeeded, resetScrolling} = makeScroller();
 let next;
 
 /**
@@ -21,8 +19,9 @@ let next;
  * @param {Set<HTMLElement>} dropZones
  * @param {HTMLElement} draggedEl
  * @param {number} [intervalMs = INTERVAL_MS]
+ * @param {MultiScroller} multiScroller
  */
-export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
+export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScroller) {
     // initialization
     let lastDropZoneFound;
     let lastIndexFound;
@@ -36,7 +35,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
      */
     function andNow() {
         const currentCenterOfDragged = findCenterOfElement(draggedEl);
-        const scrolled = scrollIfNeeded(currentCenterOfDragged, lastDropZoneFound);
+        const scrolled = multiScroller.multiScrollIfNeeded();
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         if (
             !scrolled &&
@@ -57,7 +56,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
-            if (scrolled) resetIndexesCacheForDz(lastDropZoneFound);
+            if (scrolled) resetIndexesCache();
             const indexObj = findWouldBeIndex(draggedEl, dz);
             if (indexObj === null) {
                 // it is not inside
@@ -95,6 +94,5 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
 export function unobserve() {
     printDebug(() => "unobserving");
     clearTimeout(next);
-    resetScrolling();
     resetIndexesCache();
 }

@@ -1,5 +1,10 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.41](https://github.com/isaacHagoel/svelte-dnd-action/pull/549)
+
+The library can now scroll dropzones and any scrollable element that contains dropzones inside, including the window.
+This happens when the mouse pointer is near one of the edges of a scrollable container during drag.
+
 ### [0.9.40](https://github.com/isaacHagoel/svelte-dnd-action/pull/542)
 
 Added custom events typings with generics to support TypeScript out of the box.

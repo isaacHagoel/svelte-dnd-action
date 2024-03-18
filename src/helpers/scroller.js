@@ -1,6 +1,10 @@
-import {calcInnerDistancesBetweenPointAndSidesOfElement} from "./intersection";
-const SCROLL_ZONE_PX = 25;
+import {isPointInsideRect} from "./intersection";
+const SCROLL_ZONE_PX = 30;
 
+/**
+ * Will make a scroller that can scroll any element given to it in any direction
+ * @returns {{scrollIfNeeded: function(Point, HTMLElement): boolean, resetScrolling: function(void):void}}
+ */
 export function makeScroller() {
     let scrollingInfo;
     function resetScrolling() {
@@ -20,6 +24,8 @@ export function makeScroller() {
     }
 
     /**
+     * @param {Point} pointer - the pointer will be used to decide in which direction to scroll
+     * @param {HTMLElement} elementToScroll - the scroll container
      * If the pointer is next to the sides of the element to scroll, will trigger scrolling
      * Can be called repeatedly with updated pointer and elementToScroll values without issues
      * @return {boolean} - true if scrolling was needed
@@ -74,5 +80,33 @@ export function makeScroller() {
     return {
         scrollIfNeeded,
         resetScrolling
+    };
+}
+
+/**
+ * If the point is inside the element returns its distances from the sides, otherwise returns null
+ * @param {Point} point
+ * @param {HTMLElement} el
+ * @return {null|{top: number, left: number, bottom: number, right: number}}
+ */
+function calcInnerDistancesBetweenPointAndSidesOfElement(point, el) {
+    // Even if the scrolling element is small it acts as a scroller for the viewport
+    const rect =
+        el === document.scrollingElement
+            ? {
+                  top: 0,
+                  bottom: window.innerHeight,
+                  left: 0,
+                  right: window.innerWidth
+              }
+            : el.getBoundingClientRect();
+    if (!isPointInsideRect(point, rect)) {
+        return null;
+    }
+    return {
+        top: point.y - rect.top,
+        bottom: rect.bottom - point.y,
+        left: point.x - rect.left,
+        right: rect.right - point.x
     };
 }

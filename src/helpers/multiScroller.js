@@ -1,6 +1,5 @@
 import {makeScroller} from "./scroller";
 import {printDebug} from "../constants";
-import {resetIndexesCache} from "./listUtil";
 import {getDepth} from "./util";
 import {isPointInsideRect} from "./intersection";
 
@@ -33,7 +32,6 @@ export function createMultiScroller(baseElementsForScrolling = [], getPointerPos
         for (let i = 0; i < scrollContainersUnderCursor.length; i++) {
             const scrolled = scrollIfNeeded(mousePosition, scrollContainersUnderCursor[i]);
             if (scrolled) {
-                resetIndexesCache();
                 return true;
             }
         }

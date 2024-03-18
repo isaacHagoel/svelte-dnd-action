@@ -56,6 +56,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
+            if (scrolled) resetIndexesCache();
             const indexObj = findWouldBeIndex(draggedEl, dz);
             if (indexObj === null) {
                 // it is not inside

@@ -18,10 +18,10 @@ let next;
  * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
  * @param {Set<HTMLElement>} dropZones
  * @param {HTMLElement} draggedEl
- * @param {function(void): boolean} didAnyContainerScrollDuringLastInterval
  * @param {number} [intervalMs = INTERVAL_MS]
+ * @param {MultiScroller} multiScroller
  */
-export function observe(draggedEl, dropZones, didAnyContainerScrollDuringLastInterval, intervalMs = INTERVAL_MS) {
+export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScroller) {
     // initialization
     let lastDropZoneFound;
     let lastIndexFound;
@@ -35,10 +35,10 @@ export function observe(draggedEl, dropZones, didAnyContainerScrollDuringLastInt
      */
     function andNow() {
         const currentCenterOfDragged = findCenterOfElement(draggedEl);
-        // const scrolled = scrollIfNeeded(currentCenterOfDragged, lastDropZoneFound);
+        const scrolled = multiScroller.multiScrollIfNeeded();
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         if (
-            !didAnyContainerScrollDuringLastInterval() &&
+            !scrolled &&
             lastCentrePositionOfDragged &&
             Math.abs(lastCentrePositionOfDragged.x - currentCenterOfDragged.x) < TOLERANCE_PX &&
             Math.abs(lastCentrePositionOfDragged.y - currentCenterOfDragged.y) < TOLERANCE_PX

@@ -165,6 +165,7 @@ function handleDraggedLeft(e) {
     if (shadowElIdx !== -1) {
         items.splice(shadowElIdx, 1);
     }
+    const origShadowDz = shadowElDropZone;
     shadowElDropZone = undefined;
     const {type, theOtherDz} = e.detail;
     if (
@@ -174,7 +175,8 @@ function handleDraggedLeft(e) {
         printDebug(() => "dragged left all, putting shadow element back in the origin dz");
         isDraggedOutsideOfAnyDz = true;
         shadowElDropZone = originDropZone;
-        const originZoneItems = [...dzToConfig.get(originDropZone).items];
+        // if the last zone it left is the origin dz, we will put it back into items (which we just removed it from)
+        const originZoneItems = origShadowDz === originDropZone ? items : [...dzToConfig.get(originDropZone).items];
         originZoneItems.splice(originIndex, 0, shadowElData);
         dispatchConsiderEvent(originDropZone, originZoneItems, {
             trigger: TRIGGERS.DRAGGED_LEFT_ALL,

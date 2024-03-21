@@ -372,6 +372,13 @@ This is an experimental feature added in version 0.9.29. If you have multiple le
 Specifically, it allows nested zones within the shadow element (the placeholder under the dragged element) to register and destroy.
 This is because Svelte calls nested actions before the parent action (opposite to the rendering order).
 You can use a data attribute **on the items** to help the lib prevent this: `data-is-dnd-shadow-item-hint={item[SHADOW_ITEM_MARKER_PROPERTY_NAME]} `
+Starting with version 0.9.42. if you use the hint make sure to include it in the key you provide in your each block e.g:
+
+```sveltehtml
+{#each columnItems as column (`${column._id}${column[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? "_" + column[SHADOW_ITEM_MARKER_PROPERTY_NAME] : ""}`)}
+   ...
+{/each}
+```
 
 #### Simplified Example (just shows where to place the attribute):
 

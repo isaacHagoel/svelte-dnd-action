@@ -1,5 +1,12 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.42](https://github.com/isaacHagoel/svelte-dnd-action/pull/553)
+
+Fixes that won't affect most use cases (but do affect recursive nesting).
+Fixed updating the items config prior to configure being called.
+Restored using the real id throughout the drag operation after the initial frame to prevent issues from implementations relying on it.
+This affects the each loop key should be set up when using `data-is-dnd-shadow-item-hint` (see README).
+
 ### [0.9.41](https://github.com/isaacHagoel/svelte-dnd-action/pull/549)
 
 The library can now scroll dropzones and any scrollable element that contains dropzones inside, including the window.

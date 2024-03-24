@@ -195,10 +195,10 @@ export function dndzone(node, options) {
                 e.preventDefault(); // prevent scrolling
                 e.stopPropagation();
                 const {items} = dzToConfig.get(node);
-                const children = Array.from(node.children);
+                const children = Array.from(node.children).slice(0, items.length);  // slice to prevent swap out of items range
                 const idx = children.indexOf(e.currentTarget);
                 printDebug(() => ["arrow down", idx]);
-                if (idx < children.length - 1) {
+                if (idx < items.length - 1) {
                     if (!config.autoAriaDisabled) {
                         alertToScreenReader(`Moved item ${focusedItemLabel} to position ${idx + 2} in the list ${focusedDzLabel}`);
                     }
@@ -213,7 +213,7 @@ export function dndzone(node, options) {
                 e.preventDefault(); // prevent scrolling
                 e.stopPropagation();
                 const {items} = dzToConfig.get(node);
-                const children = Array.from(node.children);
+                const children = Array.from(node.children).slice(0, items.length);  // slice to prevent swap out of items range
                 const idx = children.indexOf(e.currentTarget);
                 printDebug(() => ["arrow up", idx]);
                 if (idx > 0) {
@@ -312,7 +312,7 @@ export function dndzone(node, options) {
 
         node.addEventListener("focus", handleZoneFocus);
 
-        for (let i = 0; i < node.children.length; i++) {
+        for (let i = 0; i < config.items.length; i++) {
             const draggableEl = node.children[i];
             allDragTargets.add(draggableEl);
             draggableEl.tabIndex = isDragging ? -1 : config.zoneItemTabIndex;

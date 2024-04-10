@@ -384,6 +384,7 @@ export function dndzone(node, options) {
             printDebug(() => "cannot start a new drag before finalizing previous one");
             return;
         }
+        e.preventDefault();
         e.stopPropagation();
         const c = e.touches ? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y: c.clientY};

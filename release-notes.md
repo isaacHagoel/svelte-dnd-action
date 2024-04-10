@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.43](https://github.com/isaacHagoel/svelte-dnd-action/pull/556)
+
+Fixes an issue on some touch devices, where attempting to drag an item causes the page to scroll.
+
 ### [0.9.42](https://github.com/isaacHagoel/svelte-dnd-action/pull/553)
 
 Fixes that won't affect most use cases (but do affect recursive nesting).

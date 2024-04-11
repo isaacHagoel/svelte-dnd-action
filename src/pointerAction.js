@@ -350,11 +350,16 @@ export function dndzone(node, options) {
         window.removeEventListener("mouseup", handleFalseAlarm);
         window.removeEventListener("touchend", handleFalseAlarm);
     }
-    function handleFalseAlarm() {
+    function handleFalseAlarm(e) {
         removeMaybeListeners();
         originalDragTarget = undefined;
         dragStartMousePosition = undefined;
         currentMousePosition = undefined;
+
+        // dragging initiated by touch events prevents onclick from initially firing
+        if (e.type === "touchend") {
+            e.target.click();
+        }
     }
 
     function handleMouseMoveMaybeDragStart(e) {
@@ -384,6 +389,7 @@ export function dndzone(node, options) {
             printDebug(() => "cannot start a new drag before finalizing previous one");
             return;
         }
+        e.preventDefault();
         e.stopPropagation();
         const c = e.touches ? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y: c.clientY};

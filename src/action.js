@@ -21,7 +21,7 @@ import {toString} from "./helpers/util";
  * @property {object} [dropTargetStyle]
  * @property {string[]} [dropTargetClasses]
  * @property {function} [transformDraggedElement]
- * * @property {string} [handle] - handler selector
+ * @property {string} [handle] - handler selector
  * @param {HTMLElement} node - the element to enhance
  * @param {Options} options
  * @return {{update: function, destroy: function}}

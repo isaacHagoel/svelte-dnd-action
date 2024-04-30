@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.44](https://github.com/isaacHagoel/svelte-dnd-action/pull/567)
+
+Allows Svelte 5.0.0-next as peer dependency.
+
 ### [0.9.43](https://github.com/isaacHagoel/svelte-dnd-action/pull/556)
 
 Fixes an issue on some touch devices, where attempting to drag an item causes the page to scroll.

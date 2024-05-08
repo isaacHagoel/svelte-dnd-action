@@ -528,10 +528,10 @@ export function dndzone(node, options) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);
             if (idx === shadowElIdx) {
-                config.transformDraggedElement(draggedEl, draggedElData, idx);
                 if (!morphDisabled) {
                     morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
                 }
+                config.transformDraggedElement(draggedEl, draggedElData, idx);
                 decorateShadowEl(draggableEl);
                 continue;
             }

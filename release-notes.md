@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.45](https://github.com/isaacHagoel/svelte-dnd-action/pull/573)
+
+Bug fix - calling transformDraggedElement after the element was morphed so that changes transform makes aren't overridden by the morphing.
+
 ### [0.9.44](https://github.com/isaacHagoel/svelte-dnd-action/pull/567)
 
 Allows Svelte 5.0.0-next as peer dependency.

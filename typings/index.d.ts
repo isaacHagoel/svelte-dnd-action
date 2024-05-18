@@ -16,6 +16,27 @@ export declare function dndzone<T extends Item>(
     destroy: () => void;
 };
 
+/**
+ * A wrapper action to make it easy to work with drag handles.
+ * When using this you must also use the 'dragHandle' action on an element inside each item within the zone.
+ */
+export declare function dragHandleZone<T extends Item>(node: HTMLElement, options: Options<T>): ActionReturn<Options<T>, DndZoneAttributes<T>>;
+export declare function dragHandleZone<T extends Item>(
+    node: HTMLElement,
+    options: Options<T>
+): {
+    update: (newOptions: Options<T>) => void;
+    destroy: () => void;
+};
+
+/**
+ * This should be used to mark drag handles inside items that belong to a 'dragHandleZone'
+ */
+export declare function dragHandle(node: HTMLElement): {
+    update: () => void;
+    destroy: () => void;
+};
+
 export type TransformDraggedElementFunction = (
     element?: HTMLElement, // the dragged element.
     draggedElementData?: Item, // the data of the item from the items array

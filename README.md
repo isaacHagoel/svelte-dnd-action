@@ -170,6 +170,73 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   Mouse drag and drop can be preformed independently of keyboard dragging (as in an item can be dragged with the mouse while in or out of keyboard initiated dragging-mode)
 -   Keyboard drag uses the same `consider` (only on drag start) and `finalize` (every time the item is moved) events but share only some of the `TRIGGERS`. The same handlers should work fine for both.
 
+### Drag Handles Support
+
+Due to popular demand, starting in version 0.9.46 the library exports a wrapper action that greatly improves the ergonomics around using drag handles.
+Notes:
+
+-   A draggable item within a `dragHandleZone` would not be draggable unless it has an element that uses the `dragHandle` action inside (doesn't have to be a direct child).
+-   Don't forget an aria-label on the handle
+    Usage:
+
+```html
+<script>
+    import {dragHandleZone, dragHandle} from "svelte-dnd-action";
+    import {flip} from "svelte/animate";
+
+    let items = [
+        {
+            id: 1,
+            text: "Item 1"
+        },
+        {
+            id: 2,
+            text: "Item 2"
+        },
+        {
+            id: 3,
+            text: "Item 3"
+        }
+    ];
+    const flipDurationMs = 100;
+
+    function handleSort(e) {
+        items = e.detail.items;
+    }
+</script>
+
+<style>
+    div {
+        position: relative;
+        height: 1.5em;
+        width: 10em;
+        text-align: center;
+        border: 1px solid black;
+        margin: 0.2em;
+        padding: 0.3em;
+    }
+    .handle {
+        position: absolute;
+        right: 0;
+        width: 1em;
+        height: 0.5em;
+        background-color: grey;
+    }
+</style>
+
+<h3>Drag Handles</h3>
+<p>Items can be dragged using the grey handles via mouse, touch or keyboard. The text on the items can be selected without starting a drag</p>
+<hr />
+<section use:dragHandleZone="{{ items, flipDurationMs }}" on:consider="{handleSort}" on:finalize="{handleSort}">
+    {#each items as item (item.id)}
+    <div animate:flip="{{ duration: flipDurationMs }}">
+        <div use:dragHandle aria-label="drag-handle for {item.text}" class="handle" />
+        <span>{item.text}</span>
+    </div>
+    {/each}
+</section>
+```
+
 ### Examples and Recipes
 
 -   [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3)

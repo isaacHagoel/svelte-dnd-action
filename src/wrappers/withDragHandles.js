@@ -14,7 +14,7 @@ function getAddedOptions(isItemsDragDisabled = true) {
 /**
  * This is an action that wraps around the dndzone action to make it easy to work with drag handles
  * When using this you must also use the 'dragHandle' action (see below) on an element inside each item within the zone
- * Credit for the idea and initial implementation goes to @geovie - Georg Vienna
+ * Credit for the idea and initial implementation goes to @gleuch (Greg Leuch) and @geovie (Georg Vienna)
  *
  * @param {HTMLElement} node
  * @param options - will be passed down to the dndzone

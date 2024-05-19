@@ -175,7 +175,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 Due to popular demand, starting in version 0.9.46 the library exports a wrapper action that greatly improves the ergonomics around using drag handles.
 Notes:
 
--   A draggable item within a `dragHandleZone` would not be draggable unless it has an element that uses the `dragHandle` action inside (doesn't have to be a direct child).
+-   A draggable item within a `dragHandleZone` would not be draggable unless it has an element that uses the `dragHandle` action inside (doesn't have to be a direct child but has to be inside the bounding rect of the item).
 -   Don't forget an aria-label on the handle
     Usage:
 

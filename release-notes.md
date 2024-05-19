@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.46](https://github.com/isaacHagoel/svelte-dnd-action/pull/576)
+
+Added two wrapper actions (`dragHandleZone` and `dragHandle`) to make using drag handle easy.
+
 ### [0.9.45](https://github.com/isaacHagoel/svelte-dnd-action/pull/573)
 
 Bug fix - calling transformDraggedElement after the element was morphed so that changes transform makes aren't overridden by the morphing.

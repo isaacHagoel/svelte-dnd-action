@@ -170,6 +170,73 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 -   Mouse drag and drop can be preformed independently of keyboard dragging (as in an item can be dragged with the mouse while in or out of keyboard initiated dragging-mode)
 -   Keyboard drag uses the same `consider` (only on drag start) and `finalize` (every time the item is moved) events but share only some of the `TRIGGERS`. The same handlers should work fine for both.
 
+### Drag Handles Support
+
+Due to popular demand, starting in version 0.9.46 the library exports a wrapper action that greatly improves the ergonomics around using drag handles.
+Notes:
+
+-   A draggable item within a `dragHandleZone` would not be draggable unless it has an element that uses the `dragHandle` action inside (doesn't have to be a direct child but has to be inside the bounding rect of the item).
+-   Don't forget an aria-label on the handle
+    Usage:
+
+```html
+<script>
+    import {dragHandleZone, dragHandle} from "svelte-dnd-action";
+    import {flip} from "svelte/animate";
+
+    let items = [
+        {
+            id: 1,
+            text: "Item 1"
+        },
+        {
+            id: 2,
+            text: "Item 2"
+        },
+        {
+            id: 3,
+            text: "Item 3"
+        }
+    ];
+    const flipDurationMs = 100;
+
+    function handleSort(e) {
+        items = e.detail.items;
+    }
+</script>
+
+<style>
+    div {
+        position: relative;
+        height: 1.5em;
+        width: 10em;
+        text-align: center;
+        border: 1px solid black;
+        margin: 0.2em;
+        padding: 0.3em;
+    }
+    .handle {
+        position: absolute;
+        right: 0;
+        width: 1em;
+        height: 0.5em;
+        background-color: grey;
+    }
+</style>
+
+<h3>Drag Handles</h3>
+<p>Items can be dragged using the grey handles via mouse, touch or keyboard. The text on the items can be selected without starting a drag</p>
+<hr />
+<section use:dragHandleZone="{{ items, flipDurationMs }}" on:consider="{handleSort}" on:finalize="{handleSort}">
+    {#each items as item (item.id)}
+    <div animate:flip="{{ duration: flipDurationMs }}">
+        <div use:dragHandle aria-label="drag-handle for {item.text}" class="handle" />
+        <span>{item.text}</span>
+    </div>
+    {/each}
+</section>
+```
+
 ### Examples and Recipes
 
 -   [Super basic, single list, no animation](https://svelte.dev/repl/bbd709b1a00b453e94658392c97a018a?version=3)
@@ -184,7 +251,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 
 -   [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3)
 -   [Copy on drop and a drop area with a single slot](https://svelte.dev/repl/b4e120c45c3e48e49a0d637f0cf097d9?version=3)
--   [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3), courtesy of @gleuch
+-   [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3), legacy - before version 0.9.46, courtesy of @gleuch
 -   [Interaction (save/get items) with an asynchronous server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3)
 -   [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3)
 -   [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah

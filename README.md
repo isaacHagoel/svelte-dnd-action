@@ -251,7 +251,8 @@ Notes:
 
 -   [Copy on drag, simple and Dragula like](https://svelte.dev/repl/924b4cc920524065a637fa910fe10193?version=3)
 -   [Copy on drop and a drop area with a single slot](https://svelte.dev/repl/b4e120c45c3e48e49a0d637f0cf097d9?version=3)
--   [Drag handles](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3), legacy - before version 0.9.46, courtesy of @gleuch
+-   [Drag handles using wrapper actions](https://svelte.dev/repl/cc1bc63be7a74830b4c97d428f62054d?version=4.2.17), for nested scenarios (same usage, it "just works"), see [here](https://svelte.dev/repl/4f7cbeb7b11b470b948e9af03b82a073?version=4.2.17) and [here](https://svelte.dev/repl/47c5f52f4c774cad8c367516395c7f99?version=4.2.17)
+-   [Drag handles - legacy](https://svelte.dev/repl/4949485c5a8f46e7bdbeb73ed565a9c7?version=3), use before version 0.9.46, courtesy of @gleuch
 -   [Interaction (save/get items) with an asynchronous server](https://svelte.dev/repl/964fdac31cb9496da9ded35002300abb?version=3)
 -   [Unsortable lists with custom aria instructions](https://svelte.dev/repl/e020ea1051dc4ae3ac2b697064f234bc?version=3)
 -   [Crazy nesting](https://svelte.dev/repl/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah

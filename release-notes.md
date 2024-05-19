@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.47](https://github.com/isaacHagoel/svelte-dnd-action/pull/578)
+
+Added examples to the README (for the drag handles wrapper actions).
+
 ### [0.9.46](https://github.com/isaacHagoel/svelte-dnd-action/pull/576)
 
 Added two wrapper actions (`dragHandleZone` and `dragHandle`) to make using drag handle easy.

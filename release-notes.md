@@ -1,12 +1,12 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.48](https://github.com/isaacHagoel/svelte-dnd-action/pull/582)
+
+Fixed a bug where the scroller would stay active and scroll the page after drop
+
 ### [0.9.47](https://github.com/isaacHagoel/svelte-dnd-action/pull/578)
 
 Added examples to the README (for the drag handles wrapper actions).
-
-### [0.9.47](https://github.com/isaacHagoel/svelte-dnd-action/pull/582)
-
-Fixed a bug where the scroller would stay active and scroll the page after drop
 
 ### [0.9.46](https://github.com/isaacHagoel/svelte-dnd-action/pull/576)
 

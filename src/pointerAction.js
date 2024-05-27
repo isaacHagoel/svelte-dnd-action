@@ -58,6 +58,7 @@ let finalizingPreviousDrag = false;
 let unlockOriginDzMinDimensions;
 let isDraggedOutsideOfAnyDz = false;
 let scheduledForRemovalAfterDrop = [];
+let multiScroller;
 
 // a map from type to a set of drop-zones
 const typeToDropZones = new Map();
@@ -100,7 +101,7 @@ function watchDraggedElement() {
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
     const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
     const observationIntervalMs = setIntervalMs === 0 ? DISABLED_OBSERVATION_INTERVAL_MS : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); // if setIntervalMs is 0 it goes to 20, otherwise it is max between it and min observation.
-    const multiScroller = createMultiScroller(dropZones, () => currentMousePosition);
+    multiScroller = createMultiScroller(dropZones, () => currentMousePosition);
     observe(draggedEl, dropZones, observationIntervalMs * 1.07, multiScroller);
 }
 function unWatchDraggedElement() {
@@ -112,6 +113,8 @@ function unWatchDraggedElement() {
         dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
     window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
+    multiScroller.destroy();
+    multiScroller = undefined;
     unobserve();
 }
 

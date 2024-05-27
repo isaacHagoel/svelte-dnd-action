@@ -35,11 +35,11 @@ export function makeScroller() {
             return false;
         }
         const distances = calcInnerDistancesBetweenPointAndSidesOfElement(pointer, elementToScroll);
+        const isAlreadyScrolling = !!scrollingInfo.directionObj;
         if (distances === null) {
-            resetScrolling();
+            if (isAlreadyScrolling) resetScrolling();
             return false;
         }
-        const isAlreadyScrolling = !!scrollingInfo.directionObj;
         let [scrollingVertically, scrollingHorizontally] = [false, false];
         // vertical
         if (elementToScroll.scrollHeight > elementToScroll.clientHeight) {

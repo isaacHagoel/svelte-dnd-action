@@ -16,7 +16,7 @@ export function createMultiScroller(baseElementsForScrolling = [], getPointerPos
     printDebug(() => "creating multi-scroller");
     const scrollingContainersSet = findRelevantScrollContainers(baseElementsForScrolling);
     const scrollingContainersDeepToShallow = Array.from(scrollingContainersSet).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
-    const {scrollIfNeeded} = makeScroller();
+    const {scrollIfNeeded, resetScrolling} = makeScroller();
 
     /**
      * @return {boolean} - was any container scrolled
@@ -38,7 +38,8 @@ export function createMultiScroller(baseElementsForScrolling = [], getPointerPos
         return false;
     }
     return {
-        multiScrollIfNeeded: scrollingContainersSet.size > 0 ? tick : () => false
+        multiScrollIfNeeded: scrollingContainersSet.size > 0 ? tick : () => false,
+        destroy: () => resetScrolling()
     };
 }
 

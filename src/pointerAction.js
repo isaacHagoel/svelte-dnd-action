@@ -258,14 +258,16 @@ function handleDrop() {
         dispatchFinalizeEvent(shadowElDropZone, items, {
             trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
             id: draggedElData[ITEM_ID_KEY],
-            source: SOURCES.POINTER
+            source: SOURCES.POINTER,
+            dropMousePosition: {...currentMousePosition}
         });
         if (shadowElDropZone !== originDropZone) {
             // letting the origin drop zone know the element was permanently taken away
             dispatchFinalizeEvent(originDropZone, dzToConfig.get(originDropZone).items, {
                 trigger: TRIGGERS.DROPPED_INTO_ANOTHER,
                 id: draggedElData[ITEM_ID_KEY],
-                source: SOURCES.POINTER
+                source: SOURCES.POINTER,
+                dropMousePosition: {...currentMousePosition}
             });
         }
         if (shadowElIdx !== -1) unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);

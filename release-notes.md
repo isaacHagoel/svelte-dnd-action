@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### [0.9.48](https://github.com/isaacHagoel/svelte-dnd-action/pull/588)
+### [0.9.49](https://github.com/isaacHagoel/svelte-dnd-action/pull/588)
 
 Fixed a bug where library would crash if one of the canvas had an empty size
 

@@ -58,6 +58,7 @@ export interface Options<T extends Item = Item> {
     transformDraggedElement?: TransformDraggedElementFunction;
     autoAriaDisabled?: boolean;
     centreDraggedOnCursor?: boolean;
+    axis: "both" | "x" | "y";
 }
 
 export interface DndZoneAttributes<T> {

@@ -31,6 +31,12 @@ const typeToDropZones = new Map();
 
 let INSTRUCTION_IDs;
 
+function alertCantMoveBecauseAxis(axis, focusedItemLabel) {
+    if (!config.autoAriaDisabled) {
+        alertToScreenReader(`Item ${focusedItemLabel} can not be moved on the ${axis} axis`);
+    }
+}
+
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
     printDebug(() => "registering drop-zone if absent");
@@ -225,19 +231,35 @@ export function dndzone(node, options) {
                 break;
             }
             case "ArrowDown": {
-                if (config.axis === "both" || config.axis === "y") handleMoveItemUp(e);
+                if (config.axis === "both" || config.axis === "y") {
+                    handleMoveItemUp(e);
+                } else {
+                    alertCantMoveBecauseAxis("x");
+                }
                 break;
             }
             case "ArrowRight": {
-                if (config.axis === "both" || config.axis === "x") handleMoveItemUp(e);
+                if (config.axis === "both" || config.axis === "x") {
+                    handleMoveItemUp(e);
+                } else {
+                    alertCantMoveBecauseAxis("y");
+                }
                 break;
             }
             case "ArrowUp": {
-                if (config.axis === "both" || config.axis === "y") handleMoveItemDown(e);
+                if (config.axis === "both" || config.axis === "y") {
+                    handleMoveItemDown(e);
+                } else {
+                    alertCantMoveBecauseAxis("x");
+                }
                 break;
             }
             case "ArrowLeft": {
-                if (config.axis === "both" || config.axis === "x") handleMoveItemDown(e);
+                if (config.axis === "both" || config.axis === "x") {
+                    handleMoveItemDown(e);
+                } else {
+                    alertCantMoveBecauseAxis("y");
+                }
                 break;
             }
         }

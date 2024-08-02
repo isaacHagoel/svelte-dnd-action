@@ -31,7 +31,7 @@ const typeToDropZones = new Map();
 
 let INSTRUCTION_IDs;
 
-function alertCantMoveBecauseAxis(axis, focusedItemLabel) {
+function alertCantMoveBecauseAxis(config, axis) {
     if (!config.autoAriaDisabled) {
         alertToScreenReader(`Item ${focusedItemLabel} can not be moved on the ${axis} axis`);
     }
@@ -234,7 +234,7 @@ export function dndzone(node, options) {
                 if (config.axis === "both" || config.axis === "y") {
                     handleMoveItemUp(e);
                 } else {
-                    alertCantMoveBecauseAxis("x");
+                    alertCantMoveBecauseAxis(config, "x");
                 }
                 break;
             }
@@ -242,7 +242,7 @@ export function dndzone(node, options) {
                 if (config.axis === "both" || config.axis === "x") {
                     handleMoveItemUp(e);
                 } else {
-                    alertCantMoveBecauseAxis("y");
+                    alertCantMoveBecauseAxis(config, "y");
                 }
                 break;
             }
@@ -250,7 +250,7 @@ export function dndzone(node, options) {
                 if (config.axis === "both" || config.axis === "y") {
                     handleMoveItemDown(e);
                 } else {
-                    alertCantMoveBecauseAxis("x");
+                    alertCantMoveBecauseAxis(config, "x");
                 }
                 break;
             }
@@ -258,7 +258,7 @@ export function dndzone(node, options) {
                 if (config.axis === "both" || config.axis === "x") {
                     handleMoveItemDown(e);
                 } else {
-                    alertCantMoveBecauseAxis("y");
+                    alertCantMoveBecauseAxis(config, "y");
                 }
                 break;
             }

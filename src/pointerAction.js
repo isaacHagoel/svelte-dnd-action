@@ -212,13 +212,14 @@ function handleDraggedIsOverIndex(e) {
     dispatchConsiderEvent(e.currentTarget, items, {trigger: TRIGGERS.DRAGGED_OVER_INDEX, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 }
 
+let mouseMoveListener;
 // Global mouse/touch-events handlers
-function handleMouseMove(e) {
+function handleMouseMove(e, config) {
     e.preventDefault();
     const c = e.touches ? e.touches[0] : e;
     currentMousePosition = {x: c.clientX, y: c.clientY};
-    draggedEl.style.transform = `translate3d(${currentMousePosition.x - dragStartMousePosition.x}px, ${
-        currentMousePosition.y - dragStartMousePosition.y
+    draggedEl.style.transform = `translate3d(${config.axis === "both" || config.axis === "x" ? currentMousePosition.x - dragStartMousePosition.x : 0}px, ${
+      config.axis === "both" || config.axis === "y" ? currentMousePosition.y - dragStartMousePosition.y : 0
     }px, 0)`;
 }
 
@@ -226,8 +227,8 @@ function handleDrop() {
     printDebug(() => "dropped");
     finalizingPreviousDrag = true;
     // cleanup
-    window.removeEventListener("mousemove", handleMouseMove);
-    window.removeEventListener("touchmove", handleMouseMove);
+    window.removeEventListener("mousemove", mouseMoveListener);
+    window.removeEventListener("touchmove", mouseMoveListener);
     window.removeEventListener("mouseup", handleDrop);
     window.removeEventListener("touchend", handleDrop);
     unWatchDraggedElement();
@@ -336,7 +337,8 @@ export function dndzone(node, options) {
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
         transformDraggedElement: () => {},
-        centreDraggedOnCursor: false
+        centreDraggedOnCursor: false,
+        axis: "both"
     };
     printDebug(() => [`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node}]);
     let elToIdx = new Map();
@@ -452,8 +454,9 @@ export function dndzone(node, options) {
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 
         // handing over to global handlers - starting to watch the element
-        window.addEventListener("mousemove", handleMouseMove, {passive: false});
-        window.addEventListener("touchmove", handleMouseMove, {passive: false, capture: false});
+        mouseMoveListener = (e) => handleMouseMove(e, config);
+        window.addEventListener("mousemove", mouseMoveListener, {passive: false});
+        window.addEventListener("touchmove", mouseMoveListener, {passive: false, capture: false});
         window.addEventListener("mouseup", handleDrop, {passive: false});
         window.addEventListener("touchend", handleDrop, {passive: false});
     }
@@ -468,7 +471,8 @@ export function dndzone(node, options) {
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
         transformDraggedElement = () => {},
-        centreDraggedOnCursor = false
+        centreDraggedOnCursor = false,
+        axis = "both"
     }) {
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
@@ -480,6 +484,7 @@ export function dndzone(node, options) {
         config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;
         config.centreDraggedOnCursor = centreDraggedOnCursor;
+        config.axis = axis;
 
         // realtime update for dropTargetStyle
         if (

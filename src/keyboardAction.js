@@ -31,6 +31,12 @@ const typeToDropZones = new Map();
 
 let INSTRUCTION_IDs;
 
+function alertCantMoveBecauseAxis(config, axis) {
+    if (!config.autoAriaDisabled) {
+        alertToScreenReader(`Item ${focusedItemLabel} can not be moved on the ${axis} axis`);
+    }
+}
+
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
     printDebug(() => "registering drop-zone if absent");
@@ -161,8 +167,43 @@ export function dndzone(node, options) {
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
-        autoAriaDisabled: false
+        autoAriaDisabled: false,
+        axis: "both"
     };
+
+    function handleMoveItemUp(e) {
+        if (!isDragging) return;
+        e.preventDefault(); // prevent scrolling
+        e.stopPropagation();
+        const {items} = dzToConfig.get(node);
+        const children = Array.from(node.children);
+        const idx = children.indexOf(e.currentTarget);
+        printDebug(() => ["arrow down", idx]);
+        if (idx < children.length - 1) {
+            if (!config.autoAriaDisabled) {
+                alertToScreenReader(`Moved item ${focusedItemLabel} to position ${idx + 2} in the list ${focusedDzLabel}`);
+            }
+            swap(items, idx, idx + 1);
+            dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
+        }
+    }
+
+    function handleMoveItemDown(e) {
+        if (!isDragging) return;
+        e.preventDefault(); // prevent scrolling
+        e.stopPropagation();
+        const {items} = dzToConfig.get(node);
+        const children = Array.from(node.children);
+        const idx = children.indexOf(e.currentTarget);
+        printDebug(() => ["arrow up", idx]);
+        if (idx > 0) {
+            if (!config.autoAriaDisabled) {
+                alertToScreenReader(`Moved item ${focusedItemLabel} to position ${idx} in the list ${focusedDzLabel}`);
+            }
+            swap(items, idx, idx - 1);
+            dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
+        }
+    }
 
     function swap(arr, i, j) {
         if (arr.length <= 1) return;
@@ -189,39 +230,35 @@ export function dndzone(node, options) {
                 }
                 break;
             }
-            case "ArrowDown":
-            case "ArrowRight": {
-                if (!isDragging) return;
-                e.preventDefault(); // prevent scrolling
-                e.stopPropagation();
-                const {items} = dzToConfig.get(node);
-                const children = Array.from(node.children);
-                const idx = children.indexOf(e.currentTarget);
-                printDebug(() => ["arrow down", idx]);
-                if (idx < children.length - 1) {
-                    if (!config.autoAriaDisabled) {
-                        alertToScreenReader(`Moved item ${focusedItemLabel} to position ${idx + 2} in the list ${focusedDzLabel}`);
-                    }
-                    swap(items, idx, idx + 1);
-                    dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
+            case "ArrowDown": {
+                if (config.axis === "both" || config.axis === "y") {
+                    handleMoveItemUp(e);
+                } else {
+                    alertCantMoveBecauseAxis(config, "x");
                 }
                 break;
             }
-            case "ArrowUp":
+            case "ArrowRight": {
+                if (config.axis === "both" || config.axis === "x") {
+                    handleMoveItemUp(e);
+                } else {
+                    alertCantMoveBecauseAxis(config, "y");
+                }
+                break;
+            }
+            case "ArrowUp": {
+                if (config.axis === "both" || config.axis === "y") {
+                    handleMoveItemDown(e);
+                } else {
+                    alertCantMoveBecauseAxis(config, "x");
+                }
+                break;
+            }
             case "ArrowLeft": {
-                if (!isDragging) return;
-                e.preventDefault(); // prevent scrolling
-                e.stopPropagation();
-                const {items} = dzToConfig.get(node);
-                const children = Array.from(node.children);
-                const idx = children.indexOf(e.currentTarget);
-                printDebug(() => ["arrow up", idx]);
-                if (idx > 0) {
-                    if (!config.autoAriaDisabled) {
-                        alertToScreenReader(`Moved item ${focusedItemLabel} to position ${idx} in the list ${focusedDzLabel}`);
-                    }
-                    swap(items, idx, idx - 1);
-                    dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
+                if (config.axis === "both" || config.axis === "x") {
+                    handleMoveItemDown(e);
+                } else {
+                    alertCantMoveBecauseAxis(config, "y");
                 }
                 break;
             }
@@ -276,7 +313,8 @@ export function dndzone(node, options) {
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
-        autoAriaDisabled = false
+        autoAriaDisabled = false,
+        axis = "both"
     }) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
@@ -286,6 +324,7 @@ export function dndzone(node, options) {
         config.dropTargetStyle = dropTargetStyle;
         config.dropTargetClasses = dropTargetClasses;
         config.autoAriaDisabled = autoAriaDisabled;
+        config.axis = axis;
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
         }

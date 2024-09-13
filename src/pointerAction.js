@@ -535,7 +535,11 @@ export function dndzone(node, options) {
                     morphDraggedElementToBeLike(draggedEl, draggableEl, currentMousePosition.x, currentMousePosition.y);
                 }
                 config.transformDraggedElement(draggedEl, draggedElData, idx);
-                decorateShadowEl(draggableEl);
+
+                if (!items.some(item => item.id === "id:dnd-shadow-placeholder-0000")) {
+                    decorateShadowEl(draggableEl);
+                }
+                
                 continue;
             }
             draggableEl.removeEventListener("mousedown", elToMouseDownListener.get(draggableEl));

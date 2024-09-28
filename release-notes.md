@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### [0.9.50](https://github.com/isaacHagoel/svelte-dnd-action/pull/608)
+### [0.9.51](https://github.com/isaacHagoel/svelte-dnd-action/pull/608)
 
 Added the option to disable the final drop animation
 

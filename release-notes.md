@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.50](https://github.com/isaacHagoel/svelte-dnd-action/pull/608)
+
+Added the option to disable the final drop animation
+
 ### [0.9.50](https://github.com/isaacHagoel/svelte-dnd-action/pull/598)
 
 Fixed a bug where library would crash when a store updated "considers" in local storage from another tab

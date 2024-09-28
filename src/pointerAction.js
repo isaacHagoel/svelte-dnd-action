@@ -271,7 +271,11 @@ function handleDrop() {
         if (shadowElIdx !== -1) unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    if (dzToConfig.get(shadowElDropZone).dropAnimationDisabled) {
+        finalizeWithinZone();
+    } else {
+        animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    }
 }
 
 // helper function for handleDrop
@@ -336,7 +340,8 @@ export function dndzone(node, options) {
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
         transformDraggedElement: () => {},
-        centreDraggedOnCursor: false
+        centreDraggedOnCursor: false,
+        dropAnimationDisabled: false
     };
     printDebug(() => [`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node}]);
     let elToIdx = new Map();
@@ -468,7 +473,8 @@ export function dndzone(node, options) {
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
         transformDraggedElement = () => {},
-        centreDraggedOnCursor = false
+        centreDraggedOnCursor = false,
+        dropAnimationDisabled = false
     }) {
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
@@ -480,6 +486,7 @@ export function dndzone(node, options) {
         config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;
         config.centreDraggedOnCursor = centreDraggedOnCursor;
+        config.dropAnimationDisabled = dropAnimationDisabled;
 
         // realtime update for dropTargetStyle
         if (

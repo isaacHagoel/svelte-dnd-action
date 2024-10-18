@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.52](https://github.com/isaacHagoel/svelte-dnd-action/pull/610)
+
+Fixed a bug that affected dndzone inside scrollable parents - calculated the target index incorrectly when the element was above a hidden part of the zone
+
 ### [0.9.51](https://github.com/isaacHagoel/svelte-dnd-action/pull/608)
 
 Added the option to disable the final drop animation

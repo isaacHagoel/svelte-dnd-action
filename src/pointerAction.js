@@ -281,7 +281,9 @@ function handleDrop() {
 // helper function for handleDrop
 function animateDraggedToFinalPosition(shadowElIdx, callback) {
     const shadowElRect =
-        shadowElIdx > -1 ? getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx]) : getBoundingRectNoTransforms(shadowElDropZone);
+        shadowElIdx > -1
+            ? getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx], false)
+            : getBoundingRectNoTransforms(shadowElDropZone, false);
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
         y: shadowElRect.top - parseFloat(draggedEl.style.top)

@@ -3,11 +3,12 @@
 /**
  * Gets the bounding rect but removes transforms (ex: flip animation)
  * @param {HTMLElement} el
+ * @param {boolean} [onlyVisible] - use the visible rect defaults to true
  * @return {{top: number, left: number, bottom: number, right: number}}
  */
-export function getBoundingRectNoTransforms(el) {
+export function getBoundingRectNoTransforms(el, onlyVisible = true) {
     let ta;
-    const rect = el.getBoundingClientRect();
+    const rect = onlyVisible ? getVisibleRectRecursive(el) : el.getBoundingClientRect();
     const style = getComputedStyle(el);
     const tx = style.transform;
 
@@ -155,4 +156,54 @@ export function calcDistanceBetweenCenters(elA, elB) {
 export function isElementOffDocument(el) {
     const rect = getAbsoluteRect(el);
     return rect.right < 0 || rect.left > document.documentElement.scrollWidth || rect.bottom < 0 || rect.top > document.documentElement.scrollHeight;
+}
+
+function getVisibleRectRecursive(element) {
+    let rect = element.getBoundingClientRect();
+    let visibleRect = {
+        top: rect.top,
+        bottom: rect.bottom,
+        left: rect.left,
+        right: rect.right
+    };
+
+    // Traverse up the DOM hierarchy, checking for scrollable ancestors
+    let parent = element.parentElement;
+    while (parent && parent !== document.body) {
+        let parentRect = parent.getBoundingClientRect();
+
+        // Check if the parent has a scrollable overflow
+        const overflowY = window.getComputedStyle(parent).overflowY;
+        const overflowX = window.getComputedStyle(parent).overflowX;
+        const isScrollableY = overflowY === "scroll" || overflowY === "auto";
+        const isScrollableX = overflowX === "scroll" || overflowX === "auto";
+
+        // Constrain the visible area to the parent's visible area
+        if (isScrollableY) {
+            visibleRect.top = Math.max(visibleRect.top, parentRect.top);
+            visibleRect.bottom = Math.min(visibleRect.bottom, parentRect.bottom);
+        }
+        if (isScrollableX) {
+            visibleRect.left = Math.max(visibleRect.left, parentRect.left);
+            visibleRect.right = Math.min(visibleRect.right, parentRect.right);
+        }
+
+        parent = parent.parentElement;
+    }
+
+    // Finally, constrain the visible rect to the viewport
+    visibleRect.top = Math.max(visibleRect.top, 0);
+    visibleRect.bottom = Math.min(visibleRect.bottom, window.innerHeight);
+    visibleRect.left = Math.max(visibleRect.left, 0);
+    visibleRect.right = Math.min(visibleRect.right, window.innerWidth);
+
+    // Return the visible rectangle, ensuring that all values are valid
+    return {
+        top: visibleRect.top,
+        bottom: visibleRect.bottom,
+        left: visibleRect.left,
+        right: visibleRect.right,
+        width: Math.max(0, visibleRect.right - visibleRect.left),
+        height: Math.max(0, visibleRect.bottom - visibleRect.top)
+    };
 }

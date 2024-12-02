@@ -20,6 +20,7 @@ import {toString} from "./helpers/util";
  * @property {number} [zoneItemTabIndex] - set the tabindex of the list container items when not dragging
  * @property {object} [dropTargetStyle]
  * @property {string[]} [dropTargetClasses]
+ * @property {boolean} [dropAnimationDisabled] - cancels the drop animation to place
  * @property {function} [transformDraggedElement]
  * @param {HTMLElement} node - the element to enhance
  * @param {Options} options
@@ -74,6 +75,7 @@ function validateOptions(options) {
         transformDraggedElement,
         autoAriaDisabled,
         centreDraggedOnCursor,
+        dropAnimationDisabled,
         ...rest
     } = options;
     /*eslint-enable*/

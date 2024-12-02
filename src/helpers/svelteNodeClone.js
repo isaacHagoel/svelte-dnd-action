@@ -38,7 +38,9 @@ export function svelteNodeClone(el) {
             const clonedCanvas = clonedCanvases[i];
             clonedCanvas.width = canvas.width;
             clonedCanvas.height = canvas.height;
-            clonedCanvas.getContext("2d").drawImage(canvas, 0, 0);
+            if (canvas.width > 0 && canvas.height > 0) {
+                clonedCanvas.getContext("2d").drawImage(canvas, 0, 0);
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 {
     "name": "svelte-dnd-action",
     "description": "*An awesome drag and drop library for Svelte 3 and 4 (not using the browser's built-in dnd, thanks god): Rich animations, nested containers, touch support and more *",
-    "version": "0.9.48",
+    "version": "0.9.52",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/isaacHagoel/svelte-dnd-action.git"
@@ -47,7 +47,7 @@
         "husky": "^4.3.0",
         "lint-staged": "^10.5.1",
         "prettier": "^2.1.2",
-        "rollup": "^1.20.0",
+        "rollup": "^2.79.2",
         "rollup-plugin-babel": "^4.3.2",
         "rollup-plugin-copy": "^3.3.0"
     },

@@ -273,13 +273,19 @@ function handleDrop() {
         if (shadowElIdx !== -1) unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
         cleanupPostDrop();
     }
-    animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    if (dzToConfig.get(shadowElDropZone).dropAnimationDisabled) {
+        finalizeWithinZone();
+    } else {
+        animateDraggedToFinalPosition(shadowElIdx, finalizeWithinZone);
+    }
 }
 
 // helper function for handleDrop
 function animateDraggedToFinalPosition(shadowElIdx, callback) {
     const shadowElRect =
-        shadowElIdx > -1 ? getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx]) : getBoundingRectNoTransforms(shadowElDropZone);
+        shadowElIdx > -1
+            ? getBoundingRectNoTransforms(shadowElDropZone.children[shadowElIdx], false)
+            : getBoundingRectNoTransforms(shadowElDropZone, false);
     const newTransform = {
         x: shadowElRect.left - parseFloat(draggedEl.style.left),
         y: shadowElRect.top - parseFloat(draggedEl.style.top)
@@ -338,7 +344,8 @@ export function dndzone(node, options) {
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
         transformDraggedElement: () => {},
-        centreDraggedOnCursor: false
+        centreDraggedOnCursor: false,
+        dropAnimationDisabled: false
     };
     printDebug(() => [`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node}]);
     let elToIdx = new Map();
@@ -470,7 +477,8 @@ export function dndzone(node, options) {
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
         transformDraggedElement = () => {},
-        centreDraggedOnCursor = false
+        centreDraggedOnCursor = false,
+        dropAnimationDisabled = false
     }) {
         config.dropAnimationDurationMs = dropAnimationDurationMs;
         if (config.type && newType !== config.type) {
@@ -482,6 +490,7 @@ export function dndzone(node, options) {
         config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;
         config.centreDraggedOnCursor = centreDraggedOnCursor;
+        config.dropAnimationDisabled = dropAnimationDisabled;
 
         // realtime update for dropTargetStyle
         if (
@@ -528,7 +537,7 @@ export function dndzone(node, options) {
 
         dzToConfig.set(node, config);
         registerDropZone(node, newType);
-        const shadowElIdx = findShadowElementIdx(config.items);
+        const shadowElIdx = isWorkingOnPreviousDrag ? findShadowElementIdx(config.items) : -1;
         for (let idx = 0; idx < node.children.length; idx++) {
             const draggableEl = node.children[idx];
             styleDraggable(draggableEl, dragDisabled);

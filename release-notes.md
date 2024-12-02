@@ -1,5 +1,21 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.52](https://github.com/isaacHagoel/svelte-dnd-action/pull/610)
+
+Fixed a bug that affected dndzone inside scrollable parents - calculated the target index incorrectly when the element was above a hidden part of the zone
+
+### [0.9.51](https://github.com/isaacHagoel/svelte-dnd-action/pull/608)
+
+Added the option to disable the final drop animation
+
+### [0.9.50](https://github.com/isaacHagoel/svelte-dnd-action/pull/598)
+
+Fixed a bug where library would crash when a store updated "considers" in local storage from another tab
+
+### [0.9.49](https://github.com/isaacHagoel/svelte-dnd-action/pull/588)
+
+Fixed a bug where library would crash if one of the canvas had an empty size
+
 ### [0.9.48](https://github.com/isaacHagoel/svelte-dnd-action/pull/582)
 
 Fixed a bug where the scroller would stay active and scroll the page after drop

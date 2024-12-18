@@ -113,8 +113,11 @@ function unWatchDraggedElement() {
         dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
     window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
-    multiScroller.destroy();
-    multiScroller = undefined;
+    // ensuring multiScroller is not already destroyed before destroying
+    if(multiScroller) {
+        multiScroller.destroy();
+        multiScroller = undefined;
+    }
     unobserve();
 }
 

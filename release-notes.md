@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.53](https://github.com/isaacHagoel/svelte-dnd-action/pull/618)
+
+Added a check to address edge cases where multiScroller is undefined when accessed on destroy
+
 ### [0.9.52](https://github.com/isaacHagoel/svelte-dnd-action/pull/610)
 
 Fixed a bug that affected dndzone inside scrollable parents - calculated the target index incorrectly when the element was above a hidden part of the zone

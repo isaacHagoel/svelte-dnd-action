@@ -1,4 +1,5 @@
 import {isPointInsideRect} from "./intersection";
+import { DRAGGED_ELEMENT_ID} from "../constants";
 const SCROLL_ZONE_PX = 30;
 
 /**
@@ -14,7 +15,8 @@ export function makeScroller() {
     // directionObj {x: 0|1|-1, y:0|1|-1} - 1 means down in y and right in x
     function scrollContainer(containerEl) {
         const {directionObj, stepPx} = scrollingInfo;
-        if (directionObj) {
+        const activeDragEl = document.querySelector(`#${DRAGGED_ELEMENT_ID}`);
+        if (directionObj && activeDragEl) {
             containerEl.scrollBy(directionObj.x * stepPx, directionObj.y * stepPx);
             window.requestAnimationFrame(() => scrollContainer(containerEl));
         }

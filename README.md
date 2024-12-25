@@ -6,7 +6,7 @@ See full features list below. <br />
 
 ![dnd_demo2](https://user-images.githubusercontent.com/20507787/81682367-267eb780-9498-11ea-8dbc-5c9582033522.gif)
 
-[Play with this example in the REPL](https://svelte.dev/repl/e2ef044af75c4b16b424b8219fb31fd9?version=3).
+[Play with this example in the REPL](https://svelte.dev/playground/e2ef044af75c4b16b424b8219fb31fd9?version=5.16.0).
 
 ### Current Status
 

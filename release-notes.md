@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.54](https://github.com/isaacHagoel/svelte-dnd-action/pull/621)
+
+Readme REPL links updated repl -> playground
+
 ### [0.9.53](https://github.com/isaacHagoel/svelte-dnd-action/pull/618)
 
 Added a check to address edge cases where multiScroller is undefined when accessed on destroy

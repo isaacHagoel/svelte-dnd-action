@@ -3,6 +3,7 @@ import {
     incrementActiveDropZoneCount,
     ITEM_ID_KEY,
     printDebug,
+    SHADOW_ELEMENT_ATTRIBUTE_NAME,
     SHADOW_ITEM_MARKER_PROPERTY_NAME,
     SHADOW_PLACEHOLDER_ITEM_ID,
     SOURCES,
@@ -114,7 +115,7 @@ function unWatchDraggedElement() {
     }
     window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // ensuring multiScroller is not already destroyed before destroying
-    if(multiScroller) {
+    if (multiScroller) {
         multiScroller.destroy();
         multiScroller = undefined;
     }
@@ -271,7 +272,9 @@ function handleDrop() {
                 source: SOURCES.POINTER
             });
         }
-        if (shadowElIdx !== -1) unDecorateShadowElement(shadowElDropZone.children[shadowElIdx]);
+        // In edge cases the dom might have not been updated yet so we can't rely on data list index
+        const domShadowEl = Array.from(shadowElDropZone.children).find(c => c.getAttribute(SHADOW_ELEMENT_ATTRIBUTE_NAME));
+        if (domShadowEl) unDecorateShadowElement(domShadowEl);
         cleanupPostDrop();
     }
     if (dzToConfig.get(shadowElDropZone).dropAnimationDisabled) {

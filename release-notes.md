@@ -4,7 +4,7 @@
 
 Readme REPL links updated repl -> playground
 
-### [0.9.54](https://github.com/isaacHagoel/svelte-dnd-action/pull/626)
+### [0.9.55](https://github.com/isaacHagoel/svelte-dnd-action/pull/626)
 
 Fixed logic that could leave the shadow element invisible after drop if the dom wasn't yet updated to reflect the data list (rare)
 

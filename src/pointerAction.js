@@ -423,7 +423,7 @@ export function dndzone(node, options) {
         originIndex = currentIdx;
         originDropZone = originalDragTarget.parentElement;
         /** @type {ShadowRoot | HTMLDocument | Element } */
-        const rootNode = originDropZone.closest("dialog") || originDropZone.getRootNode();
+        const rootNode = originDropZone.closest("dialog") || originDropZone.closest("[popover]") || originDropZone.getRootNode();
         const originDropZoneRoot = rootNode.body || rootNode;
         const {items: originalItems, type, centreDraggedOnCursor} = config;
         const items = [...originalItems];

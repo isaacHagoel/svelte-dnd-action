@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.56](https://github.com/isaacHagoel/svelte-dnd-action/pull/628)
+
+Fixed dndzones inside an element with the 'popover' attribute
+
 ### [0.9.55](https://github.com/isaacHagoel/svelte-dnd-action/pull/626)
 
 Fixed logic that could leave the shadow element invisible after drop if the dom wasn't yet updated to reflect the data list (rare)

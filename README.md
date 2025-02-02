@@ -435,6 +435,10 @@ You can use generics to set the type of `items` you are expecting in `DndEvent`.
 </script>
 ```
 
+##### Svelte 5:
+
+Svelte 5 prefers `onconsider` and `onfinalize` (over `on:consider` and `on:finalize`) but works both ways as long as it's consistent within a file.
+
 ### Nested Zones Optional Optimization (experimental)
 
 This is an experimental feature added in version 0.9.29. If you have multiple levels of nesting, the lib might do unnecessary work when dragging an element that has nested zones inside.

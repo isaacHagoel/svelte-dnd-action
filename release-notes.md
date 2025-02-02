@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.57](https://github.com/isaacHagoel/svelte-dnd-action/pull/629)
+
+Readme update (`on` vs `on:` handlers in Svelte 5)
+
 ### [0.9.56](https://github.com/isaacHagoel/svelte-dnd-action/pull/628)
 
 Fixed dndzones inside an element with the 'popover' attribute

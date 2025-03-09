@@ -434,16 +434,15 @@ export function dndzone(node, options) {
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget, centreDraggedOnCursor && currentMousePosition);
         originalDragTarget.setAttribute(ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE, true);
-
+        originDropZoneRoot.appendChild(draggedEl);
+        // to prevent the outline from disappearing
+        draggedEl.focus();
+        watchDraggedElement();
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
-            if (!draggedEl.parentElement) {
-                originDropZoneRoot.appendChild(draggedEl);
-                // to prevent the outline from disappearing
-                draggedEl.focus();
-                watchDraggedElement();
-                hideElement(originalDragTarget);
+            if (!originalDragTarget.parentElement) {
                 originDropZoneRoot.appendChild(originalDragTarget);
+                hideElement(originalDragTarget);
                 // after the removal of the original element we can give the shadow element the original item id so that the host zone can find it and render it correctly if it does lookups by id
                 shadowElData[ITEM_ID_KEY] = draggedElData[ITEM_ID_KEY];
             } else {

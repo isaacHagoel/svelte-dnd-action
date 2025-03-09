@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.58](https://github.com/isaacHagoel/svelte-dnd-action/pull/636)
+
+Bugfix: when the items in the origin zone shrink in height right on drag start, the pointer would find itself outside the dragged element
+
 ### [0.9.57](https://github.com/isaacHagoel/svelte-dnd-action/pull/629)
 
 Readme update (`on` vs `on:` handlers in Svelte 5)

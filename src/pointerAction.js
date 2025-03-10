@@ -140,6 +140,11 @@ function handleDraggedEntered(e) {
     isDraggedOutsideOfAnyDz = false;
     // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
     items = items.filter(item => item[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
+    // this deals with svelte 5 $state that has a delay updating in some cases
+    const shadowElWithTempIdIndex = items.findIndex(item => item[ITEM_ID_KEY] === SHADOW_PLACEHOLDER_ITEM_ID);
+    if (shadowElWithTempIdIndex !== -1) {
+        items.splice(shadowElWithTempIdIndex, 1);
+    }
     printDebug(() => `dragged entered items ${toString(items)}`);
 
     if (originDropZone !== e.currentTarget) {
@@ -441,9 +446,9 @@ export function dndzone(node, options) {
                 originDropZoneRoot.appendChild(originalDragTarget);
                 hideElement(originalDragTarget);
                 // after the removal of the original element we can give the shadow element the original item id so that the host zone can find it and render it correctly if it does lookups by id
-                shadowElData[ITEM_ID_KEY] = draggedElData[ITEM_ID_KEY];
                 // to prevent the outline from disappearing
                 draggedEl.focus();
+                shadowElData[ITEM_ID_KEY] = draggedElData[ITEM_ID_KEY];
                 watchDraggedElement();
             } else {
                 window.requestAnimationFrame(keepOriginalElementInDom);

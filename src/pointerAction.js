@@ -374,7 +374,12 @@ export function dndzone(node, options) {
 
         // dragging initiated by touch events prevents onclick from initially firing
         if (e.type === "touchend") {
-            e.target.click();
+            const clickEvent = new Event("click", {
+                bubbles: true,
+                cancelable: true
+            });
+            // doing it this way instead of calling .click() because that doesn't work for SVG elements
+            e.target.dispatchEvent(clickEvent);
         }
     }
 

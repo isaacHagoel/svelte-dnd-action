@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.60](https://github.com/isaacHagoel/svelte-dnd-action/pull/639)
+
+Bugfix: the touchend listener was emulating a click using the click() function and that broke when the user clicked on an SVG
+
 ### [0.9.59](https://github.com/isaacHagoel/svelte-dnd-action/pull/638)
 
 Bugfix: fixed an issue that affected $state (for items) that was introduced by version 0.9.58

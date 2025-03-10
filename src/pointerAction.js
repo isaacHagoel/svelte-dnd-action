@@ -446,9 +446,9 @@ export function dndzone(node, options) {
                 originDropZoneRoot.appendChild(originalDragTarget);
                 hideElement(originalDragTarget);
                 // after the removal of the original element we can give the shadow element the original item id so that the host zone can find it and render it correctly if it does lookups by id
+                shadowElData[ITEM_ID_KEY] = draggedElData[ITEM_ID_KEY];
                 // to prevent the outline from disappearing
                 draggedEl.focus();
-                shadowElData[ITEM_ID_KEY] = draggedElData[ITEM_ID_KEY];
                 watchDraggedElement();
             } else {
                 window.requestAnimationFrame(keepOriginalElementInDom);

@@ -1,7 +1,12 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.59](https://github.com/isaacHagoel/svelte-dnd-action/pull/638)
+
+Bugfix: fixed an issue that affected $state (for items) that was introduced by version 0.9.58
+
 ### [0.9.58](https://github.com/isaacHagoel/svelte-dnd-action/pull/636)
 
+Svelte 5 $state users (if you store items as $state) - please skip this version!
 Bugfix: when the items in the origin zone shrink in height right on drag start, the pointer would find itself outside the dragged element
 
 ### [0.9.57](https://github.com/isaacHagoel/svelte-dnd-action/pull/629)

@@ -84,7 +84,18 @@ export function dragHandle(handle) {
         // preventing default to prevent lag on touch devices (because of the browser checking for screen scrolling)
         e.preventDefault();
         isItemsDragDisabled.set(false);
+
+        // Reset isItemsDragDisabled if the user releases the mouse/touch without initiating a drag
+        const onEnd = () => {
+            isItemsDragDisabled.set(true);
+            window.removeEventListener("mouseup", onEnd);
+            window.removeEventListener("touchend", onEnd);
+        };
+
+        window.addEventListener("mouseup", onEnd);
+        window.addEventListener("touchend", onEnd);
     }
+
     function handleKeyDown(e) {
         if (e.key === "Enter" || e.key === " ") isItemsDragDisabled.set(false);
     }

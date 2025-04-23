@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.61](https://github.com/isaacHagoel/svelte-dnd-action/pull/645)
+
+Bugfix: Fixed an issue in `dragHandle` where clicking and releasing without dragging left `isItemsDragDisabled` as `false`, making the entire element draggable.
+
 ### [0.9.60](https://github.com/isaacHagoel/svelte-dnd-action/pull/639)
 
 Bugfix: the touchend listener was emulating a click using the click() function and that broke when the user clicked on an SVG

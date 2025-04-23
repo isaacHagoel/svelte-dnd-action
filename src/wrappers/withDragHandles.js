@@ -84,9 +84,20 @@ export function dragHandle(handle) {
         // preventing default to prevent lag on touch devices (because of the browser checking for screen scrolling)
         e.preventDefault();
         isItemsDragDisabled.set(false);
+
+        // Reset the startDrag/isItemsDragDisabled if the user releases the mouse/touch without initiating a drag
+        window.addEventListener("mouseup", resetStartDrag);
+        window.addEventListener("touchend", resetStartDrag);
     }
+
     function handleKeyDown(e) {
         if (e.key === "Enter" || e.key === " ") isItemsDragDisabled.set(false);
+    }
+
+    function resetStartDrag() {
+        isItemsDragDisabled.set(true);
+        window.removeEventListener("mouseup", resetStartDrag);
+        window.removeEventListener("touchend", resetStartDrag);
     }
 
     isItemsDragDisabled.subscribe(disabled => {

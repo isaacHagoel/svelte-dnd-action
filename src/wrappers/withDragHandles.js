@@ -5,9 +5,9 @@ import {createStore} from "./simpleStore";
 const isItemsDragDisabled = createStore(true);
 const userDragDisabled = createStore(false);
 
-function getAddedOptions(effectiveDragDisabled) {
+function getAddedOptions() {
     return {
-        dragDisabled: effectiveDragDisabled,
+        dragDisabled: userDragDisabled.get() || isItemsDragDisabled.get(),
         zoneItemTabIndex: -1
     };
 }
@@ -29,13 +29,13 @@ export function dragHandleZone(node, options) {
 
     const zone = dndzone(node, {
         ...currentOptions,
-        ...getAddedOptions(userDragDisabled.get() || isItemsDragDisabled.get())
+        ...getAddedOptions()
     });
 
     function updateZone() {
         zone.update({
             ...currentOptions,
-            ...getAddedOptions(userDragDisabled.get() || isItemsDragDisabled.get())
+            ...getAddedOptions()
         });
     }
 

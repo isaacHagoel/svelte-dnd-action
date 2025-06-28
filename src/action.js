@@ -20,6 +20,8 @@ import {toString} from "./helpers/util";
  * @property {number} [zoneItemTabIndex] - set the tabindex of the list container items when not dragging
  * @property {object} [dropTargetStyle]
  * @property {string[]} [dropTargetClasses]
+ * @property {boolean|number} [delayTouchStart] - On touch devices, wait this long before converting the gesture to a drag.
+ * `true` uses the built-in default (80 ms).
  * @property {boolean} [dropAnimationDisabled] - cancels the drop animation to place
  * @property {function} [transformDraggedElement]
  * @param {HTMLElement} node - the element to enhance
@@ -75,6 +77,7 @@ function validateOptions(options) {
         transformDraggedElement,
         autoAriaDisabled,
         centreDraggedOnCursor,
+        delayTouchStart,
         dropAnimationDisabled,
         ...rest
     } = options;
@@ -97,6 +100,17 @@ function validateOptions(options) {
     }
     if (zoneItemTabIndex && !isInt(zoneItemTabIndex)) {
         throw new Error(`zoneItemTabIndex should be a number but instead it is a ${typeof zoneItemTabIndex}, ${toString(zoneItemTabIndex)}`);
+    }
+    if (delayTouchStart !== undefined && delayTouchStart !== false) {
+        const validBoolean = delayTouchStart === true;
+        const validNumber = typeof delayTouchStart === "number" && isFinite(delayTouchStart) && delayTouchStart >= 0;
+        if (!validBoolean && !validNumber) {
+            throw new Error(
+                `delayTouchStart should be a boolean (true/false) or a non-negative number but instead it is a ${typeof delayTouchStart}, ${toString(
+                    delayTouchStart
+                )}`
+            );
+        }
     }
 }
 

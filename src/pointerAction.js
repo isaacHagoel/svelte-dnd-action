@@ -39,6 +39,7 @@ const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
 const DISABLED_OBSERVATION_INTERVAL_MS = 20;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;
+const DEFAULT_TOUCH_DELAY_MS = 80;
 const DEFAULT_DROP_TARGET_STYLE = {
     outline: "rgba(255, 255, 102, 0.7) solid 2px"
 };
@@ -60,6 +61,8 @@ let unlockOriginDzMinDimensions;
 let isDraggedOutsideOfAnyDz = false;
 let scheduledForRemovalAfterDrop = [];
 let multiScroller;
+let touchDragHoldTimer;
+let touchHoldElapsed = false;
 
 // a map from type to a set of drop-zones
 const typeToDropZones = new Map();
@@ -310,16 +313,14 @@ function scheduleDZForRemovalAfterDrop(dz, destroy) {
 }
 /* cleanup */
 function cleanupPostDrop() {
-    draggedEl.remove();
-    originalDragTarget.remove();
-    if (scheduledForRemovalAfterDrop.length) {
-        printDebug(() => ["will destroy zones that were removed during drag", scheduledForRemovalAfterDrop]);
-        scheduledForRemovalAfterDrop.forEach(({dz, destroy}) => {
-            destroy();
-            dz.remove();
-        });
-        scheduledForRemovalAfterDrop = [];
+    // Remove the temporary elements that were kept in the DOM during the drag
+    if (draggedEl && draggedEl.remove) {
+        draggedEl.remove();
     }
+    if (originalDragTarget && originalDragTarget.remove) {
+        originalDragTarget.remove();
+    }
+
     draggedEl = undefined;
     originalDragTarget = undefined;
     draggedElData = undefined;
@@ -334,6 +335,19 @@ function cleanupPostDrop() {
     finalizingPreviousDrag = false;
     unlockOriginDzMinDimensions = undefined;
     isDraggedOutsideOfAnyDz = false;
+    if (touchDragHoldTimer) {
+        clearTimeout(touchDragHoldTimer);
+    }
+    touchDragHoldTimer = undefined;
+    touchHoldElapsed = false;
+    if (scheduledForRemovalAfterDrop.length) {
+        printDebug(() => ["will destroy zones that were removed during drag", scheduledForRemovalAfterDrop]);
+        scheduledForRemovalAfterDrop.forEach(({dz, destroy}) => {
+            destroy();
+            dz.remove();
+        });
+        scheduledForRemovalAfterDrop = [];
+    }
 }
 
 export function dndzone(node, options) {
@@ -349,7 +363,8 @@ export function dndzone(node, options) {
         dropTargetClasses: [],
         transformDraggedElement: () => {},
         centreDraggedOnCursor: false,
-        dropAnimationDisabled: false
+        dropAnimationDisabled: false,
+        delayTouchStartMs: 0
     };
     printDebug(() => [`dndzone good to go options: ${toString(options)}, config: ${toString(config)}`, {node}]);
     let elToIdx = new Map();
@@ -365,6 +380,11 @@ export function dndzone(node, options) {
         window.removeEventListener("touchmove", handleMouseMoveMaybeDragStart);
         window.removeEventListener("mouseup", handleFalseAlarm);
         window.removeEventListener("touchend", handleFalseAlarm);
+        if (touchDragHoldTimer) {
+            clearTimeout(touchDragHoldTimer);
+            touchDragHoldTimer = undefined;
+            touchHoldElapsed = false;
+        }
     }
     function handleFalseAlarm(e) {
         removeMaybeListeners();
@@ -384,8 +404,30 @@ export function dndzone(node, options) {
     }
 
     function handleMouseMoveMaybeDragStart(e) {
+        const isTouch = !!e.touches;
+        const c = isTouch ? e.touches[0] : e;
+        // If touch drag delay is configured and not elapsed yet, allow scrolling until either
+        // the delay elapses (timer will call handleDragStart) or the user moves significantly,
+        // in which case we cancel the potential drag and let the interaction be a scroll.
+        if (isTouch && config.delayTouchStartMs > 0 && !touchHoldElapsed) {
+            currentMousePosition = {x: c.clientX, y: c.clientY};
+            if (
+                Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX ||
+                Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX
+            ) {
+                // User started scrolling, cancel drag attempt.
+                if (touchDragHoldTimer) {
+                    clearTimeout(touchDragHoldTimer);
+                    touchDragHoldTimer = undefined;
+                }
+                handleFalseAlarm(e);
+            }
+            return; // Do not preventDefault so scrolling works.
+        }
+
+        // legacy / post-delay path – block scrolling and maybe start drag
         e.preventDefault();
-        const c = e.touches ? e.touches[0] : e;
+
         currentMousePosition = {x: c.clientX, y: c.clientY};
         if (
             Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX ||
@@ -410,12 +452,30 @@ export function dndzone(node, options) {
             printDebug(() => "cannot start a new drag before finalizing previous one");
             return;
         }
-        e.preventDefault();
+        const isTouchStart = !!e.touches;
+        const useDelay = isTouchStart && config.delayTouchStartMs > 0;
+
+        if (!useDelay) {
+            e.preventDefault();
+        }
         e.stopPropagation();
-        const c = e.touches ? e.touches[0] : e;
+
+        const c = isTouchStart ? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y: c.clientY};
         currentMousePosition = {...dragStartMousePosition};
         originalDragTarget = e.currentTarget;
+
+        if (useDelay) {
+            touchHoldElapsed = false;
+            touchDragHoldTimer = window.setTimeout(() => {
+                // If the finger is still down and no false-alarm happened
+                if (!originalDragTarget) return;
+                touchHoldElapsed = true;
+                removeMaybeListeners();
+                handleDragStart();
+            }, config.delayTouchStartMs);
+        }
+
         addMaybeListeners();
     }
 
@@ -487,9 +547,19 @@ export function dndzone(node, options) {
         dropTargetClasses = [],
         transformDraggedElement = () => {},
         centreDraggedOnCursor = false,
-        dropAnimationDisabled = false
+        dropAnimationDisabled = false,
+        delayTouchStart: delayTouchStartOpt = false
     }) {
         config.dropAnimationDurationMs = dropAnimationDurationMs;
+
+        let effectiveDelayMs = 0;
+        if (delayTouchStartOpt === true) {
+            effectiveDelayMs = DEFAULT_TOUCH_DELAY_MS;
+        } else if (typeof delayTouchStartOpt === "number" && isFinite(delayTouchStartOpt) && delayTouchStartOpt >= 0) {
+            effectiveDelayMs = delayTouchStartOpt;
+        }
+        config.delayTouchStartMs = effectiveDelayMs;
+
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
         }

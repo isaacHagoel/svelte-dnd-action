@@ -59,6 +59,11 @@ export interface Options<T extends Item = Item> {
     autoAriaDisabled?: boolean;
     centreDraggedOnCursor?: boolean;
     dropAnimationDisabled?: boolean;
+    /**
+     * Improve touch UX: true => default 80 ms delay, number => custom delay in ms.
+     * false/undefined => drag starts instantly (legacy behaviour)
+     */
+    delayTouchStart?: boolean | number;
 }
 
 export interface DndZoneAttributes<T> {

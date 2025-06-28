@@ -1,5 +1,12 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.63](https://github.com/isaacHagoel/svelte-dnd-action/pull/652)
+
+Feature: Added `delayTouchStart` option to improve touch-device UX.
+
+-   Allows distinguishing quick scroll gestures from drag starts.
+-   Accepts **boolean** (`true` = 80 ms default) or **number** (custom delay in ms).
+
 ### [0.9.62](https://github.com/isaacHagoel/svelte-dnd-action/pull/651)
 
 Bugfix: the dragHandle now respects the `dragDisabled` prop

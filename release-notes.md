@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.62](https://github.com/isaacHagoel/svelte-dnd-action/pull/651)
+
+Bugfix: the dragHandle now respects the `dragDisabled` prop
+
 ### [0.9.61](https://github.com/isaacHagoel/svelte-dnd-action/pull/645)
 
 Bugfix: Fixed an issue in `dragHandle` where clicking and releasing without dragging left `isItemsDragDisabled` as `false`, making the entire element draggable.

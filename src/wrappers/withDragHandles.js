@@ -3,10 +3,11 @@ import {dndzone} from "../action";
 import {createStore} from "./simpleStore";
 
 const isItemsDragDisabled = createStore(true);
+const userDragDisabled = createStore(false);
 
-function getAddedOptions(isItemsDragDisabled = true) {
+function getAddedOptions(effectiveDragDisabled) {
     return {
-        dragDisabled: isItemsDragDisabled,
+        dragDisabled: effectiveDragDisabled,
         zoneItemTabIndex: -1
     };
 }
@@ -21,18 +22,30 @@ function getAddedOptions(isItemsDragDisabled = true) {
  * @return {{update: (newOptions: Object) => {}, destroy: () => {}}}
  */
 export function dragHandleZone(node, options) {
+    // Initialise stores from initial options
+    userDragDisabled.set(options?.dragDisabled ?? false);
+
     let currentOptions = options;
+
     const zone = dndzone(node, {
         ...currentOptions,
-        ...getAddedOptions()
+        ...getAddedOptions(userDragDisabled.get() || isItemsDragDisabled.get())
     });
-    function isItemDisabledCB(isItemsDragDisabled) {
+
+    function updateZone() {
         zone.update({
             ...currentOptions,
-            ...getAddedOptions(isItemsDragDisabled)
+            ...getAddedOptions(userDragDisabled.get() || isItemsDragDisabled.get())
         });
     }
-    isItemsDragDisabled.subscribe(isItemDisabledCB);
+
+    // Subscribe to internal store so finishing a drag updates the zone
+    isItemsDragDisabled.subscribe(updateZone);
+
+    // We don't need to subscribe to userDragDisabled here because updates to
+    // it always come through the `update` lifecycle and will call `updateZone`
+    // anyway.
+
     function consider(e) {
         const {
             info: {source, trigger}
@@ -59,15 +72,14 @@ export function dragHandleZone(node, options) {
     return {
         update: newOptions => {
             currentOptions = newOptions;
-            zone.update({
-                ...currentOptions,
-                ...getAddedOptions(isItemsDragDisabled.get())
-            });
+            // keep store in sync with external prop
+            userDragDisabled.set(currentOptions?.dragDisabled ?? false);
+            updateZone();
         },
         destroy: () => {
             node.removeEventListener("consider", consider);
             node.removeEventListener("finalize", finalize);
-            isItemsDragDisabled.unsubscribe(isItemDisabledCB);
+            isItemsDragDisabled.unsubscribe(updateZone);
         }
     };
 }
@@ -100,10 +112,22 @@ export function dragHandle(handle) {
         window.removeEventListener("touchend", resetStartDrag);
     }
 
-    isItemsDragDisabled.subscribe(disabled => {
-        handle.tabIndex = disabled ? 0 : -1;
-        handle.style.cursor = disabled ? "grab" : "grabbing";
-    });
+    const recomputeHandleState = () => {
+        const userDisabled = userDragDisabled.get();
+        const internalDisabled = isItemsDragDisabled.get();
+
+        if (userDisabled) {
+            handle.tabIndex = -1;
+            handle.style.cursor = ""; // default cursor
+        } else {
+            handle.tabIndex = internalDisabled ? 0 : -1;
+            handle.style.cursor = internalDisabled ? "grab" : "grabbing";
+        }
+    };
+
+    // Subscribe to both stores
+    userDragDisabled.subscribe(recomputeHandleState);
+    isItemsDragDisabled.subscribe(recomputeHandleState);
 
     handle.addEventListener("mousedown", startDrag);
     handle.addEventListener("touchstart", startDrag);
@@ -114,6 +138,8 @@ export function dragHandle(handle) {
             handle.removeEventListener("mousedown", startDrag);
             handle.removeEventListener("touchstart", startDrag);
             handle.removeEventListener("keydown", handleKeyDown);
+            userDragDisabled.unsubscribe(recomputeHandleState);
+            isItemsDragDisabled.unsubscribe(recomputeHandleState);
         }
     };
 }

@@ -119,6 +119,10 @@ An options-object with the following attributes:
 | `autoAriaDisabled` | Boolean | No | `false` | Setting it to true will disable all the automatically added aria attributes and aria alerts (for example when the user starts/ stops dragging using the keyboard).<br /> **Use it only if you intend to implement your own custom instructions, roles and alerts.** In such a case, you might find the exported function `alertToScreenReader(string)` useful. |
 | `centreDraggedOnCursor` | Boolean | No | `false` | Setting it to true will cause elements from this dnd-zone to position their center on the cursor on drag start, effectively turning the cursor to the focal point that triggers all the dnd events (ex: entering another zone). Useful for dnd-zones with large items that can be dragged over small items. |
 | `dropAnimationDisabled` | Boolean | No | `false` | Setting it to true will disable the animation of the dropped element to its final place. |
+| `delayTouchStart` | Boolean \| Number | No | `false` | Prevents accidental drags on touch devices that should have been scrolls.  
+ • `true` – enable with sensible default (80 ms).  
+ • `number` – custom delay in milliseconds.  
+ • `false` / omitted – legacy behaviour (drag starts immediately). |
 
 ##### Output:
 
@@ -477,3 +481,15 @@ Starting with version 0.9.42. if you use the hint make sure to include it in the
 There is still quite a lot to do. If you'd like to contribute please get in touch (raise an issue or comment on an existing one).
 Ideally, be specific about which area you'd like to help with.
 Thank you for reading :)
+
+If your page is scrollable and you found that quick swipes on touch devices sometimes start a drag instead of scrolling, enable the new `delayTouchStart` option:
+
+```sveltehtml
+<section use:dndzone={{ items, flipDurationMs, delayTouchStart: true }}>
+    …
+</section>
+```
+
+Setting it to `true` waits 80 ms before hijacking the gesture; passing a number lets you tune the threshold.
+
+If you want screen-readers to tell the user which item is being dragged and which container it interacts with, **please add `aria-label` on the container and on every draggable item**. The library will take care of the rest.

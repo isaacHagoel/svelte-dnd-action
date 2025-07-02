@@ -292,7 +292,6 @@ export function dndzone(node, options) {
         config.type = newType;
         registerDropZone(node, newType);
         if (!autoAriaDisabled) {
-            node.setAttribute("aria-disabled", dragDisabled);
             node.setAttribute("role", "list");
             node.setAttribute("aria-describedby", dragDisabled ? INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED : INSTRUCTION_IDs.DND_ZONE_ACTIVE);
         }

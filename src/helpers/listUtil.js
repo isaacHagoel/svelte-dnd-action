@@ -77,5 +77,33 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
             indexOfMin = i;
         }
     }
+
+    // -------- Phantom slot check --------
+    // Regardless of layout (simple vertical list, flex-wrap, grid, floats …) the
+    // visually closest drop target can be *after* the current last **real** child.
+    // In simple layouts the would be index from the existing children would always be the last index
+    // but in more complex layouts (flex-wrap, grid, floats …) it can be any index.
+    // The problem is we can't predict where an additional element would be rendered in the general case,
+    // We therefore create a temporary, invisible clone of that last element, let
+    // the browser position it, measure the distance, and remove it immediately
+    // (same task → no paint).  This leaves `children` back in its original state
+    // before we exit the function, so existing index-caching logic and shadow-
+    // element bookkeeping continue to work unchanged.
+    if (children.length > 0) {
+        const originalLen = children.length; // before we append the phantom
+        const template = children[originalLen - 1];
+        const phantom = template.cloneNode(false); // shallow clone is enough for size
+        phantom.style.visibility = "hidden";
+        phantom.style.pointerEvents = "none";
+        collectionBelowEl.appendChild(phantom);
+
+        const phantomDistance = calcDistanceBetweenCenters(floatingAboveEl, phantom);
+        if (phantomDistance < minDistanceSoFar) {
+            indexOfMin = originalLen; // index of phantom slot in original list
+        }
+
+        collectionBelowEl.removeChild(phantom);
+    }
+
     return {index: indexOfMin, isProximityBased: true};
 }

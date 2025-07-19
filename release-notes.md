@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.64](https://github.com/isaacHagoel/svelte-dnd-action/pull/657)
+
+Bugfix: change the handling of positioning the shadow element as the last child to support complex layouts like flex-wrap
+
 ### [0.9.63](https://github.com/isaacHagoel/svelte-dnd-action/pull/652)
 
 Feature: Added `delayTouchStart` option to improve touch-device UX.

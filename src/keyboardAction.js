@@ -165,8 +165,8 @@ export function dndzone(node, options) {
     };
 
     function swap(arr, i, j) {
-        if (arr.length <= 1) return;
-        arr.splice(j, 1, arr.splice(i, 1, arr[j])[0]);
+        if (arr.length <= Math.max(i, j)) return;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
 
     function handleKeyDown(e) {

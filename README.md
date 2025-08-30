@@ -262,7 +262,7 @@ Notes:
 -   [Unsortable lists with custom aria instructions](https://svelte.dev/playground/e020ea1051dc4ae3ac2b697064f234bc?version=3)
 -   [Crazy nesting](https://svelte.dev/playground/fe8c9eca04f9417a94a8b6041df77139?version=3), courtesy of @zahachtah
 -   [Generic List Component (Alternative to Slots)](https://svelte.dev/playground/028674733f67409c94bd52995d5906f1?version=3)
--   [Maitaining internal scroll poisition on scrollable dragabble](https://svelte.dev/playground/eb2f5988bd2f46488810606c1fb13392?version=3)
+-   [Maintaining internal scroll poisition on scrollable dragabble](https://svelte.dev/playground/eb2f5988bd2f46488810606c1fb13392?version=3)
 -   [Scrabble like board using over a 100 single slot dnd-zones](https://svelte.dev/playground/ed2e138417094281be6db1aef23d7859?version=3)
 -   [Select multiple elements to drag (multi-drag) with mouse or keyboard](https://svelte.dev/playground/c4eb917bb8df42c4b17402a7dda54856?version=3)
 

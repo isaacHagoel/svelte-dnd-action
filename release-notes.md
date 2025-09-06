@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.65](https://github.com/isaacHagoel/svelte-dnd-action/pull/665)
+
+No changes, just added a shameless plug to the Readme for github and NPM
+
 ### [0.9.64](https://github.com/isaacHagoel/svelte-dnd-action/pull/657)
 
 Bugfix: change the handling of positioning the shadow element as the last child to support complex layouts like flex-wrap

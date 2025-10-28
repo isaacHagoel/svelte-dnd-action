@@ -141,8 +141,8 @@ function handleDraggedEntered(e) {
         return;
     }
     isDraggedOutsideOfAnyDz = false;
-    // this deals with another race condition. in rare occasions (super rapid operations) the list hasn't updated yet
-    items = items.filter(item => item[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY]);
+    // this deals with another race condition. on some occasions (super rapid operations) the list hasn't updated yet
+    items = items.filter(item => item[ITEM_ID_KEY] !== shadowElData[ITEM_ID_KEY] && item[ITEM_ID_KEY] !== SHADOW_PLACEHOLDER_ITEM_ID);
     printDebug(() => `dragged entered items ${toString(items)}`);
 
     if (originDropZone !== e.currentTarget) {

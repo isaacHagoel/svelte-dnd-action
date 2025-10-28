@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.66](https://github.com/isaacHagoel/svelte-dnd-action/pull/670)
+
+Tiny fix to prevent an error when in Svelte 5 runes mode
+
 ### [0.9.65](https://github.com/isaacHagoel/svelte-dnd-action/pull/665)
 
 No changes, just added a shameless plug to the Readme for github and NPM

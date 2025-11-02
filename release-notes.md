@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.67](https://github.com/isaacHagoel/svelte-dnd-action/pull/675)
+
+Bugfix - very tall elements/zones detection logic fix.
+
 ### [0.9.66](https://github.com/isaacHagoel/svelte-dnd-action/pull/670)
 
 Tiny fix to prevent an error when in Svelte 5 runes mode

@@ -158,8 +158,25 @@ export function isElementOffDocument(el) {
     return rect.right < 0 || rect.left > document.documentElement.scrollWidth || rect.bottom < 0 || rect.top > document.documentElement.scrollHeight;
 }
 
+/**
+ * Computes the portion of an element that is actually visible inside its scrollable
+ * ancestor containers. If the element is clipped by any scrollable ancestor (overflow: auto|scroll),
+ * the returned rect is the clipped one. If it is not clipped by any scrollable ancestor but is
+ * partially or fully outside the viewport, the function returns the element's full bounding rect
+ * (i.e. it does NOT clip to the viewport).
+ *
+ * This is useful for distinguishing "hidden because parent scrolls" from
+ * "hidden because off-screen".
+ *
+ * @param {HTMLElement} element - The DOM element to measure.
+ * @returns {{top: number, bottom: number, left: number, right: number, width: number, height: number}}
+ * An object describing the visible rectangle in viewport coordinates.
+ */
 function getVisibleRectRecursive(element) {
-    let rect = element.getBoundingClientRect();
+    // original rect of the element (can be off-screen)
+    const rect = element.getBoundingClientRect();
+
+    // this will be our "clipped by scroll containers" rect
     let visibleRect = {
         top: rect.top,
         bottom: rect.bottom,
@@ -167,43 +184,68 @@ function getVisibleRectRecursive(element) {
         right: rect.right
     };
 
-    // Traverse up the DOM hierarchy, checking for scrollable ancestors
+    let wasClippedByScrollY = false;
+    let wasClippedByScrollX = false;
+
+    // walk up and clip ONLY by scrollable ancestors
     let parent = element.parentElement;
     while (parent && parent !== document.body) {
-        let parentRect = parent.getBoundingClientRect();
-
-        // Check if the parent has a scrollable overflow
-        const overflowY = window.getComputedStyle(parent).overflowY;
-        const overflowX = window.getComputedStyle(parent).overflowX;
+        const style = window.getComputedStyle(parent);
+        const overflowY = style.overflowY;
+        const overflowX = style.overflowX;
         const isScrollableY = overflowY === "scroll" || overflowY === "auto";
         const isScrollableX = overflowX === "scroll" || overflowX === "auto";
 
-        // Constrain the visible area to the parent's visible area
-        if (isScrollableY) {
-            visibleRect.top = Math.max(visibleRect.top, parentRect.top);
-            visibleRect.bottom = Math.min(visibleRect.bottom, parentRect.bottom);
-        }
-        if (isScrollableX) {
-            visibleRect.left = Math.max(visibleRect.left, parentRect.left);
-            visibleRect.right = Math.min(visibleRect.right, parentRect.right);
+        if (isScrollableY || isScrollableX) {
+            const parentRect = parent.getBoundingClientRect();
+
+            if (isScrollableY) {
+                // if we actually shrink, mark it
+                const newTop = Math.max(visibleRect.top, parentRect.top);
+                const newBottom = Math.min(visibleRect.bottom, parentRect.bottom);
+                if (newTop !== visibleRect.top || newBottom !== visibleRect.bottom) {
+                    wasClippedByScrollY = true;
+                }
+                visibleRect.top = newTop;
+                visibleRect.bottom = newBottom;
+            }
+
+            if (isScrollableX) {
+                const newLeft = Math.max(visibleRect.left, parentRect.left);
+                const newRight = Math.min(visibleRect.right, parentRect.right);
+                if (newLeft !== visibleRect.left || newRight !== visibleRect.right) {
+                    wasClippedByScrollX = true;
+                }
+                visibleRect.left = newLeft;
+                visibleRect.right = newRight;
+            }
         }
 
         parent = parent.parentElement;
     }
 
-    // Finally, constrain the visible rect to the viewport
-    visibleRect.top = Math.max(visibleRect.top, 0);
-    visibleRect.bottom = Math.min(visibleRect.bottom, window.innerHeight);
-    visibleRect.left = Math.max(visibleRect.left, 0);
-    visibleRect.right = Math.min(visibleRect.right, window.innerWidth);
+    // CASE 1: element was clipped by a scrollable container
+    // → return the clipped rect (this is your 500px content inside 250px scroller case)
+    if (wasClippedByScrollY || wasClippedByScrollX) {
+        return {
+            top: visibleRect.top,
+            bottom: visibleRect.bottom,
+            left: visibleRect.left,
+            right: visibleRect.right,
+            width: Math.max(0, visibleRect.right - visibleRect.left),
+            height: Math.max(0, visibleRect.bottom - visibleRect.top)
+        };
+    }
 
-    // Return the visible rectangle, ensuring that all values are valid
+    // CASE 2: not clipped by scroll containers
+    // → we want the element’s FULL rect, even if it’s off-screen
+    // i.e. do NOT clip to viewport
     return {
-        top: visibleRect.top,
-        bottom: visibleRect.bottom,
-        left: visibleRect.left,
-        right: visibleRect.right,
-        width: Math.max(0, visibleRect.right - visibleRect.left),
-        height: Math.max(0, visibleRect.bottom - visibleRect.top)
+        top: rect.top,
+        bottom: rect.bottom,
+        left: rect.left,
+        right: rect.right,
+        width: Math.max(0, rect.right - rect.left),
+        height: Math.max(0, rect.bottom - rect.top)
     };
 }

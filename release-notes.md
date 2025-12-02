@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.68](https://github.com/isaacHagoel/svelte-dnd-action/pull/650)
+
+Bugfix - dragHandleZones are now testable within playwright
+
 ### [0.9.67](https://github.com/isaacHagoel/svelte-dnd-action/pull/675)
 
 Bugfix - very tall elements/zones detection logic fix.

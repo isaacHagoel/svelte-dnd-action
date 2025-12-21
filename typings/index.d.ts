@@ -64,6 +64,10 @@ export interface Options<T extends Item = Item> {
      * false/undefined => drag starts instantly (legacy behaviour)
      */
     delayTouchStart?: boolean | number;
+    /**
+     * Use cursor position instead of dragged element center for drop zone detection
+     */
+    useCursorForDetection?: boolean;
 }
 
 export interface DndZoneAttributes<T> {

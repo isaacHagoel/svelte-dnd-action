@@ -150,6 +150,17 @@ export function calcDistanceBetweenCenters(elA, elB) {
 }
 
 /**
+ * Calculate distance from a point to the center of an element
+ * @param {{x: number, y: number}} point
+ * @param {HTMLElement|ChildNode} el
+ * @return {number}
+ */
+export function calcDistanceFromPointToCenter(point, el) {
+    const centerOfEl = findCenterOfElement(el);
+    return calcDistance(point, centerOfEl);
+}
+
+/**
  * @param {HTMLElement} el - the element to check
  * @returns {boolean} - true if the element in its entirety is off-screen including the scrollable area (the normal dom events look at the mouse rather than the element)
  */

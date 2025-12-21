@@ -77,6 +77,7 @@ function validateOptions(options) {
         transformDraggedElement,
         autoAriaDisabled,
         centreDraggedOnCursor,
+        useCursorForDetection,
         delayTouchStart,
         dropAnimationDisabled,
         ...rest

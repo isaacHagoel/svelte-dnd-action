@@ -20,8 +20,9 @@ let next;
  * @param {HTMLElement} draggedEl
  * @param {number} [intervalMs = INTERVAL_MS]
  * @param {MultiScroller} multiScroller
+ * @param {function(): {x: number, y: number} | null} [getCursorPosition] - Optional function to get cursor position for detection
  */
-export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScroller) {
+export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScroller, getCursorPosition = null) {
     // initialization
     let lastDropZoneFound;
     let lastIndexFound;
@@ -34,7 +35,11 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
      * The main function in this module. Tracks where everything is/ should be a take the actions
      */
     function andNow() {
-        const currentCenterOfDragged = findCenterOfElement(draggedEl);
+        // Use cursor position if provided, otherwise use element center
+        const cursorPos = getCursorPosition ? getCursorPosition() : null;
+        const currentCenterOfDragged = cursorPos
+            ? {x: cursorPos.x + window.scrollX, y: cursorPos.y + window.scrollY}
+            : findCenterOfElement(draggedEl);
         const scrolled = multiScroller.multiScrollIfNeeded();
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         if (
@@ -57,7 +62,8 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
         let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
             if (scrolled) resetIndexesCache();
-            const indexObj = findWouldBeIndex(draggedEl, dz);
+            // Pass cursor position to findWouldBeIndex when using cursor-based detection
+            const indexObj = findWouldBeIndex(draggedEl, dz, cursorPos ? currentCenterOfDragged : null);
             if (indexObj === null) {
                 // it is not inside
                 continue;

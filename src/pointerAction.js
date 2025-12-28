@@ -107,8 +107,13 @@ function watchDraggedElement() {
     const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
     const observationIntervalMs = setIntervalMs === 0 ? DISABLED_OBSERVATION_INTERVAL_MS : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); // if setIntervalMs is 0 it goes to 20, otherwise it is max between it and min observation.
     multiScroller = createMultiScroller(dropZones, () => currentMousePosition);
-    // Pass cursor position getter when useCursorForDetection is active
-    const getCursorPosition = useCursorForDetectionActive ? () => currentMousePosition : null;
+    // Returns cursor position in document coordinates (with scroll offset), or null to use element center
+    const getCursorPosition = useCursorForDetectionActive
+        ? () => ({
+              x: currentMousePosition.x + window.scrollX,
+              y: currentMousePosition.y + window.scrollY
+          })
+        : null;
     observe(draggedEl, dropZones, observationIntervalMs * 1.07, multiScroller, getCursorPosition);
 }
 function unWatchDraggedElement() {

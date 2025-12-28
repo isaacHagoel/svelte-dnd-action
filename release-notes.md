@@ -1,5 +1,12 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.69](https://github.com/isaacHagoel/svelte-dnd-action/pull/679)
+
+Feature: Added `useCursorForDetection` option.
+
+-   Uses cursor position instead of dragged element's center for drop zone detection.
+-   Improves accuracy when dragging large elements over small drop targets.
+
 ### [0.9.68](https://github.com/isaacHagoel/svelte-dnd-action/pull/650)
 
 Bugfix - dragHandleZones are now testable within playwright

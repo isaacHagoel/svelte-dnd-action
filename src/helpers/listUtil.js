@@ -96,12 +96,9 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl, detectionPo
     let indexOfMin = undefined;
     // we are checking all of them because we don't know whether we are dealing with a horizontal or vertical container and where the floating element entered from
     for (let i = 0; i < children.length; i++) {
-        let distance;
-        if (detectionPoint) {
-            distance = calcDistanceFromPointToCenter(detectionPoint, children[i]);
-        } else {
-            distance = calcDistanceBetweenCenters(floatingAboveEl, children[i]);
-        }
+        const distance = detectionPoint
+            ? calcDistanceFromPointToCenter(detectionPoint, children[i])
+            : calcDistanceBetweenCenters(floatingAboveEl, children[i]);
         if (distance < minDistanceSoFar) {
             minDistanceSoFar = distance;
             indexOfMin = i;
@@ -127,12 +124,9 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl, detectionPo
         phantom.style.pointerEvents = "none";
         collectionBelowEl.appendChild(phantom);
 
-        let phantomDistance;
-        if (detectionPoint) {
-            phantomDistance = calcDistanceFromPointToCenter(detectionPoint, phantom);
-        } else {
-            phantomDistance = calcDistanceBetweenCenters(floatingAboveEl, phantom);
-        }
+        const phantomDistance = detectionPoint
+            ? calcDistanceFromPointToCenter(detectionPoint, phantom)
+            : calcDistanceBetweenCenters(floatingAboveEl, phantom);
         if (phantomDistance < minDistanceSoFar) {
             indexOfMin = originalLen; // index of phantom slot in original list
         }

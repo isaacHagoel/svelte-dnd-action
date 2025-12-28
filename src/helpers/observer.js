@@ -61,7 +61,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
         let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
             if (scrolled) resetIndexesCache();
-            // 直接传递 detectionPoint 给 findWouldBeIndex（null 表示使用元素中心）
+            // Pass detection point to findWouldBeIndex (null means use element center)
             const indexObj = findWouldBeIndex(draggedEl, dz, detectionPoint);
             if (indexObj === null) {
                 // it is not inside

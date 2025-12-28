@@ -1,4 +1,4 @@
-import {isCenterOfAInsideB, calcDistanceBetweenCenters, getAbsoluteRectNoTransforms, isPointInsideRect, findCenterOfElement} from "./intersection";
+import {getAbsoluteRectNoTransforms, isPointInsideRect, calcDistanceFromPointToCenter} from "./intersection";
 import {printDebug, SHADOW_ELEMENT_ATTRIBUTE_NAME} from "../constants";
 
 let dzToShadowIndexToRect;
@@ -37,14 +37,16 @@ function cacheShadowRect(dz) {
  */
 /**
  * Find the index for the dragged element in the list it is dragged over
- * @param {HTMLElement} floatingAboveEl
+ * @param {{x: number, y: number}} referencePoint - The reference point for detection (cursor position or element center)
  * @param {HTMLElement} collectionBelowEl
  * @returns {Index|null} -  if the element is over the container the Index object otherwise null
  */
-export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
-    if (!isCenterOfAInsideB(floatingAboveEl, collectionBelowEl)) {
+export function findWouldBeIndex(referencePoint, collectionBelowEl) {
+    const collectionRect = getAbsoluteRectNoTransforms(collectionBelowEl);
+    if (!isPointInsideRect(referencePoint, collectionRect)) {
         return null;
     }
+
     const children = collectionBelowEl.children;
     // the container is empty, floating element should be the first
     if (children.length === 0) {
@@ -55,10 +57,11 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     // the search could be more efficient but keeping it simple for now
     // a possible improvement: pass in the lastIndex it was found in and check there first, then expand from there
     for (let i = 0; i < children.length; i++) {
-        if (isCenterOfAInsideB(floatingAboveEl, children[i])) {
+        const childRect = getAbsoluteRectNoTransforms(children[i]);
+        if (isPointInsideRect(referencePoint, childRect)) {
             const cachedShadowRect = dzToShadowIndexToRect.has(collectionBelowEl) && dzToShadowIndexToRect.get(collectionBelowEl).get(i);
             if (cachedShadowRect) {
-                if (!isPointInsideRect(findCenterOfElement(floatingAboveEl), cachedShadowRect)) {
+                if (!isPointInsideRect(referencePoint, cachedShadowRect)) {
                     return {index: shadowElIndex, isProximityBased: false};
                 }
             }
@@ -71,7 +74,7 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     let indexOfMin = undefined;
     // we are checking all of them because we don't know whether we are dealing with a horizontal or vertical container and where the floating element entered from
     for (let i = 0; i < children.length; i++) {
-        const distance = calcDistanceBetweenCenters(floatingAboveEl, children[i]);
+        const distance = calcDistanceFromPointToCenter(referencePoint, children[i]);
         if (distance < minDistanceSoFar) {
             minDistanceSoFar = distance;
             indexOfMin = i;
@@ -97,7 +100,7 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
         phantom.style.pointerEvents = "none";
         collectionBelowEl.appendChild(phantom);
 
-        const phantomDistance = calcDistanceBetweenCenters(floatingAboveEl, phantom);
+        const phantomDistance = calcDistanceFromPointToCenter(referencePoint, phantom);
         if (phantomDistance < minDistanceSoFar) {
             indexOfMin = originalLen; // index of phantom slot in original list
         }

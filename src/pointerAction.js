@@ -33,7 +33,7 @@ import {
     DRAGGED_OVER_INDEX_EVENT_NAME
 } from "./helpers/dispatcher";
 import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, toString} from "./helpers/util";
-import {getBoundingRectNoTransforms} from "./helpers/intersection";
+import {getBoundingRectNoTransforms, findCenterOfElement} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -63,6 +63,7 @@ let scheduledForRemovalAfterDrop = [];
 let multiScroller;
 let touchDragHoldTimer;
 let touchHoldElapsed = false;
+let useCursorForDetectionActive = false;
 
 // a map from type to a set of drop-zones
 const typeToDropZones = new Map();
@@ -106,7 +107,14 @@ function watchDraggedElement() {
     const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
     const observationIntervalMs = setIntervalMs === 0 ? DISABLED_OBSERVATION_INTERVAL_MS : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); // if setIntervalMs is 0 it goes to 20, otherwise it is max between it and min observation.
     multiScroller = createMultiScroller(dropZones, () => currentMousePosition);
-    observe(draggedEl, dropZones, observationIntervalMs * 1.07, multiScroller);
+    // Returns reference point in document coordinates - either cursor position or element center
+    const getReferencePoint = useCursorForDetectionActive
+        ? () => ({
+              x: currentMousePosition.x + window.scrollX,
+              y: currentMousePosition.y + window.scrollY
+          })
+        : () => findCenterOfElement(draggedEl);
+    observe(draggedEl, dropZones, observationIntervalMs * 1.07, multiScroller, getReferencePoint);
 }
 function unWatchDraggedElement() {
     printDebug(() => "unwatching dragged element");
@@ -339,6 +347,7 @@ function cleanupPostDrop() {
     }
     touchDragHoldTimer = undefined;
     touchHoldElapsed = false;
+    useCursorForDetectionActive = false;
     if (scheduledForRemovalAfterDrop.length) {
         printDebug(() => ["will destroy zones that were removed during drag", scheduledForRemovalAfterDrop]);
         scheduledForRemovalAfterDrop.forEach(({dz, destroy}) => {
@@ -362,6 +371,7 @@ export function dndzone(node, options) {
         dropTargetClasses: [],
         transformDraggedElement: () => {},
         centreDraggedOnCursor: false,
+        useCursorForDetection: false,
         dropAnimationDisabled: false,
         delayTouchStartMs: 0
     };
@@ -489,11 +499,12 @@ export function dndzone(node, options) {
         /** @type {ShadowRoot | HTMLDocument | Element } */
         const rootNode = originDropZone.closest("dialog") || originDropZone.closest("[popover]") || originDropZone.getRootNode();
         const originDropZoneRoot = rootNode.body || rootNode;
-        const {items: originalItems, type, centreDraggedOnCursor} = config;
+        const {items: originalItems, type, centreDraggedOnCursor, useCursorForDetection} = config;
         const items = [...originalItems];
         draggedElData = items[currentIdx];
         draggedElType = type;
         shadowElData = createShadowElData(draggedElData);
+        useCursorForDetectionActive = useCursorForDetection;
 
         // creating the draggable element
         draggedEl = createDraggedElementFrom(originalDragTarget, centreDraggedOnCursor && currentMousePosition);
@@ -546,6 +557,7 @@ export function dndzone(node, options) {
         dropTargetClasses = [],
         transformDraggedElement = () => {},
         centreDraggedOnCursor = false,
+        useCursorForDetection = false,
         dropAnimationDisabled = false,
         delayTouchStart: delayTouchStartOpt = false
     }) {
@@ -568,6 +580,7 @@ export function dndzone(node, options) {
         config.morphDisabled = morphDisabled;
         config.transformDraggedElement = transformDraggedElement;
         config.centreDraggedOnCursor = centreDraggedOnCursor;
+        config.useCursorForDetection = useCursorForDetection;
         config.dropAnimationDisabled = dropAnimationDisabled;
 
         // realtime update for dropTargetStyle

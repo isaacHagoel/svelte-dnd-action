@@ -128,28 +128,6 @@ export function findCenterOfElement(el) {
 }
 
 /**
- * @param {HTMLElement} elA
- * @param {HTMLElement} elB
- * @return {boolean}
- */
-export function isCenterOfAInsideB(elA, elB) {
-    const centerOfA = findCenterOfElement(elA);
-    const rectOfB = getAbsoluteRectNoTransforms(elB);
-    return isPointInsideRect(centerOfA, rectOfB);
-}
-
-/**
- * @param {HTMLElement|ChildNode} elA
- * @param {HTMLElement|ChildNode} elB
- * @return {number}
- */
-export function calcDistanceBetweenCenters(elA, elB) {
-    const centerOfA = findCenterOfElement(elA);
-    const centerOfB = findCenterOfElement(elB);
-    return calcDistance(centerOfA, centerOfB);
-}
-
-/**
  * Calculate distance from a point to the center of an element
  * @param {{x: number, y: number}} point
  * @param {HTMLElement|ChildNode} el

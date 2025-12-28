@@ -1,4 +1,5 @@
 import {findWouldBeIndex} from "../../src/helpers/listUtil";
+import {findCenterOfElement} from "../../src/helpers/intersection";
 
 describe("listUtil", () => {
     describe("findWouldBeIndex", () => {
@@ -37,22 +38,22 @@ describe("listUtil", () => {
         it("returns null when element is outside of containers", () => {
             draggedEl.style.top = "600px";
             draggedEl.style.left = "0";
-            expect(findWouldBeIndex(draggedEl, containerEl)).to.equal(null);
+            expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.equal(null);
         });
         // The following two assertions rely on centre-point intersection logic
         // that is intentionally constrained to the visible viewport.  Inside
-        // Cypress’ headless browser this causes `findWouldBeIndex` to return
+        // Cypress' headless browser this causes `findWouldBeIndex` to return
         // `null`, producing false-negatives.  The behaviour is correct in
         // real browsers, so we skip these checks here.
         it.skip("works correctly, not proximity based (skipped – viewport-clamp)", () => {
             draggedEl.style.top = "150px";
             draggedEl.style.left = "5px";
-            expect(findWouldBeIndex(draggedEl, containerEl)).to.deep.equal({index: 1, isProximityBased: false});
+            expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.deep.equal({index: 1, isProximityBased: false});
         });
         it.skip("works correctly, proximity based (skipped – viewport-clamp)", () => {
             draggedEl.style.top = "450px";
             draggedEl.style.left = "5px";
-            expect(findWouldBeIndex(draggedEl, containerEl)).to.deep.equal({index: 2, isProximityBased: true});
+            expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.deep.equal({index: 2, isProximityBased: true});
         });
     });
 });

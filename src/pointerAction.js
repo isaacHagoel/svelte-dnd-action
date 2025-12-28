@@ -33,7 +33,7 @@ import {
     DRAGGED_OVER_INDEX_EVENT_NAME
 } from "./helpers/dispatcher";
 import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, toString} from "./helpers/util";
-import {getBoundingRectNoTransforms} from "./helpers/intersection";
+import {getBoundingRectNoTransforms, findCenterOfElement} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
@@ -107,14 +107,14 @@ function watchDraggedElement() {
     const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
     const observationIntervalMs = setIntervalMs === 0 ? DISABLED_OBSERVATION_INTERVAL_MS : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); // if setIntervalMs is 0 it goes to 20, otherwise it is max between it and min observation.
     multiScroller = createMultiScroller(dropZones, () => currentMousePosition);
-    // Returns cursor position in document coordinates (with scroll offset), or null to use element center
-    const getCursorPosition = useCursorForDetectionActive
+    // Returns reference point in document coordinates - either cursor position or element center
+    const getReferencePoint = useCursorForDetectionActive
         ? () => ({
               x: currentMousePosition.x + window.scrollX,
               y: currentMousePosition.y + window.scrollY
           })
-        : null;
-    observe(draggedEl, dropZones, observationIntervalMs * 1.07, multiScroller, getCursorPosition);
+        : () => findCenterOfElement(draggedEl);
+    observe(draggedEl, dropZones, observationIntervalMs * 1.07, multiScroller, getReferencePoint);
 }
 function unWatchDraggedElement() {
     printDebug(() => "unwatching dragged element");

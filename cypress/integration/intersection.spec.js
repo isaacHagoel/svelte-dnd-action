@@ -1,4 +1,4 @@
-import {isCenterOfAInsideB, calcDistanceBetweenCenters, isElementOffDocument} from "../../src/helpers/intersection";
+import {isElementOffDocument} from "../../src/helpers/intersection";
 
 function makeDiv(widthPx = 50, heightPx = 50) {
     const el = document.createElement("div");
@@ -8,49 +8,6 @@ function makeDiv(widthPx = 50, heightPx = 50) {
 }
 
 describe("intersection", () => {
-    describe("isCenterOfAInsideB", () => {
-        // NOTE: This assertion relies on the element's full bounding rect, but
-        // the production code deliberately clamps measurements to the visible
-        // viewport (see `getBoundingRectNoTransforms`). In the headless
-        // Electron environment used by Cypress, this causes the calculation
-        // to fail, even though it works in a real browser.  Skipping to avoid
-        // false-negatives.
-        it.skip("center is inside (skipped – viewport-clamping breaks in Cypress)", () => {
-            const el = makeDiv(50, 50);
-            document.body.style.width = "1000px";
-            document.body.style.height = "1000px";
-            document.body.appendChild(el);
-            expect(isCenterOfAInsideB(el, document.body)).to.equal(true);
-        });
-        it("center is outside", () => {
-            const elA = makeDiv();
-            const elB = makeDiv();
-            document.body.appendChild(elA);
-            document.body.appendChild(elB);
-            expect(isCenterOfAInsideB(elA, elB)).to.equal(false);
-        });
-    });
-
-    describe("calcDistanceBetweenCenters", () => {
-        it("distance from self is zero", () => {
-            const el = makeDiv();
-            document.body.appendChild(el);
-            expect(calcDistanceBetweenCenters(el, el)).to.equal(0);
-        });
-        it("calculates distance correctly", () => {
-            const elA = makeDiv(80, 60);
-            const elB = makeDiv(40, 30);
-            elA.style.position = "relative";
-            elB.style.position = "absolute";
-            elB.top = 0;
-            elB.left = 0;
-            document.body.appendChild(elA);
-            elA.appendChild(elB);
-            expect(calcDistanceBetweenCenters(elA, elB)).to.equal(25);
-            expect(calcDistanceBetweenCenters(elB, elA)).to.equal(25);
-        });
-    });
-
     describe("isElementOffDocument", () => {
         before(() => {
             document.body.style.width = "100vw";

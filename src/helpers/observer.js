@@ -1,5 +1,5 @@
 import {findWouldBeIndex, resetIndexesCache} from "./listUtil";
-import {findCenterOfElement, isElementOffDocument} from "./intersection";
+import {isElementOffDocument} from "./intersection";
 import {
     dispatchDraggedElementEnteredContainer,
     dispatchDraggedElementLeftContainerForAnother,
@@ -20,9 +20,9 @@ let next;
  * @param {HTMLElement} draggedEl
  * @param {number} [intervalMs = INTERVAL_MS]
  * @param {MultiScroller} multiScroller
- * @param {function(): {x: number, y: number} | null} [getCursorPosition] - Optional function to get cursor position for detection
+ * @param {function(): {x: number, y: number}} getReferencePoint - Function that returns the reference point for detection (cursor or element center)
  */
-export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScroller, getCursorPosition = null) {
+export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScroller, getReferencePoint) {
     // initialization
     let lastDropZoneFound;
     let lastIndexFound;
@@ -35,17 +35,14 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
      * The main function in this module. Tracks where everything is/ should be a take the actions
      */
     function andNow() {
-        // Detection point: cursor position if provided, otherwise null (will use element center)
-        const detectionPoint = getCursorPosition ? getCursorPosition() : null;
-        // Reference point for throttling position changes
-        const currentCenterOfDragged = detectionPoint || findCenterOfElement(draggedEl);
+        const referencePoint = getReferencePoint();
         const scrolled = multiScroller.multiScrollIfNeeded();
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         if (
             !scrolled &&
             lastCentrePositionOfDragged &&
-            Math.abs(lastCentrePositionOfDragged.x - currentCenterOfDragged.x) < TOLERANCE_PX &&
-            Math.abs(lastCentrePositionOfDragged.y - currentCenterOfDragged.y) < TOLERANCE_PX
+            Math.abs(lastCentrePositionOfDragged.x - referencePoint.x) < TOLERANCE_PX &&
+            Math.abs(lastCentrePositionOfDragged.y - referencePoint.y) < TOLERANCE_PX
         ) {
             next = window.setTimeout(andNow, intervalMs);
             return;
@@ -56,13 +53,12 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
             return;
         }
 
-        lastCentrePositionOfDragged = currentCenterOfDragged;
+        lastCentrePositionOfDragged = referencePoint;
         // this is a simple algorithm, potential improvement: first look at lastDropZoneFound
         let isDraggedInADropZone = false;
         for (const dz of dropZonesFromDeepToShallow) {
             if (scrolled) resetIndexesCache();
-            // Pass detection point to findWouldBeIndex (null means use element center)
-            const indexObj = findWouldBeIndex(draggedEl, dz, detectionPoint);
+            const indexObj = findWouldBeIndex(referencePoint, dz);
             if (indexObj === null) {
                 // it is not inside
                 continue;

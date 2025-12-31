@@ -357,6 +357,18 @@ declare namespace svelteHTML {
 }
 ```
 
+#### Svelte 4.2 or above:
+
+```typescript
+import type { DndEvent } from 'svelte-dnd-action';
+declare module 'svelte/elements' {
+	interface HTMLAttributes<T> {
+		'on:consider'?: EventHandler<CustomEvent<DndEvent<ItemType>>, T>;
+		'on:finalize'?: EventHandler<CustomEvent<DndEvent<ItemType>>, T>;
+	}
+}
+```
+
 You may need to edit `tsconfig.json` to include `global.d.ts` if it doesn't already: "include": ["src/**/*", "global.d.ts"].
 
 > Note: If you are using Sveltekit you should use `svelte.config.js` to modify the generated `tsconfig.json` rather than adding the `include` element to the root `tsconfig.json`. Adding `include` to the root file will cause issues because it will [override](https://www.typescriptlang.org/tsconfig#extends) the `include` array defined in `.svelte-kit/tsconfig.json`. Example:

@@ -109,7 +109,7 @@ export enum SOURCES {
 
 export interface DndEventInfo {
     trigger: TRIGGERS; // the type of dnd event that took place
-    id: string;
+    id: number;
     source: SOURCES; // the type of interaction that the user used to perform the dnd operation
 }
 

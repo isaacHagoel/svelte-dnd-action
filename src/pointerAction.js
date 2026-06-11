@@ -511,6 +511,11 @@ export function dndzone(node, options) {
         originDropZoneRoot.appendChild(draggedEl);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
+            // if the drag was already finalized (cleanupPostDrop cleared draggedEl), this rAF loop
+            // must not re-arm the watcher: the original element might leave the DOM long after the
+            // drop (ex: its component unmounts), which would call watchDraggedElement() with an
+            // undefined draggedEl and crash inside observe() (getBoundingClientRect of undefined)
+            if (!draggedEl) return;
             if (!originalDragTarget.parentElement) {
                 originalDragTarget.setAttribute(ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE, true);
                 originDropZoneRoot.appendChild(originalDragTarget);

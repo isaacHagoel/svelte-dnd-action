@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.70](https://github.com/isaacHagoel/svelte-dnd-action/pull/685)
+
+Bugfix: stop the `keepOriginalElementInDom` animation-frame loop after a drag is finalized, preventing a delayed crash when the original element leaves the DOM.
+
 ### [0.9.69](https://github.com/isaacHagoel/svelte-dnd-action/pull/679)
 
 Feature: Added `useCursorForDetection` option.

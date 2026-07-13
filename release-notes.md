@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### 0.9.71
+### [0.9.71](https://github.com/isaacHagoel/svelte-dnd-action/pull/688)
 
 Bugfix: prevent the original-element animation-frame loop from restarting pointer observation while a drop is finalizing, avoiding an uncaught `getBoundingClientRect` error on fast animated drops. Adds defensive observer cleanup for the same race. Fixes [#687](https://github.com/isaacHagoel/svelte-dnd-action/issues/687).
 

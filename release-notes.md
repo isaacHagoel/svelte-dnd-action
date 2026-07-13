@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### 0.9.72
+### [0.9.72](https://github.com/isaacHagoel/svelte-dnd-action/pull/689)
 
 Bugfixes: harden drag lifecycle cleanup against timing-sensitive updates and teardown.
 

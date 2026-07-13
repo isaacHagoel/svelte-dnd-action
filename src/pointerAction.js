@@ -268,6 +268,9 @@ function handleDrop() {
 
     items = items.map(item => (item[SHADOW_ITEM_MARKER_PROPERTY_NAME] ? draggedElData : item));
     function finalizeWithinZone() {
+        // The original-element rAF loop may have re-armed observation during the settle animation.
+        // Cancel again before dispatching events that can update or destroy drop zones.
+        unWatchDraggedElement();
         unlockOriginDzMinDimensions();
         dispatchFinalizeEvent(shadowElDropZone, items, {
             trigger: isDraggedOutsideOfAnyDz ? TRIGGERS.DROPPED_OUTSIDE_OF_ANY : TRIGGERS.DROPPED_INTO_ZONE,
@@ -511,11 +514,10 @@ export function dndzone(node, options) {
         originDropZoneRoot.appendChild(draggedEl);
         // We will keep the original dom node in the dom because touch events keep firing on it, we want to re-add it after the framework removes it
         function keepOriginalElementInDom() {
-            // if the drag was already finalized (cleanupPostDrop cleared draggedEl), this rAF loop
-            // must not re-arm the watcher: the original element might leave the DOM long after the
-            // drop (ex: its component unmounts), which would call watchDraggedElement() with an
-            // undefined draggedEl and crash inside observe() (getBoundingClientRect of undefined)
-            if (!draggedEl) return;
+            // Once the drop starts finalizing, handleDrop has stopped observation and this loop
+            // must not re-arm it during the settle animation. After cleanup, draggedEl is cleared
+            // as an additional guard against the original element leaving the DOM much later.
+            if (!draggedEl || finalizingPreviousDrag) return;
             if (!originalDragTarget.parentElement) {
                 originalDragTarget.setAttribute(ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE, true);
                 originDropZoneRoot.appendChild(originalDragTarget);

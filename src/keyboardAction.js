@@ -50,12 +50,13 @@ function registerDropZone(dropZoneEl, type) {
 }
 function unregisterDropZone(dropZoneEl, type) {
     printDebug(() => "unregistering drop-zone");
-    if (focusedDz === dropZoneEl) {
+    if (isDragging && focusedDz === dropZoneEl) {
         handleDrop();
     }
-    typeToDropZones.get(type).delete(dropZoneEl);
+    const dropZones = typeToDropZones.get(type);
+    if (!dropZones || !dropZones.delete(dropZoneEl)) return;
     decrementActiveDropZoneCount();
-    if (typeToDropZones.get(type).size === 0) {
+    if (dropZones.size === 0) {
         typeToDropZones.delete(type);
     }
     if (typeToDropZones.size === 0) {
@@ -112,9 +113,12 @@ function handleZoneFocus(e) {
         }
     }
     const dzFrom = focusedDz;
-    dispatchFinalizeEvent(dzFrom, originItems, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: focusedItemId, source: SOURCES.KEYBOARD});
-    dispatchFinalizeEvent(newlyFocusedDz, targetItems, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
+    const movedItemId = focusedItemId;
     focusedDz = newlyFocusedDz;
+    dispatchFinalizeEvent(dzFrom, originItems, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: movedItemId, source: SOURCES.KEYBOARD});
+    if (dzToConfig.has(newlyFocusedDz)) {
+        dispatchFinalizeEvent(newlyFocusedDz, targetItems, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: movedItemId, source: SOURCES.KEYBOARD});
+    }
 }
 
 function triggerAllDzsUpdate() {
@@ -122,25 +126,22 @@ function triggerAllDzsUpdate() {
 }
 
 function handleDrop(dispatchConsider = true) {
+    if (!isDragging || !focusedDz) return;
     printDebug(() => "drop");
-    if (!dzToConfig.get(focusedDz).autoAriaDisabled) {
+    const droppedDz = focusedDz;
+    const droppedConfig = dzToConfig.get(droppedDz);
+    const droppedItemId = focusedItemId;
+    const droppedItemType = draggedItemType;
+    if (!droppedConfig) return;
+
+    if (!droppedConfig.autoAriaDisabled) {
         alertToScreenReader(`Stopped dragging item ${focusedItemLabel}`);
     }
     if (allDragTargets.has(document.activeElement)) {
         document.activeElement.blur();
     }
-    if (dispatchConsider) {
-        dispatchConsiderEvent(focusedDz, dzToConfig.get(focusedDz).items, {
-            trigger: TRIGGERS.DRAG_STOPPED,
-            id: focusedItemId,
-            source: SOURCES.KEYBOARD
-        });
-    }
-    styleInactiveDropZones(
-        typeToDropZones.get(draggedItemType),
-        dz => dzToConfig.get(dz).dropTargetStyle,
-        dz => dzToConfig.get(dz).dropTargetClasses
-    );
+    // Clear global drag state before dispatching. A synchronous handler may destroy the
+    // focused zone, and unregisterDropZone must not recursively enter handleDrop.
     focusedItem = null;
     focusedItemId = null;
     focusedItemLabel = "";
@@ -148,10 +149,27 @@ function handleDrop(dispatchConsider = true) {
     focusedDz = null;
     focusedDzLabel = "";
     isDragging = false;
+
+    if (dispatchConsider) {
+        dispatchConsiderEvent(droppedDz, droppedConfig.items, {
+            trigger: TRIGGERS.DRAG_STOPPED,
+            id: droppedItemId,
+            source: SOURCES.KEYBOARD
+        });
+    }
+    const dropZones = typeToDropZones.get(droppedItemType);
+    if (dropZones) {
+        styleInactiveDropZones(
+            dropZones,
+            dz => dzToConfig.get(dz).dropTargetStyle,
+            dz => dzToConfig.get(dz).dropTargetClasses
+        );
+    }
     triggerAllDzsUpdate();
 }
 //////
 export function dndzone(node, options) {
+    let destroyed = false;
     const config = {
         items: undefined,
         type: undefined,
@@ -344,7 +362,14 @@ export function dndzone(node, options) {
             configure(newOptions);
         },
         destroy: () => {
+            if (destroyed) return;
+            destroyed = true;
             printDebug(() => "keyboard dndzone will destroy");
+            node.removeEventListener("focus", handleZoneFocus);
+            for (const draggableEl of node.children) {
+                draggableEl.removeEventListener("keydown", elToKeyDownListeners.get(draggableEl));
+                draggableEl.removeEventListener("click", elToFocusListeners.get(draggableEl));
+            }
             unregisterDropZone(node, config.type);
             dzToConfig.delete(node);
             dzToHandles.delete(node);

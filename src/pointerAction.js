@@ -64,6 +64,8 @@ let multiScroller;
 let touchDragHoldTimer;
 let touchHoldElapsed = false;
 let useCursorForDetectionActive = false;
+let pendingDragOwner;
+let watchedDropZones = new Set();
 
 // a map from type to a set of drop-zones
 const typeToDropZones = new Map();
@@ -84,9 +86,10 @@ function registerDropZone(dropZoneEl, type) {
     }
 }
 function unregisterDropZone(dropZoneEl, type) {
-    typeToDropZones.get(type).delete(dropZoneEl);
+    const dropZones = typeToDropZones.get(type);
+    if (!dropZones || !dropZones.delete(dropZoneEl)) return;
     decrementActiveDropZoneCount();
-    if (typeToDropZones.get(type).size === 0) {
+    if (dropZones.size === 0) {
         typeToDropZones.delete(type);
     }
 }
@@ -95,8 +98,11 @@ function unregisterDropZone(dropZoneEl, type) {
 function watchDraggedElement() {
     printDebug(() => "watching dragged element");
     const dropZones = typeToDropZones.get(draggedElType);
+    if (!dropZones || dropZones.size === 0) return;
+    if (watchedDropZones.size > 0) unWatchDraggedElement();
+    watchedDropZones = new Set(dropZones);
 
-    for (const dz of dropZones) {
+    for (const dz of watchedDropZones) {
         dz.addEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
         dz.addEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
         dz.addEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
@@ -104,9 +110,9 @@ function watchDraggedElement() {
     window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
 
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
-    const setIntervalMs = Math.max(...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
+    const setIntervalMs = Math.max(...Array.from(watchedDropZones).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
     const observationIntervalMs = setIntervalMs === 0 ? DISABLED_OBSERVATION_INTERVAL_MS : Math.max(setIntervalMs, MIN_OBSERVATION_INTERVAL_MS); // if setIntervalMs is 0 it goes to 20, otherwise it is max between it and min observation.
-    multiScroller = createMultiScroller(dropZones, () => currentMousePosition);
+    multiScroller = createMultiScroller(watchedDropZones, () => currentMousePosition);
     // Returns reference point in document coordinates - either cursor position or element center
     const getReferencePoint = useCursorForDetectionActive
         ? () => ({
@@ -114,16 +120,16 @@ function watchDraggedElement() {
               y: currentMousePosition.y + window.scrollY
           })
         : () => findCenterOfElement(draggedEl);
-    observe(draggedEl, dropZones, observationIntervalMs * 1.07, multiScroller, getReferencePoint);
+    observe(draggedEl, watchedDropZones, observationIntervalMs * 1.07, multiScroller, getReferencePoint);
 }
 function unWatchDraggedElement() {
     printDebug(() => "unwatching dragged element");
-    const dropZones = typeToDropZones.get(draggedElType);
-    for (const dz of dropZones) {
+    for (const dz of watchedDropZones) {
         dz.removeEventListener(DRAGGED_ENTERED_EVENT_NAME, handleDraggedEntered);
         dz.removeEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
         dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
+    watchedDropZones = new Set();
     window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // ensuring multiScroller is not already destroyed before destroying
     if (multiScroller) {
@@ -315,8 +321,10 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 }
 
 function scheduleDZForRemovalAfterDrop(dz, destroy) {
-    scheduledForRemovalAfterDrop.push({dz, destroy});
+    const scheduledRemoval = {dz, destroy};
+    scheduledForRemovalAfterDrop.push(scheduledRemoval);
     window.requestAnimationFrame(() => {
+        if (!scheduledForRemovalAfterDrop.includes(scheduledRemoval)) return;
         hideElement(dz);
         document.body.appendChild(dz);
     });
@@ -351,6 +359,7 @@ function cleanupPostDrop() {
     touchDragHoldTimer = undefined;
     touchHoldElapsed = false;
     useCursorForDetectionActive = false;
+    pendingDragOwner = undefined;
     if (scheduledForRemovalAfterDrop.length) {
         printDebug(() => ["will destroy zones that were removed during drag", scheduledForRemovalAfterDrop]);
         scheduledForRemovalAfterDrop.forEach(({dz, destroy}) => {
@@ -363,6 +372,7 @@ function cleanupPostDrop() {
 
 export function dndzone(node, options) {
     let initialized = false;
+    let destroyed = false;
     const config = {
         items: undefined,
         type: undefined,
@@ -398,11 +408,17 @@ export function dndzone(node, options) {
             touchHoldElapsed = false;
         }
     }
-    function handleFalseAlarm(e) {
+    function cancelPendingDrag() {
+        if (pendingDragOwner !== node) return;
         removeMaybeListeners();
+        pendingDragOwner = undefined;
         originalDragTarget = undefined;
         dragStartMousePosition = undefined;
         currentMousePosition = undefined;
+    }
+    function handleFalseAlarm(e) {
+        if (pendingDragOwner !== node) return;
+        cancelPendingDrag();
 
         // dragging initiated by touch events prevents onclick from initially firing
         if (e.type === "touchend") {
@@ -416,6 +432,7 @@ export function dndzone(node, options) {
     }
 
     function handleMouseMoveMaybeDragStart(e) {
+        if (destroyed || pendingDragOwner !== node) return;
         const isTouch = !!e.touches;
         const c = isTouch ? e.touches[0] : e;
         // If touch drag delay is configured and not elapsed yet, allow scrolling until either
@@ -445,7 +462,6 @@ export function dndzone(node, options) {
             Math.abs(currentMousePosition.x - dragStartMousePosition.x) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX ||
             Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX
         ) {
-            removeMaybeListeners();
             handleDragStart();
         }
     }
@@ -460,8 +476,8 @@ export function dndzone(node, options) {
             printDebug(() => `ignoring none left click button: ${e.button}`);
             return;
         }
-        if (isWorkingOnPreviousDrag) {
-            printDebug(() => "cannot start a new drag before finalizing previous one");
+        if (destroyed || isWorkingOnPreviousDrag || pendingDragOwner) {
+            printDebug(() => "cannot start a new drag before finalizing the current drag or pending gesture");
             return;
         }
         const isTouchStart = !!e.touches;
@@ -471,6 +487,7 @@ export function dndzone(node, options) {
             e.preventDefault();
         }
         e.stopPropagation();
+        pendingDragOwner = node;
 
         const c = isTouchStart ? e.touches[0] : e;
         dragStartMousePosition = {x: c.clientX, y: c.clientY};
@@ -478,12 +495,12 @@ export function dndzone(node, options) {
         originalDragTarget = e.currentTarget;
 
         if (useDelay) {
+            const pendingTarget = originalDragTarget;
             touchHoldElapsed = false;
             touchDragHoldTimer = window.setTimeout(() => {
-                // If the finger is still down and no false-alarm happened
-                if (!originalDragTarget) return;
+                // If this action still owns the same pending gesture, transition it to a drag.
+                if (destroyed || pendingDragOwner !== node || originalDragTarget !== pendingTarget) return;
                 touchHoldElapsed = true;
-                removeMaybeListeners();
                 handleDragStart();
             }, config.delayTouchStartMs);
         }
@@ -492,6 +509,12 @@ export function dndzone(node, options) {
     }
 
     function handleDragStart() {
+        if (destroyed || pendingDragOwner !== node || isWorkingOnPreviousDrag || !originalDragTarget?.parentElement) {
+            cancelPendingDrag();
+            return;
+        }
+        removeMaybeListeners();
+        pendingDragOwner = undefined;
         printDebug(() => [`drag start config: ${toString(config)}`, originalDragTarget]);
         isWorkingOnPreviousDrag = true;
 
@@ -670,9 +693,18 @@ export function dndzone(node, options) {
             configure(newOptions);
         },
         destroy: () => {
+            if (destroyed) return;
+            destroyed = true;
+            cancelPendingDrag();
+            for (const draggableEl of node.children) {
+                draggableEl.removeEventListener("mousedown", elToMouseDownListener.get(draggableEl));
+                draggableEl.removeEventListener("touchstart", elToMouseDownListener.get(draggableEl));
+            }
             function destroyDz() {
                 printDebug(() => "pointer dndzone will destroy");
-                unregisterDropZone(node, dzToConfig.get(node).type);
+                const registeredConfig = dzToConfig.get(node);
+                if (!registeredConfig) return;
+                unregisterDropZone(node, registeredConfig.type);
                 dzToConfig.delete(node);
             }
             if (isWorkingOnPreviousDrag && !node.closest(`[${ORIGINAL_DRAGGED_ITEM_MARKER_ATTRIBUTE}]`)) {

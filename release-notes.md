@@ -1,5 +1,15 @@
 ## Svelte Dnd Action - Release Notes
 
+### 0.9.72
+
+Bugfixes: harden drag lifecycle cleanup against timing-sensitive updates and teardown.
+
+-   Keep pointer observation tied to the exact zones being watched, including when zone types change during an animated drop.
+-   Cancel pending pointer and delayed-touch gestures when their owning zone is destroyed, and serialize simultaneous touch starts.
+-   Prevent stale animation frames from reattaching zones after drop cleanup has destroyed them.
+-   Make keyboard drop handling safe when event handlers synchronously destroy the focused zone.
+-   Destroy the wrapped dndzone when a `dragHandleZone` action is destroyed.
+
 ### [0.9.71](https://github.com/isaacHagoel/svelte-dnd-action/pull/688)
 
 Bugfix: prevent the original-element animation-frame loop from restarting pointer observation while a drop is finalizing, avoiding an uncaught `getBoundingClientRect` error on fast animated drops. Adds defensive observer cleanup for the same race. Fixes [#687](https://github.com/isaacHagoel/svelte-dnd-action/issues/687).

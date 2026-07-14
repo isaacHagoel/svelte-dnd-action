@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### 0.9.73
+### [0.9.73](https://github.com/isaacHagoel/svelte-dnd-action/pull/690)
 
 Bugfix: preserve the cursor's relative grab point when a dragged element morphs again before its previous size transition completes. Size and position transitions are also synchronized when the first morph happens before delayed transition setup.
 

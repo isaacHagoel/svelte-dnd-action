@@ -13,6 +13,19 @@ const TRANSITION_DURATION_SECONDS = 0.2;
 function trs(property) {
     return `${property} ${TRANSITION_DURATION_SECONDS}s ease`;
 }
+
+/**
+ * Adds the size transitions after the dragged element's initial styles have been applied.
+ * This normally happens in a timeout to avoid a browser rendering bug, but a synchronous
+ * first morph can happen before that timeout and needs the transitions immediately.
+ * @param {HTMLElement} draggedEl
+ */
+function ensureMorphSizeTransitions(draggedEl) {
+    const transitionProperties = draggedEl.style.transitionProperty.split(",").map(property => property.trim());
+    if (transitionProperties.includes("all")) return;
+    if (!transitionProperties.includes("width")) draggedEl.style.transition += `, ${trs("width")}`;
+    if (!transitionProperties.includes("height")) draggedEl.style.transition += `, ${trs("height")}`;
+}
 /**
  * clones the given element and applies proper styles and transitions to the dragged element
  * @param {HTMLElement} originalElement
@@ -45,7 +58,7 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     draggedEl.style.width = `${rect.width}px`;
     draggedEl.style.transition = `${trs("top")}, ${trs("left")}, ${trs("background-color")}, ${trs("opacity")}, ${trs("color")} `;
     // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
-    window.setTimeout(() => (draggedEl.style.transition += `, ${trs("width")}, ${trs("height")}`), 0);
+    window.setTimeout(() => ensureMorphSizeTransitions(draggedEl), 0);
     draggedEl.style.zIndex = "9999";
     draggedEl.style.cursor = "grabbing";
 
@@ -68,22 +81,26 @@ export function moveDraggedElementToWasDroppedState(draggedEl) {
  * @param {number} currentMouseY
  */
 export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX, currentMouseY) {
+    ensureMorphSizeTransitions(draggedEl);
     copyStylesFromTo(copyFromEl, draggedEl);
     const newRect = copyFromEl.getBoundingClientRect();
     const draggedElRect = draggedEl.getBoundingClientRect();
+    const draggedElComputedStyle = window.getComputedStyle(draggedEl);
+    const currentLeft = parseFloat(draggedElComputedStyle.left);
+    const currentTop = parseFloat(draggedElComputedStyle.top);
     const widthChange = newRect.width - draggedElRect.width;
     const heightChange = newRect.height - draggedElRect.height;
     if (widthChange || heightChange) {
         const relativeDistanceOfMousePointerFromDraggedSides = {
-            left: (currentMouseX - draggedElRect.left) / draggedElRect.width,
-            top: (currentMouseY - draggedElRect.top) / draggedElRect.height
+            left: draggedElRect.width ? (currentMouseX - draggedElRect.left) / draggedElRect.width : 0,
+            top: draggedElRect.height ? (currentMouseY - draggedElRect.top) / draggedElRect.height : 0
         };
         if (!getFeatureFlag(FEATURE_FLAG_NAMES.USE_COMPUTED_STYLE_INSTEAD_OF_BOUNDING_RECT)) {
             draggedEl.style.height = `${newRect.height}px`;
             draggedEl.style.width = `${newRect.width}px`;
         }
-        draggedEl.style.left = `${parseFloat(draggedEl.style.left) - relativeDistanceOfMousePointerFromDraggedSides.left * widthChange}px`;
-        draggedEl.style.top = `${parseFloat(draggedEl.style.top) - relativeDistanceOfMousePointerFromDraggedSides.top * heightChange}px`;
+        draggedEl.style.left = `${currentLeft - relativeDistanceOfMousePointerFromDraggedSides.left * widthChange}px`;
+        draggedEl.style.top = `${currentTop - relativeDistanceOfMousePointerFromDraggedSides.top * heightChange}px`;
     }
 }
 

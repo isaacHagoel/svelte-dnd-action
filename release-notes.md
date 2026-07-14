@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### 0.9.74
+### [0.9.74](https://github.com/isaacHagoel/svelte-dnd-action/pull/691)
 
 Bugfix: prevent nested `dragHandleZone` teardown during an active drag from broadcasting a stale update that can hide a real item as the shadow element.
 

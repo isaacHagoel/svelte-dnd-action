@@ -4,7 +4,7 @@ import {findCenterOfElement} from "../../src/helpers/intersection";
 describe("listUtil", () => {
     describe("findWouldBeIndex", () => {
         let containerEl, draggedEl;
-        before(() => {
+        beforeEach(() => {
             document.body.style.height = "2000px";
             document.body.style.width = "2000px";
 
@@ -30,30 +30,29 @@ describe("listUtil", () => {
             draggedEl.style.width = "50px";
             draggedEl.style.position = "fixed";
             document.body.appendChild(draggedEl);
-        });
-        beforeEach(() => {
             draggedEl.style.top = "0";
             draggedEl.style.left = "0";
+        });
+        afterEach(() => {
+            containerEl.remove();
+            draggedEl.remove();
+            document.body.style.height = "";
+            document.body.style.width = "";
         });
         it("returns null when element is outside of containers", () => {
             draggedEl.style.top = "600px";
             draggedEl.style.left = "0";
             expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.equal(null);
         });
-        // The following two assertions rely on centre-point intersection logic
-        // that is intentionally constrained to the visible viewport.  Inside
-        // Cypress' headless browser this causes `findWouldBeIndex` to return
-        // `null`, producing false-negatives.  The behaviour is correct in
-        // real browsers, so we skip these checks here.
-        it.skip("works correctly, not proximity based (skipped – viewport-clamp)", () => {
+        it("works correctly, not proximity based", () => {
             draggedEl.style.top = "150px";
             draggedEl.style.left = "5px";
             expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.deep.equal({index: 1, isProximityBased: false});
         });
-        it.skip("works correctly, proximity based (skipped – viewport-clamp)", () => {
+        it("returns the trailing insertion slot when it is the closest", () => {
             draggedEl.style.top = "450px";
             draggedEl.style.left = "5px";
-            expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.deep.equal({index: 2, isProximityBased: true});
+            expect(findWouldBeIndex(findCenterOfElement(draggedEl), containerEl)).to.deep.equal({index: 3, isProximityBased: true});
         });
     });
 });

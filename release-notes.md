@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### 0.9.74
+
+Bugfix: prevent nested `dragHandleZone` teardown during an active drag from broadcasting a stale update that can hide a real item as the shadow element.
+
 ### [0.9.73](https://github.com/isaacHagoel/svelte-dnd-action/pull/690)
 
 Bugfix: preserve the cursor's relative grab point when a dragged element morphs again before its previous size transition completes. Size and position transitions are also synchronized when the first morph happens before delayed transition setup.

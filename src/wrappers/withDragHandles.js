@@ -77,7 +77,6 @@ export function dragHandleZone(node, options) {
             updateZone();
         },
         destroy: () => {
-            isItemsDragDisabled.set(true);
             zone.destroy();
             node.removeEventListener("consider", consider);
             node.removeEventListener("finalize", finalize);

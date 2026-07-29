@@ -86,11 +86,23 @@ function globalClickHandler() {
     }
 }
 
+// A consumer re-render can take the dragged item out of every zone mid-grab, leaving
+// focusedDz pointing at a zone that no longer holds it. There is nothing left to drag,
+// so drop rather than act on the stale pointer.
+function grabIsAlive() {
+    if (dzToConfig.get(focusedDz)?.items.some(item => item[ITEM_ID_KEY] === focusedItemId)) return true;
+    printDebug(() => "dragged item is gone, dropping");
+    handleDrop();
+    return false;
+}
+
 function handleZoneFocus(e) {
     printDebug(() => "zone focus");
     if (!isDragging) return;
     const newlyFocusedDz = e.currentTarget;
     if (newlyFocusedDz === focusedDz) return;
+
+    if (!grabIsAlive()) return;
 
     focusedDzLabel = newlyFocusedDz.getAttribute("aria-label") || "";
     const {items: originItems} = dzToConfig.get(focusedDz);
@@ -316,6 +328,11 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
 
         if (isDragging) {
+            // the consumer may have moved the dragged item into this zone behind our back
+            if (config.items.some(item => item[ITEM_ID_KEY] === focusedItemId)) {
+                focusedDz = node;
+                focusedDzLabel = node.getAttribute("aria-label") || "";
+            }
             node.tabIndex =
                 node === focusedDz ||
                 focusedItem.contains(node) ||
@@ -344,7 +361,7 @@ export function dndzone(node, options) {
                 draggableEl.addEventListener("click", handleClick);
                 elToFocusListeners.set(draggableEl, handleClick);
             }
-            if (isDragging && config.items[i][ITEM_ID_KEY] === focusedItemId) {
+            if (isDragging && config.items[i]?.[ITEM_ID_KEY] === focusedItemId) {
                 printDebug(() => ["focusing on", {i, focusedItemId}]);
                 // if it is a nested dropzone, it was re-rendered and we need to refresh our pointer
                 focusedItem = draggableEl;

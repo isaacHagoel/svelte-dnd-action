@@ -1,5 +1,13 @@
 ## Svelte Dnd Action - Release Notes
 
+### 0.9.75
+
+Bugfix: keep an active keyboard drag synchronized when a consumer re-render moves or removes the grabbed item.
+
+-   Follow an item moved between same-type zones without losing focus or cross-zone keyboard navigation.
+-   End the drag safely if the item disappears instead of moving an unrelated item from a stale origin.
+-   Keep zones of other types isolated even when they use the same item id.
+
 ### [0.9.74](https://github.com/isaacHagoel/svelte-dnd-action/pull/691)
 
 Bugfix: prevent nested `dragHandleZone` teardown during an active drag from broadcasting a stale update that can hide a real item as the shadow element.

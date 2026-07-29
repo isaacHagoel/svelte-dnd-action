@@ -86,11 +86,31 @@ function globalClickHandler() {
     }
 }
 
+function getActiveDragTabIndex(dropZoneEl, config) {
+    return dropZoneEl === focusedDz || focusedItem.contains(dropZoneEl) || config.dropFromOthersDisabled || config.type !== draggedItemType ? -1 : 0;
+}
+
+function refreshActiveDragTabIndices() {
+    dzToConfig.forEach((config, dropZoneEl) => {
+        dropZoneEl.tabIndex = getActiveDragTabIndex(dropZoneEl, config);
+    });
+}
+
+function grabIsAlive() {
+    const focusedConfig = dzToConfig.get(focusedDz);
+    if (focusedConfig?.items.some(item => item[ITEM_ID_KEY] === focusedItemId)) return true;
+    printDebug(() => "dragged item is gone, dropping");
+    handleDrop();
+    return false;
+}
+
 function handleZoneFocus(e) {
     printDebug(() => "zone focus");
     if (!isDragging) return;
     const newlyFocusedDz = e.currentTarget;
     if (newlyFocusedDz === focusedDz) return;
+
+    if (!grabIsAlive()) return;
 
     focusedDzLabel = newlyFocusedDz.getAttribute("aria-label") || "";
     const {items: originItems} = dzToConfig.get(focusedDz);
@@ -316,13 +336,15 @@ export function dndzone(node, options) {
         dzToConfig.set(node, config);
 
         if (isDragging) {
-            node.tabIndex =
-                node === focusedDz ||
-                focusedItem.contains(node) ||
-                config.dropFromOthersDisabled ||
-                (focusedDz && config.type !== dzToConfig.get(focusedDz).type)
-                    ? -1
-                    : 0;
+            const itemMovedToThisZone =
+                config.type === draggedItemType && config.items.some(item => item[ITEM_ID_KEY] === focusedItemId) && node !== focusedDz;
+            if (itemMovedToThisZone) {
+                focusedDz = node;
+                focusedDzLabel = node.getAttribute("aria-label") || "";
+                refreshActiveDragTabIndices();
+            } else {
+                node.tabIndex = getActiveDragTabIndex(node, config);
+            }
         } else {
             node.tabIndex = config.zoneTabIndex;
         }
@@ -344,7 +366,7 @@ export function dndzone(node, options) {
                 draggableEl.addEventListener("click", handleClick);
                 elToFocusListeners.set(draggableEl, handleClick);
             }
-            if (isDragging && config.items[i][ITEM_ID_KEY] === focusedItemId) {
+            if (isDragging && config.type === draggedItemType && config.items[i]?.[ITEM_ID_KEY] === focusedItemId) {
                 printDebug(() => ["focusing on", {i, focusedItemId}]);
                 // if it is a nested dropzone, it was re-rendered and we need to refresh our pointer
                 focusedItem = draggableEl;

@@ -81,6 +81,39 @@ describe("keyboardAction", () => {
         });
     });
 
+    it("keeps a same-type nested zone untabbable when the moved item is recreated", () => {
+        const {
+            zone: zoneA,
+            action: actionA,
+            children: [itemA]
+        } = createZone([{id: "a"}, {id: "b"}]);
+        const {zone: zoneB, action: actionB} = createZone([]);
+
+        itemA.focus();
+        itemA.dispatchEvent(new KeyboardEvent("keydown", {key: " ", bubbles: true, cancelable: true}));
+
+        zoneA.removeChild(itemA);
+        actionA.update({items: [{id: "b"}]});
+
+        const replacementItem = document.createElement("div");
+        const nestedZone = document.createElement("div");
+        nestedZone.appendChild(document.createElement("div"));
+        replacementItem.appendChild(nestedZone);
+        zoneB.appendChild(replacementItem);
+
+        // Svelte configures a nested action before the action on its parent.
+        const nestedAction = dndzone(nestedZone, {items: [{id: "nested"}]});
+        actions.push(nestedAction);
+        expect(nestedZone.tabIndex, "should initially reflect the old focused item").to.equal(0);
+
+        actionB.update({items: [{id: "a"}]});
+
+        expect(document.activeElement, "should focus the replacement item").to.equal(replacementItem);
+        expect(zoneA.tabIndex, "should make the old zone reachable").to.equal(0);
+        expect(zoneB.tabIndex, "should remove the new current zone from the tab order").to.equal(-1);
+        expect(nestedZone.tabIndex, "should keep a nested zone inside the dragged item unreachable").to.equal(-1);
+    });
+
     it("does not let another zone type with the same item id steal the grab", () => {
         const {
             zone: zoneA,

@@ -335,16 +335,15 @@ export function dndzone(node, options) {
         }
         dzToConfig.set(node, config);
 
+        let itemMovedToThisZone = false;
         if (isDragging) {
-            const itemMovedToThisZone =
+            itemMovedToThisZone =
                 config.type === draggedItemType && config.items.some(item => item[ITEM_ID_KEY] === focusedItemId) && node !== focusedDz;
             if (itemMovedToThisZone) {
                 focusedDz = node;
                 focusedDzLabel = node.getAttribute("aria-label") || "";
-                refreshActiveDragTabIndices();
-            } else {
-                node.tabIndex = getActiveDragTabIndex(node, config);
             }
+            node.tabIndex = getActiveDragTabIndex(node, config);
         } else {
             node.tabIndex = config.zoneTabIndex;
         }
@@ -374,6 +373,11 @@ export function dndzone(node, options) {
                 // without this the element loses focus if it moves backwards in the list
                 draggableEl.focus();
             }
+        }
+        if (itemMovedToThisZone) {
+            // Nested actions are configured before their parent action. Refresh only
+            // after focusedItem points at the replacement so nested zones stay untabbable.
+            refreshActiveDragTabIndices();
         }
     }
     configure(options);

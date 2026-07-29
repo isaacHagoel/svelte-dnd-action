@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### 0.9.75
+### [0.9.75](https://github.com/isaacHagoel/svelte-dnd-action/pull/694)
 
 Bugfix: keep an active keyboard drag synchronized when a consumer re-render moves or removes the grabbed item.
 

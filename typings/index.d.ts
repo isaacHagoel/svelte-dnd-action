@@ -94,6 +94,7 @@ export interface AriaStrings {
 
 /**
  * Overrides the strings the library speaks to screen readers. Merges over the current strings.
+ * This is global and applies to all dndzones.
  * Pass null to restore the built-in English strings.
  */
 export declare function setAriaStrings(overrides: AriaStrings | null): void;

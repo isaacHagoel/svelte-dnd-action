@@ -187,9 +187,9 @@ setAriaStrings({
 });
 ```
 
-Every key is optional — what you leave out keeps its English default. The five message keys are functions so that you control word order and pluralisation; they receive `itemLabel` and `zoneLabel` (from the `aria-label` attributes you already provide), plus `position` and `count` for the move messages and `canMoveBetweenZones` for `dragStarted`.
+Every key is optional — what you leave out keeps its English default. The five message keys are functions so that you control word order and pluralisation; `dragStarted`, `movedToPosition`, `movedToZoneEnd` and `movedToZoneStart` receive `itemLabel` and `zoneLabel` (from the `aria-label` attributes you already provide), plus `position` and `count` for the move messages and `canMoveBetweenZones` for `dragStarted`; `dropped` receives only `itemLabel`.
 
-You can call it again whenever the user changes language — the static instructions already in the DOM are re-rendered too. Pass `null` to go back to the built-in English. Passing an unrecognised key throws, so typos surface immediately.
+You can call it again whenever the user changes language — the static instructions already in the DOM are re-rendered too. Pass `null` to go back to the built-in English. Passing an unrecognised key, or a value of the wrong type for its key, throws, so mistakes surface immediately. This is global and applies to all dndzones — you can't configure two zones with different aria strings.
 
 ##### Keyboard support
 

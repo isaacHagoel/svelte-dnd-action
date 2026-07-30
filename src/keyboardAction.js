@@ -269,6 +269,7 @@ export function dndzone(node, options) {
         printDebug(() => "drag start");
         setCurrentFocusedItem(e.currentTarget);
         focusedDz = node;
+        focusedDzLabel = node.getAttribute("aria-label") || "";
         draggedItemType = config.type;
         isDragging = true;
         const dropTargets = Array.from(typeToDropZones.get(config.type)).filter(dz => dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled);

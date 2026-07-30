@@ -63,6 +63,45 @@ describe("aria strings", () => {
         expect(() => setAriaStrings({onDrop: () => "nope"})).to.throw("movedToPosition");
     });
 
+    it("throws when a message key is given a non-function value", () => {
+        // A locale file missing a key would otherwise silently install `undefined`, and the screen
+        // reader would speak the literal word "undefined" on every drop.
+        expect(() => setAriaStrings({dropped: undefined})).to.throw("dropped");
+        expect(() => setAriaStrings({dropped: "Stopped dragging"})).to.throw("dropped");
+    });
+
+    it("throws when an instruction key is given a non-string value", () => {
+        // A natural mistake since the other five keys are functions - this would otherwise read the
+        // literal source text of the function aloud to every screen-reader user who tabs into a zone.
+        expect(() => setAriaStrings({zoneActiveInstruction: () => "Tab to an item"})).to.throw("zoneActiveInstruction");
+    });
+
+    it("leaves the string table untouched when a value fails validation", () => {
+        setAriaStrings({dropped: ({itemLabel}) => `${itemLabel} déposé`});
+
+        expect(() =>
+            setAriaStrings({
+                dropped: ({itemLabel}) => `${itemLabel} abgelegt`,
+                zoneActiveInstruction: () => "not a string"
+            })
+        ).to.throw("zoneActiveInstruction");
+
+        announceToScreenReader("dropped", {itemLabel: "Carte A"});
+        expect(alertText(), "the earlier valid override should survive a later failed call untouched").to.equal("Carte A déposé");
+    });
+
+    it("throws a clear error for non-object arguments instead of silently no-oping", () => {
+        // null/undefined are the legitimate "reset to defaults" signal and must keep working.
+        expect(() => setAriaStrings(42)).to.throw("42");
+        expect(() => setAriaStrings([])).to.throw("setAriaStrings");
+        expect(() => setAriaStrings("fr")).to.throw("setAriaStrings");
+
+        setAriaStrings({dropped: ({itemLabel}) => `${itemLabel} déposé`});
+        expect(() => setAriaStrings("fr")).to.throw("setAriaStrings");
+        announceToScreenReader("dropped", {itemLabel: "Carte A"});
+        expect(alertText(), "an invalid call should not touch the existing table").to.equal("Carte A déposé");
+    });
+
     it("can be called again to switch locale", () => {
         setAriaStrings({dropped: ({itemLabel}) => `${itemLabel} déposé`});
         setAriaStrings({dropped: ({itemLabel}) => `${itemLabel} abgelegt`});

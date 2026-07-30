@@ -1,4 +1,5 @@
-import {isOnServer} from "../constants";
+import {isOnServer, printDebug} from "../constants";
+import {toString} from "./util";
 
 const INSTRUCTION_IDs = {
     DND_ZONE_ACTIVE: "dnd-zone-active",
@@ -20,6 +21,9 @@ const DEFAULT_ARIA_STRINGS = {
     zoneActiveInstruction: "Tab to one the items and press space-bar or enter to start dragging it",
     zoneDragDisabledInstruction: "This is a disabled drag and drop list"
 };
+
+const FUNCTION_ARIA_STRING_KEYS = ["dragStarted", "movedToPosition", "movedToZoneEnd", "movedToZoneStart", "dropped"];
+const STRING_ARIA_STRING_KEYS = ["zoneActiveInstruction", "zoneDragDisabledInstruction"];
 
 let ariaStrings = {...DEFAULT_ARIA_STRINGS};
 
@@ -87,7 +91,7 @@ function instructionToHiddenDiv(id, txt) {
 }
 
 function renderInstruction(div, txt) {
-    div.innerHTML = "";
+    div.replaceChildren();
     const paragraph = document.createElement("p");
     paragraph.textContent = txt;
     div.appendChild(paragraph);
@@ -114,18 +118,31 @@ export function alertToScreenReader(txt) {
  * Overrides the strings the library speaks to screen readers. Merges over the current strings, so you
  * can translate one message without restating the rest. Can be called at any time - including again on
  * a locale change, which also re-renders the static instructions that are already in the DOM.
+ * This is global and applies to all dndzones.
  * Pass null to restore the built-in English strings.
  * @param {Object | null} overrides - any subset of: dragStarted, movedToPosition, movedToZoneEnd,
  * movedToZoneStart, dropped (functions taking a context object and returning a string);
  * zoneActiveInstruction, zoneDragDisabledInstruction (strings)
+ * @throws {Error} if given something other than an object or null, an unknown key, or a value of the wrong
+ * type for its key (a partially-applied table is never left behind - the whole call is validated first)
  */
 export function setAriaStrings(overrides) {
     if (overrides === null || overrides === undefined) {
         ariaStrings = {...DEFAULT_ARIA_STRINGS};
     } else {
+        if (typeof overrides !== "object" || Array.isArray(overrides)) {
+            throw new Error(`setAriaStrings expects an object or null but instead got a ${typeof overrides}, ${toString(overrides)}`);
+        }
         Object.keys(overrides).forEach(key => {
             if (!Object.prototype.hasOwnProperty.call(DEFAULT_ARIA_STRINGS, key)) {
                 throw new Error(`Can't set non existing aria string ${key}! Supported strings: ${Object.keys(DEFAULT_ARIA_STRINGS)}`);
+            }
+            const value = overrides[key];
+            if (FUNCTION_ARIA_STRING_KEYS.includes(key) && typeof value !== "function") {
+                throw new Error(`${key} should be a function but instead it is a ${typeof value}, ${toString(value)}`);
+            }
+            if (STRING_ARIA_STRING_KEYS.includes(key) && typeof value !== "string") {
+                throw new Error(`${key} should be a string but instead it is a ${typeof value}, ${toString(value)}`);
             }
         });
         ariaStrings = {...ariaStrings, ...overrides};
@@ -137,12 +154,32 @@ export function setAriaStrings(overrides) {
     });
 }
 
+function formatAriaString(strings, key, ctx) {
+    const ariaString = strings[key];
+    return typeof ariaString === "function" ? ariaString(ctx) : ariaString;
+}
+
 /**
- * Formats one of the aria strings and alerts it to the screen reader
+ * Formats one of the aria strings and alerts it to the screen reader. A consumer-supplied formatter
+ * (installed via setAriaStrings) is never allowed to throw out of here - this runs inside the drag
+ * lifecycle (ex: handleDrop), and letting an exception escape would leave the library stuck mid-drag.
+ * If the consumer's formatter throws, we fall back to the built-in default for that key (itself guarded)
+ * and report the swallowed error via printDebug.
  * @param {string} key - one of the keys accepted by setAriaStrings
  * @param {Object} [ctx] - the interpolation context for that key
  */
 export function announceToScreenReader(key, ctx) {
-    const ariaString = ariaStrings[key];
-    alertToScreenReader(typeof ariaString === "function" ? ariaString(ctx) : ariaString);
+    let text;
+    try {
+        text = formatAriaString(ariaStrings, key, ctx);
+    } catch (err) {
+        printDebug(() => [`aria string formatter for "${key}" threw, falling back to the default`, err]);
+        try {
+            text = formatAriaString(DEFAULT_ARIA_STRINGS, key, ctx);
+        } catch (defaultErr) {
+            printDebug(() => [`default aria string formatter for "${key}" also threw`, defaultErr]);
+            text = "";
+        }
+    }
+    alertToScreenReader(text);
 }

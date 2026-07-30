@@ -184,6 +184,10 @@ describe("keyboardAction", () => {
     });
 
     describe("announcements", () => {
+        afterEach(() => {
+            setAriaStrings(null);
+        });
+
         function alertText() {
             return document.getElementById("dnd-action-aria-alert").textContent;
         }
@@ -219,10 +223,6 @@ describe("keyboardAction", () => {
             item.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown", bubbles: true, cancelable: true}));
 
             expect(alertText()).to.equal("Moved item Card 0 to position 2 in the list To do");
-        });
-
-        afterEach(() => {
-            setAriaStrings(null);
         });
 
         it("routes every announcement through the overridable strings", () => {
@@ -292,6 +292,57 @@ describe("keyboardAction", () => {
             grab(item);
 
             expect(document.getElementById("dnd-action-aria-alert").textContent).to.equal("");
+        });
+
+        it("does not get stuck dragging when a consumer formatter throws on drop, and announces the default instead", () => {
+            setAriaStrings({
+                dropped: () => {
+                    throw new Error("boom");
+                }
+            });
+            const {
+                zone,
+                children: [item]
+            } = createLabelledZone([{id: "a"}, {id: "b"}], "To do");
+            const triggers = [];
+            zone.addEventListener("consider", e => triggers.push(e.detail.info.trigger));
+
+            grab(item);
+            item.dispatchEvent(new KeyboardEvent("keydown", {key: " ", bubbles: true, cancelable: true}));
+
+            expect(alertText(), "should fall back to the default text instead of staying silent or speaking undefined").to.equal(
+                "Stopped dragging item Card 0"
+            );
+            expect(triggers, "the drop should still have dispatched the drag-stopped consider event").to.include(TRIGGERS.DRAG_STOPPED);
+            expect(zone.tabIndex, "the drop should have completed and restored the zone's tab index").to.equal(0);
+            expect(item.tabIndex, "the drop should have completed and restored the item's tab index").to.equal(0);
+
+            // A fresh grab proves the library isn't wedged in isDragging:true - if it were, pressing
+            // space would be routed to another drop (handleKeyDown treats space-while-dragging as a
+            // drop), not a new drag-started announcement.
+            setAriaStrings(null);
+            grab(item);
+            expect(alertText(), "a fresh grab afterwards should start a new drag rather than drop again").to.equal(
+                "Started dragging item Card 0. Use the arrow keys to move it within its list To do"
+            );
+        });
+
+        it("does not throw when a consumer formatter throws while a zone is destroyed mid-drag", () => {
+            setAriaStrings({
+                dropped: () => {
+                    throw new Error("boom");
+                }
+            });
+            const {
+                action,
+                children: [item]
+            } = createLabelledZone([{id: "a"}], "To do");
+
+            grab(item);
+
+            // unregisterDropZone calls handleDrop synchronously when the focused zone is destroyed
+            // mid-drag; a throwing formatter must not break component teardown.
+            expect(() => action.destroy()).to.not.throw();
         });
     });
 });

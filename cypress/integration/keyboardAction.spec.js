@@ -181,4 +181,43 @@ describe("keyboardAction", () => {
 
         expect(finalized, "should not finalize a move for an unrelated item").to.be.empty;
     });
+
+    describe("announcements", () => {
+        function alertText() {
+            return document.getElementById("dnd-action-aria-alert").textContent;
+        }
+
+        function createLabelledZone(items, zoneLabel, options = {}) {
+            const {zone, action, children} = createZone(items, options);
+            zone.setAttribute("aria-label", zoneLabel);
+            children.forEach((child, i) => child.setAttribute("aria-label", `Card ${i}`));
+            return {zone, action, children};
+        }
+
+        function grab(item) {
+            item.focus();
+            item.dispatchEvent(new KeyboardEvent("keydown", {key: " ", bubbles: true, cancelable: true}));
+        }
+
+        it("names the zone when the drag starts", () => {
+            const {
+                children: [item]
+            } = createLabelledZone([{id: "a"}, {id: "b"}], "To do");
+
+            grab(item);
+
+            expect(alertText()).to.equal("Started dragging item Card 0. Use the arrow keys to move it within its list To do");
+        });
+
+        it("names the zone when arrowing within the list", () => {
+            const {
+                children: [item]
+            } = createLabelledZone([{id: "a"}, {id: "b"}], "To do");
+
+            grab(item);
+            item.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown", bubbles: true, cancelable: true}));
+
+            expect(alertText()).to.equal("Moved item Card 0 to position 2 in the list To do");
+        });
+    });
 });

@@ -265,18 +265,22 @@ describe("keyboardAction", () => {
             });
             const {zone: zoneA, children: itemsA} = createLabelledZone([{id: "a"}], "To do");
             const {zone: zoneB} = createLabelledZone([{id: "b"}], "Done");
+            // The zones otherwise have no visible content, so both would collapse to the same
+            // (0,0) top/left and handleZoneFocus's `top <`/`left <` check would never fire true
+            // either direction. Give them real, distinct layout so zoneA genuinely sits above
+            // zoneB - that's what makes the two branches (movedToZoneStart / movedToZoneEnd)
+            // actually distinguishable here.
+            zoneA.style.height = "50px";
+            zoneB.style.height = "50px";
 
             // zoneB renders below zoneA, so moving into it is a move to the beginning.
             grab(itemsA[0]);
             zoneB.dispatchEvent(new FocusEvent("focus"));
             expect(alertText()).to.equal("start:Card 0:Done:1:2");
 
-            // These zones have no visible content, so both collapse to the same (0) top/left in
-            // the real browser layout Cypress renders. handleZoneFocus's `top <`/`left <` check
-            // never fires true either direction, so every zone-to-zone move here takes the
-            // "unshift" branch (movedToZoneStart) - moving back up into zoneA is no exception.
+            // and moving back up into zoneA - which sits above zoneB - is a move to the end.
             zoneA.dispatchEvent(new FocusEvent("focus"));
-            expect(alertText()).to.equal("start:Card 0:To do:1:1");
+            expect(alertText()).to.equal("end:Card 0:To do:1:1");
         });
 
         it("stays silent when autoAriaDisabled is set, even with overrides installed", () => {

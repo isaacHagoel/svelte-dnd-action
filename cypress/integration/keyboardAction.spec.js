@@ -1,5 +1,6 @@
 import {dndzone} from "../../src/keyboardAction";
 import {TRIGGERS} from "../../src/constants";
+import {setAriaStrings} from "../../src/helpers/aria";
 
 describe("keyboardAction", () => {
     const actions = [];
@@ -218,6 +219,75 @@ describe("keyboardAction", () => {
             item.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown", bubbles: true, cancelable: true}));
 
             expect(alertText()).to.equal("Moved item Card 0 to position 2 in the list To do");
+        });
+
+        afterEach(() => {
+            setAriaStrings(null);
+        });
+
+        it("routes every announcement through the overridable strings", () => {
+            const seen = [];
+            setAriaStrings({
+                dragStarted: ctx => `grab:${ctx.itemLabel}:${ctx.zoneLabel}:${ctx.canMoveBetweenZones}`,
+                movedToPosition: ctx => `move:${ctx.itemLabel}:${ctx.zoneLabel}:${ctx.position}:${ctx.count}`,
+                dropped: ctx => `drop:${ctx.itemLabel}`
+            });
+            const {
+                children: [item]
+            } = createLabelledZone([{id: "a"}, {id: "b"}], "To do");
+
+            grab(item);
+            seen.push(alertText());
+            item.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown", bubbles: true, cancelable: true}));
+            seen.push(alertText());
+            item.dispatchEvent(new KeyboardEvent("keydown", {key: " ", bubbles: true, cancelable: true}));
+            seen.push(alertText());
+
+            expect(seen).to.deep.equal(["grab:Card 0:To do:false", "move:Card 0:To do:2:2", "drop:Card 0"]);
+        });
+
+        it("reports canMoveBetweenZones when another zone can accept the item", () => {
+            setAriaStrings({dragStarted: ctx => `${ctx.canMoveBetweenZones}`});
+            const {
+                children: [item]
+            } = createLabelledZone([{id: "a"}], "To do");
+            createLabelledZone([], "Done");
+
+            grab(item);
+
+            expect(alertText()).to.equal("true");
+        });
+
+        it("uses the cross-zone strings when focus moves to another zone", () => {
+            setAriaStrings({
+                movedToZoneEnd: ctx => `end:${ctx.itemLabel}:${ctx.zoneLabel}:${ctx.position}:${ctx.count}`,
+                movedToZoneStart: ctx => `start:${ctx.itemLabel}:${ctx.zoneLabel}:${ctx.position}:${ctx.count}`
+            });
+            const {zone: zoneA, children: itemsA} = createLabelledZone([{id: "a"}], "To do");
+            const {zone: zoneB} = createLabelledZone([{id: "b"}], "Done");
+
+            // zoneB renders below zoneA, so moving into it is a move to the beginning.
+            grab(itemsA[0]);
+            zoneB.dispatchEvent(new FocusEvent("focus"));
+            expect(alertText()).to.equal("start:Card 0:Done:1:2");
+
+            // These zones have no visible content, so both collapse to the same (0) top/left in
+            // the real browser layout Cypress renders. handleZoneFocus's `top <`/`left <` check
+            // never fires true either direction, so every zone-to-zone move here takes the
+            // "unshift" branch (movedToZoneStart) - moving back up into zoneA is no exception.
+            zoneA.dispatchEvent(new FocusEvent("focus"));
+            expect(alertText()).to.equal("start:Card 0:To do:1:1");
+        });
+
+        it("stays silent when autoAriaDisabled is set, even with overrides installed", () => {
+            setAriaStrings({dragStarted: () => "SHOULD NOT BE SPOKEN"});
+            const {
+                children: [item]
+            } = createLabelledZone([{id: "a"}], "To do", {autoAriaDisabled: true});
+
+            grab(item);
+
+            expect(document.getElementById("dnd-action-aria-alert").textContent).to.equal("");
         });
     });
 });

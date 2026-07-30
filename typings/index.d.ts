@@ -82,6 +82,22 @@ export interface DndZoneAttributes<T> {
  */
 export declare function alertToScreenReader(txt: string): void;
 
+export interface AriaStrings {
+    dragStarted?: (ctx: {itemLabel: string; zoneLabel: string; canMoveBetweenZones: boolean}) => string;
+    movedToPosition?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
+    movedToZoneEnd?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
+    movedToZoneStart?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
+    dropped?: (ctx: {itemLabel: string}) => string;
+    zoneActiveInstruction?: string;
+    zoneDragDisabledInstruction?: string;
+}
+
+/**
+ * Overrides the strings the library speaks to screen readers. Merges over the current strings.
+ * Pass null to restore the built-in English strings.
+ */
+export declare function setAriaStrings(overrides: AriaStrings | null): void;
+
 /**
  * Allows using another key instead of "id" in the items data. This is global and applies to all dndzones.
  * Has to be called when there are no rendered dndzones whatsoever.

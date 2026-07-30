@@ -1,6 +1,6 @@
 export {dndzone} from "./action.js";
 export {dragHandleZone, dragHandle} from "./wrappers/withDragHandles";
-export {alertToScreenReader} from "./helpers/aria";
+export {alertToScreenReader, setAriaStrings} from "./helpers/aria";
 export {
     TRIGGERS,
     SOURCES,

@@ -4,10 +4,24 @@ const INSTRUCTION_IDs = {
     DND_ZONE_ACTIVE: "dnd-zone-active",
     DND_ZONE_DRAG_DISABLED: "dnd-zone-drag-disabled"
 };
-const ID_TO_INSTRUCTION = {
-    [INSTRUCTION_IDs.DND_ZONE_ACTIVE]: "Tab to one the items and press space-bar or enter to start dragging it",
-    [INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED]: "This is a disabled drag and drop list"
+const INSTRUCTION_ID_TO_STRING_KEY = {
+    [INSTRUCTION_IDs.DND_ZONE_ACTIVE]: "zoneActiveInstruction",
+    [INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED]: "zoneDragDisabledInstruction"
 };
+
+const DEFAULT_ARIA_STRINGS = {
+    dragStarted: ({itemLabel, zoneLabel, canMoveBetweenZones}) =>
+        `Started dragging item ${itemLabel}. Use the arrow keys to move it within its list ${zoneLabel}` +
+        (canMoveBetweenZones ? ", or tab to another list in order to move the item into it" : ""),
+    movedToPosition: ({itemLabel, zoneLabel, position}) => `Moved item ${itemLabel} to position ${position} in the list ${zoneLabel}`,
+    movedToZoneEnd: ({itemLabel, zoneLabel}) => `Moved item ${itemLabel} to the end of the list ${zoneLabel}`,
+    movedToZoneStart: ({itemLabel, zoneLabel}) => `Moved item ${itemLabel} to the beginning of the list ${zoneLabel}`,
+    dropped: ({itemLabel}) => `Stopped dragging item ${itemLabel}`,
+    zoneActiveInstruction: "Tab to one the items and press space-bar or enter to start dragging it",
+    zoneDragDisabledInstruction: "This is a disabled drag and drop list"
+};
+
+let ariaStrings = {...DEFAULT_ARIA_STRINGS};
 
 const ALERT_DIV_ID = "dnd-action-aria-alert";
 let alertsDiv;
@@ -35,7 +49,7 @@ function initAriaOnBrowser() {
     document.body.prepend(alertsDiv);
 
     // setting the instructions
-    Object.entries(ID_TO_INSTRUCTION).forEach(([id, txt]) => document.body.prepend(instructionToHiddenDiv(id, txt)));
+    Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) => document.body.prepend(instructionToHiddenDiv(id, ariaStrings[key])));
 }
 
 /**
@@ -57,7 +71,7 @@ export function initAria() {
  */
 export function destroyAria() {
     if (isOnServer || !alertsDiv) return;
-    Object.keys(ID_TO_INSTRUCTION).forEach(id => document.getElementById(id)?.remove());
+    Object.keys(INSTRUCTION_ID_TO_STRING_KEY).forEach(id => document.getElementById(id)?.remove());
     alertsDiv.remove();
     alertsDiv = undefined;
 }
@@ -65,11 +79,18 @@ export function destroyAria() {
 function instructionToHiddenDiv(id, txt) {
     const div = document.createElement("div");
     div.id = id;
-    div.innerHTML = `<p>${txt}</p>`;
+    renderInstruction(div, txt);
     div.style.display = "none";
     div.style.position = "fixed";
     div.style.zIndex = "-5";
     return div;
+}
+
+function renderInstruction(div, txt) {
+    div.innerHTML = "";
+    const paragraph = document.createElement("p");
+    paragraph.textContent = txt;
+    div.appendChild(paragraph);
 }
 
 /**
@@ -87,4 +108,41 @@ export function alertToScreenReader(txt) {
     // this is needed for Safari
     alertsDiv.style.display = "none";
     alertsDiv.style.display = "inline";
+}
+
+/**
+ * Overrides the strings the library speaks to screen readers. Merges over the current strings, so you
+ * can translate one message without restating the rest. Can be called at any time - including again on
+ * a locale change, which also re-renders the static instructions that are already in the DOM.
+ * Pass null to restore the built-in English strings.
+ * @param {Object | null} overrides - any subset of: dragStarted, movedToPosition, movedToZoneEnd,
+ * movedToZoneStart, dropped (functions taking a context object and returning a string);
+ * zoneActiveInstruction, zoneDragDisabledInstruction (strings)
+ */
+export function setAriaStrings(overrides) {
+    if (overrides === null || overrides === undefined) {
+        ariaStrings = {...DEFAULT_ARIA_STRINGS};
+    } else {
+        Object.keys(overrides).forEach(key => {
+            if (!Object.prototype.hasOwnProperty.call(DEFAULT_ARIA_STRINGS, key)) {
+                throw new Error(`Can't set non existing aria string ${key}! Supported strings: ${Object.keys(DEFAULT_ARIA_STRINGS)}`);
+            }
+        });
+        ariaStrings = {...ariaStrings, ...overrides};
+    }
+    if (isOnServer) return;
+    Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) => {
+        const div = document.getElementById(id);
+        if (div) renderInstruction(div, ariaStrings[key]);
+    });
+}
+
+/**
+ * Formats one of the aria strings and alerts it to the screen reader
+ * @param {string} key - one of the keys accepted by setAriaStrings
+ * @param {Object} [ctx] - the interpolation context for that key
+ */
+export function announceToScreenReader(key, ctx) {
+    const ariaString = ariaStrings[key];
+    alertToScreenReader(typeof ariaString === "function" ? ariaString(ctx) : ariaString);
 }

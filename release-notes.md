@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.76](https://github.com/isaacHagoel/svelte-dnd-action/pull/695)
+
+Bugfix: include the originating drop-zone label in keyboard drag announcements so screen-reader users hear the list name from drag start and while reordering within the list.
+
 ### [0.9.75](https://github.com/isaacHagoel/svelte-dnd-action/pull/694)
 
 Bugfix: keep an active keyboard drag synchronized when a consumer re-render moves or removes the grabbed item.

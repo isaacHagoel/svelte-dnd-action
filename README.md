@@ -187,7 +187,7 @@ setAriaStrings({
 });
 ```
 
-Every key is optional — what you leave out keeps its English default. The five message keys are functions so that you control word order and pluralisation; `dragStarted`, `movedToPosition`, `movedToZoneEnd` and `movedToZoneStart` receive `itemLabel` and `zoneLabel` (from the `aria-label` attributes you already provide), plus `position` and `count` for the move messages and `canMoveBetweenZones` for `dragStarted`; `dropped` receives only `itemLabel`.
+Every key is optional — what you leave out keeps its English default. The five message keys are functions so that you control word order and pluralisation. All five receive the same context: `itemLabel` and `zoneLabel` (from the `aria-label` attributes you already provide), plus `position` and `count` — the item's 1-based seat in the zone the message is about, and how many items that zone holds. `dragStarted` additionally receives `canMoveBetweenZones`. The built-in English strings don't interpolate every field, but they are all supplied so you can word any message positionally, for example `` dropped: ({itemLabel, zoneLabel, position, count}) => `${itemLabel} déposé dans ${zoneLabel}, ${position} sur ${count}` ``.
 
 You can call it again whenever the user changes language — the static instructions already in the DOM are re-rendered too. Pass `null` to go back to the built-in English. Passing an unrecognised key, or a value of the wrong type for its key, throws, so mistakes surface immediately. This is global and applies to all dndzones — you can't configure two zones with different aria strings.
 

@@ -82,12 +82,14 @@ export interface DndZoneAttributes<T> {
  */
 export declare function alertToScreenReader(txt: string): void;
 
+// Every message key receives the same core context - itemLabel, zoneLabel, position, count -
+// so a consumer can word any of them positionally. Only dragStarted carries an extra.
 export interface AriaStrings {
-    dragStarted?: (ctx: {itemLabel: string; zoneLabel: string; canMoveBetweenZones: boolean}) => string;
+    dragStarted?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number; canMoveBetweenZones: boolean}) => string;
     movedToPosition?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     movedToZoneEnd?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     movedToZoneStart?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
-    dropped?: (ctx: {itemLabel: string}) => string;
+    dropped?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     zoneActiveInstruction?: string;
     zoneDragDisabledInstruction?: string;
 }

@@ -246,6 +246,28 @@ describe("keyboardAction", () => {
             expect(seen).to.deep.equal(["grab:Card 0:To do:false", "move:Card 0:To do:2:2", "drop:Card 0"]);
         });
 
+        it("gives the grab and the drop the item's seat and the zone's size", () => {
+            const seen = [];
+            setAriaStrings({
+                dragStarted: ctx => `grab:${ctx.zoneLabel}:${ctx.position}:${ctx.count}`,
+                dropped: ctx => `drop:${ctx.zoneLabel}:${ctx.position}:${ctx.count}`
+            });
+            const {
+                children: [, second]
+            } = createLabelledZone([{id: "a"}, {id: "b"}, {id: "c"}], "To do");
+
+            grab(second);
+            seen.push(alertText());
+            second.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown", bubbles: true, cancelable: true}));
+            second.dispatchEvent(new KeyboardEvent("keydown", {key: " ", bubbles: true, cancelable: true}));
+            seen.push(alertText());
+
+            // Lifted from seat 2 of 3 and dropped into seat 3 of 3. Both are read off the live
+            // items rather than assumed, so a hardcoded position or a stale count fails here
+            // instead of passing quietly - which a single-item zone would not catch.
+            expect(seen).to.deep.equal(["grab:To do:2:3", "drop:To do:3:3"]);
+        });
+
         it("reports canMoveBetweenZones when another zone can accept the item", () => {
             setAriaStrings({dragStarted: ctx => `${ctx.canMoveBetweenZones}`});
             const {

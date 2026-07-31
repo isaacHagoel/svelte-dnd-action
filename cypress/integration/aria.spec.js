@@ -102,12 +102,29 @@ describe("aria strings", () => {
         expect(alertText(), "an invalid call should not touch the existing table").to.equal("Carte A déposé");
     });
 
-    it("can be called again to switch locale", () => {
-        setAriaStrings({dropped: ({itemLabel}) => `${itemLabel} déposé`});
-        setAriaStrings({dropped: ({itemLabel}) => `${itemLabel} abgelegt`});
+    it("treats each call as a whole locale, not a patch on the previous one", () => {
+        // Switching locale exercises three kinds of key at once, and only the first survives a merge
+        // over the *current* table: one both locales name, one only the new locale names, and one only
+        // the old locale named. That last kind is the leak - two locale files rarely override the exact
+        // same subset, so the keys the new one is silent about would keep speaking the old language.
+        setAriaStrings({
+            dropped: ({itemLabel}) => `${itemLabel} déposé`,
+            zoneActiveInstruction: "Tabulez jusqu'à un élément et appuyez sur espace"
+        });
+        setAriaStrings({
+            dropped: ({itemLabel}) => `${itemLabel} abgelegt`,
+            movedToZoneEnd: ({itemLabel, zoneLabel}) => `${itemLabel} ans Ende der Liste ${zoneLabel} verschoben`
+        });
 
         announceToScreenReader("dropped", {itemLabel: "Karte A"});
-        expect(alertText()).to.equal("Karte A abgelegt");
+        expect(alertText(), "a key both locales name should speak the new one").to.equal("Karte A abgelegt");
+
+        announceToScreenReader("movedToZoneEnd", {itemLabel: "Karte A", zoneLabel: "Fertig", position: 3, count: 3});
+        expect(alertText(), "a key only the new locale names should take effect").to.equal("Karte A ans Ende der Liste Fertig verschoben");
+
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent, "a key only the old locale named should be English again, not French").to.equal(
+            "Tab to one the items and press space-bar or enter to start dragging it"
+        );
     });
 
     it("resets to the defaults when passed null", () => {

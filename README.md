@@ -190,7 +190,7 @@ setAriaStrings({
 
 Every key is optional — what you leave out keeps its English default. The five message keys are functions so that you control word order and pluralisation. All five receive the same context: `itemLabel` and `zoneLabel` (from the `aria-label` attributes you already provide), plus `position` and `count` — the item's 1-based seat in the zone the message is about, and how many items that zone holds. `dragStarted` additionally receives `canMoveBetweenZones`. Destructure only what your wording needs — the built-in English strings don't interpolate every field, but they are all supplied so you can word any message positionally, as the `dropped` line above does.
 
-You can call it again whenever the user changes language — the static instructions already in the DOM are re-rendered too. Pass `null` to go back to the built-in English. Passing an unrecognised key, or a value of the wrong type for its key, throws, so mistakes surface immediately. This is global and applies to all dndzones — you can't configure two zones with different aria strings.
+You can call it again whenever the user changes language — the static instructions already in the DOM are re-rendered too. Each call describes a whole locale rather than patching the previous one: the overrides are merged over the English defaults, not over whatever was set last, so a key your new locale is silent about goes back to English instead of staying in the old language. Pass `null` to go back to the built-in English. Passing an unrecognised key, or a value of the wrong type for its key, throws, so mistakes surface immediately. This is global and applies to all dndzones — you can't configure two zones with different aria strings.
 
 ##### Keyboard support
 

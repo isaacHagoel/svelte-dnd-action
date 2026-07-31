@@ -115,9 +115,11 @@ export function alertToScreenReader(txt) {
 }
 
 /**
- * Overrides the strings the library speaks to screen readers. Merges over the current strings, so you
- * can translate one message without restating the rest. Can be called at any time - including again on
- * a locale change, which also re-renders the static instructions that are already in the DOM.
+ * Overrides the strings the library speaks to screen readers. Merges over the built-in English defaults,
+ * so you can translate one message without restating the rest. Each call describes a whole locale rather
+ * than patching the previous one - anything a call leaves out goes back to English, so switching between
+ * two partial locales can't leave keys behind speaking the old language. Can be called at any time -
+ * including again on a locale change, which also re-renders the static instructions already in the DOM.
  * This is global and applies to all dndzones.
  * Pass null to restore the built-in English strings.
  * @param {Object | null} overrides - any subset of: dragStarted, movedToPosition, movedToZoneEnd,
@@ -145,7 +147,7 @@ export function setAriaStrings(overrides) {
                 throw new Error(`${key} should be a string but instead it is a ${typeof value}, ${toString(value)}`);
             }
         });
-        ariaStrings = {...ariaStrings, ...overrides};
+        ariaStrings = {...DEFAULT_ARIA_STRINGS, ...overrides};
     }
     if (isOnServer) return;
     Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) => {

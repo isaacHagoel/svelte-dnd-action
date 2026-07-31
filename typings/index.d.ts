@@ -95,7 +95,9 @@ export interface AriaStrings {
 }
 
 /**
- * Overrides the strings the library speaks to screen readers. Merges over the current strings.
+ * Overrides the strings the library speaks to screen readers. Merges over the built-in English defaults,
+ * so each call describes a whole locale rather than patching the previous one - anything a call leaves
+ * out goes back to English.
  * This is global and applies to all dndzones.
  * Pass null to restore the built-in English strings.
  */

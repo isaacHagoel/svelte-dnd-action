@@ -309,8 +309,7 @@ export function dndzone(node, options) {
             dz => dzToConfig.get(dz).dropTargetClasses
         );
         if (!config.autoAriaDisabled) {
-            // The seat the item is lifted FROM, so a consumer can open with it ("Picked up
-            // Card A. To do, 1 of 5") — the most common reason to override this string.
+            // The seat the item is lifted FROM, so a consumer can open with it ("Picked up Card A. To do, 1 of 5")
             const startItems = dzToConfig.get(node).items;
             const startIdx = startItems.findIndex(item => item[ITEM_ID_KEY] === focusedItemId);
             announceToScreenReader("dragStarted", {

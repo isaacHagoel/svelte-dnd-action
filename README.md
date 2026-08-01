@@ -169,7 +169,7 @@ If you want to implement your own custom screen-reader alerts, roles and instruc
 
 #### Translating the screen-reader messages
 
-`autoAriaDisabled` is all-or-nothing — it turns off the aria attributes, the roles and the instructions along with the alerts. If all you want is to change the _words_ (for example to ship the library in a language other than English), import `setAriaStrings` instead and keep everything else:
+`autoAriaDisabled` disables all automatically added ARIA attributes, roles, instructions and alerts. If you only want to translate the screen-reader wording, import `setAriaStrings` and leave `autoAriaDisabled` off:
 
 ```javascript
 import {setAriaStrings} from "svelte-dnd-action";
@@ -181,16 +181,18 @@ setAriaStrings({
     movedToPosition: ({itemLabel, zoneLabel, position}) => `${itemLabel} déplacé en position ${position} dans la liste ${zoneLabel}`,
     movedToZoneEnd: ({itemLabel, zoneLabel}) => `${itemLabel} déplacé à la fin de la liste ${zoneLabel}`,
     movedToZoneStart: ({itemLabel, zoneLabel}) => `${itemLabel} déplacé au début de la liste ${zoneLabel}`,
-    // The defaults don't say where the item landed, but the context is there if you want it
+    // The default message omits the destination, but custom messages can include it
     dropped: ({itemLabel, zoneLabel, position, count}) => `${itemLabel} déposé dans ${zoneLabel}, ${position} sur ${count}`,
     zoneActiveInstruction: `Tabulez jusqu'à un élément et appuyez sur espace ou entrée pour le déplacer`,
     zoneDragDisabledInstruction: `Cette liste de glisser-déposer est désactivée`
 });
 ```
 
-Every key is optional — what you leave out keeps its English default. The five message keys are functions so that you control word order and pluralisation. All five receive the same context: `itemLabel` and `zoneLabel` (from the `aria-label` attributes you already provide), plus `position` and `count` — the item's 1-based seat in the zone the message is about, and how many items that zone holds. `dragStarted` additionally receives `canMoveBetweenZones`. Destructure only what your wording needs — the built-in English strings don't interpolate every field, but they are all supplied so you can word any message positionally, as the `dropped` line above does.
+Every key is optional. Omitted keys use their English defaults. The five announcement keys are formatter functions, so translations can control word order and pluralisation. Each formatter receives `itemLabel` and `zoneLabel` from the consumer-provided `aria-label` attributes, plus `position` and `count` for the item's 1-based position and the number of items in the relevant zone. `dragStarted` also receives `canMoveBetweenZones`. Destructure only the fields your wording needs; the built-in English messages do not use every field, but custom messages can.
 
-You can call it again whenever the user changes language — the static instructions already in the DOM are re-rendered too. Each call describes a whole locale rather than patching the previous one: the overrides are merged over the English defaults, not over whatever was set last, so a key your new locale is silent about goes back to English instead of staying in the old language. Pass `null` to go back to the built-in English. Passing an unrecognised key, or a value of the wrong type for its key, throws, so mistakes surface immediately. This is global and applies to all dndzones — you can't configure two zones with different aria strings.
+Call `setAriaStrings` during app-level initialization and again whenever the application locale changes. Each call defines the complete active locale by applying its overrides to the English defaults, so omitted keys return to English rather than retaining values from the previous locale. Existing instruction elements update immediately. Pass `null` to restore all English defaults. Unknown keys and values of the wrong type throw an error.
+
+The setting is global to the document and applies to every dndzone. Different zones cannot use different strings at the same time.
 
 ##### Keyboard support
 

@@ -165,9 +165,7 @@ function handleDrop(dispatchConsider = true) {
     if (!droppedConfig) return;
 
     if (!droppedConfig.autoAriaDisabled) {
-        // Same context as the move messages: where the item came to rest is the news, and a
-        // consumer that words the drop ("Dropped in Done, 2 of 5") needs the zone and the
-        // seat, not just the item. `focusedDzLabel` tracks focusedDz, which droppedDz is.
+        // Include the destination and final position so localized messages can describe the completed drop.
         const droppedItems = droppedConfig.items;
         const droppedIdx = droppedItems.findIndex(item => item[ITEM_ID_KEY] === droppedItemId);
         announceToScreenReader("dropped", {
@@ -309,7 +307,7 @@ export function dndzone(node, options) {
             dz => dzToConfig.get(dz).dropTargetClasses
         );
         if (!config.autoAriaDisabled) {
-            // The seat the item is lifted FROM, so a consumer can open with it ("Picked up Card A. To do, 1 of 5")
+            // Include the starting position so localized messages can describe where the item was picked up.
             const startItems = dzToConfig.get(node).items;
             const startIdx = startItems.findIndex(item => item[ITEM_ID_KEY] === focusedItemId);
             announceToScreenReader("dragStarted", {

@@ -118,7 +118,7 @@ An options-object with the following attributes:
 | `dropTargetStyle` | Object&lt;String&gt; | No | `{outline: 'rgba(255, 255, 102, 0.7) solid 2px'}` | An object of styles to apply to the dnd-zone when items can be dragged into it. Note: the styles override any inline styles applied to the dnd-zone. When the styles are removed, any original inline styles will be lost |
 | `dropTargetClasses`| Array&lt;String&gt; | No | `[]` | A list of classes to apply to the dnd-zone when items can be dragged into it. Note: make sure the classes you use are global. |
 | `transformDraggedElement` | Function | No | `() => {}` | A function that is invoked when the draggable element enters the dnd-zone or hover overs a new index in the current dnd-zone. <br />Signature:<br />function(element, data, index) {}<br />**element**: The dragged element. <br />**data**: The data of the item from the items array.<br />**index**: The index the dragged element will become in the new dnd-zone.<br /><br />This allows you to override properties on the dragged element, such as innerHTML to change how it displays. If what you are after is altering styles, do it to the children, not to the dragged element itself |
-| `autoAriaDisabled` | Boolean | No | `false` | Setting it to true will disable all the automatically added aria attributes and aria alerts (for example when the user starts/ stops dragging using the keyboard).<br /> **Use it only if you intend to implement your own custom instructions, roles and alerts.** In such a case, you might find the exported function `alertToScreenReader(string)` useful. |
+| `autoAriaDisabled` | Boolean | No | `false` | Setting it to true will disable all the automatically added aria attributes and aria alerts (for example when the user starts/ stops dragging using the keyboard).<br /> **Use it only if you intend to implement your own custom instructions, roles and alerts.** In such a case, you might find the exported function `alertToScreenReader(string)` useful. <br />**If you only want to change the wording (ex: to translate it), use `setAriaStrings` instead and leave this off.** |
 | `centreDraggedOnCursor` | Boolean | No | `false` | Setting it to true will cause elements from this dnd-zone to position their center on the cursor on drag start, effectively turning the cursor to the focal point that triggers all the dnd events (ex: entering another zone). Useful for dnd-zones with large items that can be dragged over small items. |
 | `useCursorForDetection` | Boolean | No | `false` | Setting it to true will use the cursor position instead of the dragged element's center for drop zone detection. This improves accuracy when dragging large elements over small drop targets. Unlike `centreDraggedOnCursor`, this option does not reposition the dragged element. |
 | `dropAnimationDisabled` | Boolean | No | `false` | Setting it to true will disable the animation of the dropped element to its final place. |
@@ -166,6 +166,31 @@ For example:
 If you don't provide the aria-labels everything will still work, but the messages to the user will be less informative.
 _Note_: in general you probably want to use semantic-html (ex: `ol` and `li` elements rather than `section` and `div`) but the library is screen readers friendly regardless (or at least that's the goal :)).
 If you want to implement your own custom screen-reader alerts, roles and instructions, you can use the `autoAriaDisabled` options and wire everything up yourself using markup and the `consider` and `finalize` handlers (for example: [unsortable list](https://svelte.dev/playground/e020ea1051dc4ae3ac2b697064f234bc?version=3)).
+
+#### Translating the screen-reader messages
+
+`autoAriaDisabled` is all-or-nothing — it turns off the aria attributes, the roles and the instructions along with the alerts. If all you want is to change the _words_ (for example to ship the library in a language other than English), import `setAriaStrings` instead and keep everything else:
+
+```javascript
+import {setAriaStrings} from "svelte-dnd-action";
+
+setAriaStrings({
+    dragStarted: ({itemLabel, zoneLabel, canMoveBetweenZones}) =>
+        `Déplacement de ${itemLabel} commencé. Utilisez les flèches pour le déplacer dans la liste ${zoneLabel}` +
+        (canMoveBetweenZones ? `, ou tabulez vers une autre liste` : ``),
+    movedToPosition: ({itemLabel, zoneLabel, position}) => `${itemLabel} déplacé en position ${position} dans la liste ${zoneLabel}`,
+    movedToZoneEnd: ({itemLabel, zoneLabel}) => `${itemLabel} déplacé à la fin de la liste ${zoneLabel}`,
+    movedToZoneStart: ({itemLabel, zoneLabel}) => `${itemLabel} déplacé au début de la liste ${zoneLabel}`,
+    // The defaults don't say where the item landed, but the context is there if you want it
+    dropped: ({itemLabel, zoneLabel, position, count}) => `${itemLabel} déposé dans ${zoneLabel}, ${position} sur ${count}`,
+    zoneActiveInstruction: `Tabulez jusqu'à un élément et appuyez sur espace ou entrée pour le déplacer`,
+    zoneDragDisabledInstruction: `Cette liste de glisser-déposer est désactivée`
+});
+```
+
+Every key is optional — what you leave out keeps its English default. The five message keys are functions so that you control word order and pluralisation. All five receive the same context: `itemLabel` and `zoneLabel` (from the `aria-label` attributes you already provide), plus `position` and `count` — the item's 1-based seat in the zone the message is about, and how many items that zone holds. `dragStarted` additionally receives `canMoveBetweenZones`. Destructure only what your wording needs — the built-in English strings don't interpolate every field, but they are all supplied so you can word any message positionally, as the `dropped` line above does.
+
+You can call it again whenever the user changes language — the static instructions already in the DOM are re-rendered too. Each call describes a whole locale rather than patching the previous one: the overrides are merged over the English defaults, not over whatever was set last, so a key your new locale is silent about goes back to English instead of staying in the old language. Pass `null` to go back to the built-in English. Passing an unrecognised key, or a value of the wrong type for its key, throws, so mistakes surface immediately. This is global and applies to all dndzones — you can't configure two zones with different aria strings.
 
 ##### Keyboard support
 

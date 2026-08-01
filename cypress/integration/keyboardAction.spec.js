@@ -262,9 +262,7 @@ describe("keyboardAction", () => {
             second.dispatchEvent(new KeyboardEvent("keydown", {key: " ", bubbles: true, cancelable: true}));
             seen.push(alertText());
 
-            // Lifted from seat 2 of 3 and dropped into seat 3 of 3. Both are read off the live
-            // items rather than assumed, so a hardcoded position or a stale count fails here
-            // instead of passing quietly - which a single-item zone would not catch.
+            // Multiple items ensure that hardcoded positions and stale counts fail the assertion.
             expect(seen).to.deep.equal(["grab:To do:2:3", "drop:To do:3:3"]);
         });
 
@@ -287,11 +285,7 @@ describe("keyboardAction", () => {
             });
             const {zone: zoneA, children: itemsA} = createLabelledZone([{id: "a"}], "To do");
             const {zone: zoneB} = createLabelledZone([{id: "b"}], "Done");
-            // The zones otherwise have no visible content, so both would collapse to the same
-            // (0,0) top/left and handleZoneFocus's `top <`/`left <` check would never fire true
-            // either direction. Give them real, distinct layout so zoneA genuinely sits above
-            // zoneB - that's what makes the two branches (movedToZoneStart / movedToZoneEnd)
-            // actually distinguishable here.
+            // Give the zones distinct positions so both insertion branches are reachable.
             zoneA.style.height = "50px";
             zoneB.style.height = "50px";
 
@@ -339,9 +333,7 @@ describe("keyboardAction", () => {
             expect(zone.tabIndex, "the drop should have completed and restored the zone's tab index").to.equal(0);
             expect(item.tabIndex, "the drop should have completed and restored the item's tab index").to.equal(0);
 
-            // A fresh grab proves the library isn't wedged in isDragging:true - if it were, pressing
-            // space would be routed to another drop (handleKeyDown treats space-while-dragging as a
-            // drop), not a new drag-started announcement.
+            // Starting another drag verifies that the formatter error did not leave drag state active.
             setAriaStrings(null);
             grab(item);
             expect(alertText(), "a fresh grab afterwards should start a new drag rather than drop again").to.equal(
@@ -362,8 +354,7 @@ describe("keyboardAction", () => {
 
             grab(item);
 
-            // unregisterDropZone calls handleDrop synchronously when the focused zone is destroyed
-            // mid-drag; a throwing formatter must not break component teardown.
+            // Destroying the focused zone calls handleDrop synchronously; formatter errors must not interrupt teardown.
             expect(() => action.destroy()).to.not.throw();
         });
     });

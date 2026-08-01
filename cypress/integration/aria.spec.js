@@ -56,23 +56,19 @@ describe("aria strings", () => {
     });
 
     it("throws on an unknown key and names the supported ones", () => {
-        // Note: matched via substring rather than `.to.throw(/regex/)` - the Cypress version pinned in this
-        // repo (15.18.1) has a bug where chai's throw assertion never matches a RegExp errMsgMatcher, even
-        // for a bare `throw new Error(...)` with no involvement of this library's code.
+        // Cypress 15.18.1 does not match RegExp error assertions reliably, so compare substrings.
         expect(() => setAriaStrings({onDrop: () => "nope"})).to.throw("onDrop");
         expect(() => setAriaStrings({onDrop: () => "nope"})).to.throw("movedToPosition");
     });
 
     it("throws when a message key is given a non-function value", () => {
-        // A locale file missing a key would otherwise silently install `undefined`, and the screen
-        // reader would speak the literal word "undefined" on every drop.
+        // Missing translation entries often produce undefined; reject them before they can be announced.
         expect(() => setAriaStrings({dropped: undefined})).to.throw("dropped");
         expect(() => setAriaStrings({dropped: "Stopped dragging"})).to.throw("dropped");
     });
 
     it("throws when an instruction key is given a non-string value", () => {
-        // A natural mistake since the other five keys are functions - this would otherwise read the
-        // literal source text of the function aloud to every screen-reader user who tabs into a zone.
+        // Instruction keys are strings; reject formatter functions instead of exposing their source text.
         expect(() => setAriaStrings({zoneActiveInstruction: () => "Tab to an item"})).to.throw("zoneActiveInstruction");
     });
 
@@ -91,7 +87,7 @@ describe("aria strings", () => {
     });
 
     it("throws a clear error for non-object arguments instead of silently no-oping", () => {
-        // null/undefined are the legitimate "reset to defaults" signal and must keep working.
+        // null and undefined reset the active strings to their defaults.
         expect(() => setAriaStrings(42)).to.throw("42");
         expect(() => setAriaStrings([])).to.throw("setAriaStrings");
         expect(() => setAriaStrings("fr")).to.throw("setAriaStrings");
@@ -103,10 +99,7 @@ describe("aria strings", () => {
     });
 
     it("treats each call as a whole locale, not a patch on the previous one", () => {
-        // Switching locale exercises three kinds of key at once, and only the first survives a merge
-        // over the *current* table: one both locales name, one only the new locale names, and one only
-        // the old locale named. That last kind is the leak - two locale files rarely override the exact
-        // same subset, so the keys the new one is silent about would keep speaking the old language.
+        // Cover keys shared by both locales and keys supplied by only one locale.
         setAriaStrings({
             dropped: ({itemLabel}) => `${itemLabel} déposé`,
             zoneActiveInstruction: "Tabulez jusqu'à un élément et appuyez sur espace"

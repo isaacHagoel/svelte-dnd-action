@@ -115,18 +115,15 @@ export function alertToScreenReader(txt) {
 }
 
 /**
- * Overrides the strings the library speaks to screen readers. Merges over the built-in English defaults,
- * so you can translate one message without restating the rest. Each call describes a whole locale rather
- * than patching the previous one - anything a call leaves out goes back to English, so switching between
- * two partial locales can't leave keys behind speaking the old language. Can be called at any time -
- * including again on a locale change, which also re-renders the static instructions already in the DOM.
- * This is global and applies to all dndzones.
+ * Overrides the strings the library announces to screen readers. Each call starts with the built-in
+ * English defaults and applies the supplied overrides, so omitted keys return to English when the locale
+ * changes. Existing instruction elements update immediately. This setting is global to all dndzones.
  * Pass null to restore the built-in English strings.
  * @param {Object | null} overrides - any subset of: dragStarted, movedToPosition, movedToZoneEnd,
  * movedToZoneStart, dropped (functions taking a context object and returning a string);
  * zoneActiveInstruction, zoneDragDisabledInstruction (strings)
- * @throws {Error} if given something other than an object or null, an unknown key, or a value of the wrong
- * type for its key (a partially-applied table is never left behind - the whole call is validated first)
+ * @throws {Error} if overrides is not an object or null, contains an unknown key, or contains a value of
+ * the wrong type. Validation completes before the active strings change.
  */
 export function setAriaStrings(overrides) {
     if (overrides === null || overrides === undefined) {
@@ -162,11 +159,9 @@ function formatAriaString(strings, key, ctx) {
 }
 
 /**
- * Formats one of the aria strings and alerts it to the screen reader. A consumer-supplied formatter
- * (installed via setAriaStrings) is never allowed to throw out of here - this runs inside the drag
- * lifecycle (ex: handleDrop), and letting an exception escape would leave the library stuck mid-drag.
- * If the consumer's formatter throws, we fall back to the built-in default for that key (itself guarded)
- * and report the swallowed error via printDebug.
+ * Formats and announces one configured ARIA message. If a consumer formatter throws, the built-in
+ * English formatter is used and the error is reported through printDebug. Formatter errors must not
+ * escape because this function runs during the drag lifecycle.
  * @param {string} key - one of the keys accepted by setAriaStrings
  * @param {Object} [ctx] - the interpolation context for that key
  */

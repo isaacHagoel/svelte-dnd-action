@@ -1,5 +1,13 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.77](https://github.com/isaacHagoel/svelte-dnd-action/pull/698)
+
+Feature: add `setAriaStrings` for localizing the built-in screen-reader instructions and keyboard-drag announcements.
+
+-   Override any subset of messages with formatter functions that receive item, zone, position and count context.
+-   Update the document-wide locale at runtime while keeping English defaults for omitted messages.
+-   Preserve the library's existing ARIA roles and behavior without enabling `autoAriaDisabled`.
+
 ### [0.9.76](https://github.com/isaacHagoel/svelte-dnd-action/pull/695)
 
 Bugfix: include the originating drop-zone label in keyboard drag announcements so screen-reader users hear the list name from drag start and while reordering within the list.

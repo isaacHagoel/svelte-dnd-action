@@ -120,6 +120,7 @@ An options-object with the following attributes:
 | `centreDraggedOnCursor` | Boolean | No | `false` | Setting it to true will cause elements from this dnd-zone to position their center on the cursor on drag start, effectively turning the cursor to the focal point that triggers all the dnd events (ex: entering another zone). Useful for dnd-zones with large items that can be dragged over small items. |
 | `useCursorForDetection` | Boolean | No | `false` | Setting it to true will use the cursor position instead of the dragged element's center for drop zone detection. This improves accuracy when dragging large elements over small drop targets. Unlike `centreDraggedOnCursor`, this option does not reposition the dragged element. |
 | `dropAnimationDisabled` | Boolean | No | `false` | Setting it to true will disable the animation of the dropped element to its final place. |
+| `onActivate` | Function | No | `undefined` | Called with the item's id when _Enter_ is pressed on an item that is not being dragged.<br />Signature:<br />function(itemId) {}<br /><br />Supplying it hands _Enter_ to your app - for example to open the item - instead of starting a keyboard drag. The _Space_ key still starts a drag, so the zone remains keyboard-accessible. Omit it and _Enter_ keeps its default grab/drop behaviour. |
 | `delayTouchStart` | Boolean \| Number | No | `false` | Prevents accidental drags on touch devices that should have been scrolls.  
  • `true` – enable with sensible default (80 ms).  
  • `number` – custom delay in milliseconds.  
@@ -195,7 +196,7 @@ The setting is global to the document and applies to every dndzone. Different zo
 ##### Keyboard support
 
 -   Tab into a dnd container to get a description and instructions
--   Tab into an item and press the _Space_/_Enter_ key to enter dragging-mode. The reader will tell the user a drag has started.
+-   Tab into an item and press the _Space_/_Enter_ key to enter dragging-mode. The reader will tell the user a drag has started. If the zone supplies `onActivate`, _Enter_ is handed to your app instead and only _Space_ starts a drag.
 -   Use the _arrow keys_ while in dragging-mode to change the item's position in the list (down and right are the same, up and left are the same). The reader will tell the user about position changes.
 -   Tab to another dnd container while in dragging-mode in order to move the item to it (the item will be moved to it when it gets focus). The reader will tell the user that item was added to the new list.
 -   Press _Space_/_Enter_ key while focused on an item, or the _Escape_ key anywhere to exit dragging mode. The reader will tell the user that they are no longer dragging.

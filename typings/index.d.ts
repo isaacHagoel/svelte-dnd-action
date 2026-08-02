@@ -68,6 +68,12 @@ export interface Options<T extends Item = Item> {
      * Use cursor position instead of dragged element center for drop zone detection
      */
     useCursorForDetection?: boolean;
+    /**
+     * Called with the item's id when Enter is pressed on an item that is not being dragged.
+     * Supplying it hands Enter to your app (ex: open the item) instead of starting a keyboard
+     * drag; space-bar still starts one. Omit it to keep Enter's default grab/drop behaviour.
+     */
+    onActivate?: (itemId: string) => void;
 }
 
 export interface DndZoneAttributes<T> {

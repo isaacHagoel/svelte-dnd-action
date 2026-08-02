@@ -217,7 +217,8 @@ export function dndzone(node, options) {
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
-        autoAriaDisabled: false
+        autoAriaDisabled: false,
+        onActivate: undefined
     };
 
     function swap(arr, i, j) {
@@ -236,6 +237,16 @@ export function dndzone(node, options) {
                 }
                 e.preventDefault(); // preventing scrolling on spacebar
                 e.stopPropagation();
+                // Opt-in split activation: when the consumer supplies onActivate, Enter on an
+                // item that is not being dragged belongs to them (ex: open it) rather than
+                // starting a drag. Space still grabs, so keyboard dragging stays reachable and
+                // the zone stays accessible. Without onActivate, Enter keeps its stock behaviour.
+                if (e.key === "Enter" && !isDragging && config.onActivate) {
+                    const {items} = dzToConfig.get(node);
+                    const idx = Array.from(node.children).indexOf(e.currentTarget);
+                    if (idx >= 0 && items[idx]) config.onActivate(items[idx][ITEM_ID_KEY]);
+                    return;
+                }
                 if (isDragging) {
                     // TODO - should this trigger a drop? only here or in general (as in when hitting space or enter outside of any zone)?
                     handleDrop();
@@ -348,7 +359,8 @@ export function dndzone(node, options) {
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
-        autoAriaDisabled = false
+        autoAriaDisabled = false,
+        onActivate = undefined
     }) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
@@ -358,6 +370,7 @@ export function dndzone(node, options) {
         config.dropTargetStyle = dropTargetStyle;
         config.dropTargetClasses = dropTargetClasses;
         config.autoAriaDisabled = autoAriaDisabled;
+        config.onActivate = onActivate;
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
         }

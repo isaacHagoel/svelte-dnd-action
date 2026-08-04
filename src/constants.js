@@ -18,6 +18,15 @@ export const SOURCES = {
     KEYBOARD: "keyboard"
 };
 
+// Maps each valid `keyboardDragTrigger` option value to the KeyboardEvent.key values it covers.
+// Keys that are not part of the active trigger are left completely untouched by the library.
+export const KEYBOARD_DRAG_TRIGGER_KEYS = {
+    space: [" "],
+    enter: ["Enter"],
+    space_or_enter: [" ", "Enter"]
+};
+export const DEFAULT_KEYBOARD_DRAG_TRIGGER = "space_or_enter";
+
 export const SHADOW_ITEM_MARKER_PROPERTY_NAME = "isDndShadowItem";
 export const SHADOW_ELEMENT_ATTRIBUTE_NAME = "data-is-dnd-shadow-item-internal";
 export const SHADOW_ELEMENT_HINT_ATTRIBUTE_NAME = "data-is-dnd-shadow-item-hint";

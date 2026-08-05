@@ -1,4 +1,5 @@
 import {decrementActiveDropZoneCount, incrementActiveDropZoneCount, ITEM_ID_KEY, SOURCES, TRIGGERS} from "./constants";
+import {isKeyboardDragTriggerKey} from "./keyboardDragTrigger";
 import {styleActiveDropZones, styleInactiveDropZones} from "./helpers/styler";
 import {dispatchConsiderEvent, dispatchFinalizeEvent} from "./helpers/dispatcher";
 import {initAria, announceToScreenReader, destroyAria} from "./helpers/aria";
@@ -230,6 +231,10 @@ export function dndzone(node, options) {
         switch (e.key) {
             case "Enter":
             case " ": {
+                // keys outside the configured trigger belong to the consumer - don't claim them in any way
+                if (!isKeyboardDragTriggerKey(e.key)) {
+                    return;
+                }
                 // we don't want to affect nested input elements or clickable elements
                 if ((e.target.disabled !== undefined || e.target.href || e.target.isContentEditable) && !allDragTargets.has(e.target)) {
                     return;

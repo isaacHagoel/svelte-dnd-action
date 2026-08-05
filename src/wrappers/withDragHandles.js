@@ -1,4 +1,5 @@
 import {SOURCES, TRIGGERS} from "../constants";
+import {isKeyboardDragTriggerKey} from "../keyboardDragTrigger";
 import {dndzone} from "../action";
 import {createStore} from "./simpleStore";
 
@@ -104,7 +105,7 @@ export function dragHandle(handle) {
     }
 
     function handleKeyDown(e) {
-        if (e.key === "Enter" || e.key === " ") isItemsDragDisabled.set(false);
+        if (isKeyboardDragTriggerKey(e.key)) isItemsDragDisabled.set(false);
     }
 
     function resetStartDrag() {

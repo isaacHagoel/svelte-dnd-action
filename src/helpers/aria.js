@@ -1,4 +1,4 @@
-import {isOnServer, printDebug} from "../constants";
+import {DEFAULT_KEYBOARD_DRAG_TRIGGER, KEYBOARD_DRAG_TRIGGER_PHRASES, isOnServer, printDebug} from "../constants";
 import {toString} from "./util";
 
 const INSTRUCTION_IDs = {
@@ -18,14 +18,19 @@ const DEFAULT_ARIA_STRINGS = {
     movedToZoneEnd: ({itemLabel, zoneLabel}) => `Moved item ${itemLabel} to the end of the list ${zoneLabel}`,
     movedToZoneStart: ({itemLabel, zoneLabel}) => `Moved item ${itemLabel} to the beginning of the list ${zoneLabel}`,
     dropped: ({itemLabel}) => `Stopped dragging item ${itemLabel}`,
-    zoneActiveInstruction: "Tab to one the items and press space-bar or enter to start dragging it",
+    zoneActiveInstruction: ({keyboardDragTrigger}) =>
+        `Tab to one the items and press ${KEYBOARD_DRAG_TRIGGER_PHRASES[keyboardDragTrigger]} to start dragging it`,
     zoneDragDisabledInstruction: "This is a disabled drag and drop list"
 };
 
 const FUNCTION_ARIA_STRING_KEYS = ["dragStarted", "movedToPosition", "movedToZoneEnd", "movedToZoneStart", "dropped"];
-const STRING_ARIA_STRING_KEYS = ["zoneActiveInstruction", "zoneDragDisabledInstruction"];
+// zoneActiveInstruction names the key that starts a drag, so a translation may need to vary it with the trigger.
+const STRING_OR_FUNCTION_ARIA_STRING_KEYS = ["zoneActiveInstruction"];
+// zoneDragDisabledInstruction has no drag to start and thus no key to name, so it stays string-only.
+const STRING_ONLY_ARIA_STRING_KEYS = ["zoneDragDisabledInstruction"];
 
 let ariaStrings = {...DEFAULT_ARIA_STRINGS};
+let instructionCtx = {keyboardDragTrigger: DEFAULT_KEYBOARD_DRAG_TRIGGER};
 
 const ALERT_DIV_ID = "dnd-action-aria-alert";
 let alertsDiv;
@@ -53,7 +58,9 @@ function initAriaOnBrowser() {
     document.body.prepend(alertsDiv);
 
     // setting the instructions
-    Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) => document.body.prepend(instructionToHiddenDiv(id, ariaStrings[key])));
+    Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) =>
+        document.body.prepend(instructionToHiddenDiv(id, formatWithFallback(key, instructionCtx)))
+    );
 }
 
 /**
@@ -121,7 +128,10 @@ export function alertToScreenReader(txt) {
  * Pass null to restore the built-in English strings.
  * @param {Object | null} overrides - any subset of: dragStarted, movedToPosition, movedToZoneEnd,
  * movedToZoneStart, dropped (functions taking a context object and returning a string);
- * zoneActiveInstruction, zoneDragDisabledInstruction (strings)
+ * zoneActiveInstruction (a string, or a function taking {keyboardDragTrigger} and returning a string -
+ * useful because a hard-coded translation can't name the right key if the app varies the trigger);
+ * zoneDragDisabledInstruction (a string only - a disabled zone has no drag to start, so there is no key
+ * for a formatter to name)
  * @throws {Error} if overrides is not an object or null, contains an unknown key, or contains a value of
  * the wrong type. Validation completes before the active strings change.
  */
@@ -140,22 +150,53 @@ export function setAriaStrings(overrides) {
             if (FUNCTION_ARIA_STRING_KEYS.includes(key) && typeof value !== "function") {
                 throw new Error(`${key} should be a function but instead it is a ${typeof value}, ${toString(value)}`);
             }
-            if (STRING_ARIA_STRING_KEYS.includes(key) && typeof value !== "string") {
+            if (STRING_OR_FUNCTION_ARIA_STRING_KEYS.includes(key) && typeof value !== "string" && typeof value !== "function") {
+                throw new Error(`${key} should be a string or a function but instead it is a ${typeof value}, ${toString(value)}`);
+            }
+            if (STRING_ONLY_ARIA_STRING_KEYS.includes(key) && typeof value !== "string") {
                 throw new Error(`${key} should be a string but instead it is a ${typeof value}, ${toString(value)}`);
             }
         });
         ariaStrings = {...DEFAULT_ARIA_STRINGS, ...overrides};
     }
-    if (isOnServer) return;
-    Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) => {
-        const div = document.getElementById(id);
-        if (div) renderInstruction(div, ariaStrings[key]);
-    });
+    refreshInstructions();
 }
 
 function formatAriaString(strings, key, ctx) {
     const ariaString = strings[key];
     return typeof ariaString === "function" ? ariaString(ctx) : ariaString;
+}
+
+function formatWithFallback(key, ctx) {
+    try {
+        return formatAriaString(ariaStrings, key, ctx);
+    } catch (err) {
+        printDebug(() => [`aria string formatter for "${key}" threw, falling back to the default`, err]);
+        try {
+            return formatAriaString(DEFAULT_ARIA_STRINGS, key, ctx);
+        } catch (defaultErr) {
+            printDebug(() => [`default aria string formatter for "${key}" also threw`, defaultErr]);
+            return "";
+        }
+    }
+}
+
+function refreshInstructions() {
+    if (isOnServer) return;
+    Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) => {
+        const div = document.getElementById(id);
+        if (div) renderInstruction(div, formatWithFallback(key, instructionCtx));
+    });
+}
+
+/**
+ * Sets the context the static instruction formatters receive, and re-renders them. Internal - the
+ * public entry point is setKeyboardDragTrigger.
+ * @param {{keyboardDragTrigger: "space"|"enter"|"space_or_enter"}} ctx
+ */
+export function setInstructionContext(ctx) {
+    instructionCtx = {...ctx};
+    refreshInstructions();
 }
 
 /**
@@ -166,17 +207,5 @@ function formatAriaString(strings, key, ctx) {
  * @param {Object} [ctx] - the interpolation context for that key
  */
 export function announceToScreenReader(key, ctx) {
-    let text;
-    try {
-        text = formatAriaString(ariaStrings, key, ctx);
-    } catch (err) {
-        printDebug(() => [`aria string formatter for "${key}" threw, falling back to the default`, err]);
-        try {
-            text = formatAriaString(DEFAULT_ARIA_STRINGS, key, ctx);
-        } catch (defaultErr) {
-            printDebug(() => [`default aria string formatter for "${key}" also threw`, defaultErr]);
-            text = "";
-        }
-    }
-    alertToScreenReader(text);
+    alertToScreenReader(formatWithFallback(key, ctx));
 }

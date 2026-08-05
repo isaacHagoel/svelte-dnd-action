@@ -165,12 +165,38 @@ If you don't provide the aria-labels everything will still work, but the message
 _Note_: in general you probably want to use semantic-html (ex: `ol` and `li` elements rather than `section` and `div`) but the library is screen readers friendly regardless (or at least that's the goal :)).
 If you want to implement your own custom screen-reader alerts, roles and instructions, you can use the `autoAriaDisabled` options and wire everything up yourself using markup and the `consider` and `finalize` handlers (for example: [unsortable list](https://svelte.dev/playground/e020ea1051dc4ae3ac2b697064f234bc?version=3)).
 
+#### Choosing the keyboard drag trigger
+
+By default both _Space_ and _Enter_ start and stop a keyboard drag. If your app needs one of
+those keys for something else - ex: _Enter_ to open or edit the focused item - narrow the trigger:
+
+```javascript
+import {setKeyboardDragTrigger} from "svelte-dnd-action";
+
+setKeyboardDragTrigger("space");
+```
+
+Accepted values are `"space"`, `"enter"` and `"space_or_enter"` (the default). Pass `null` or
+`undefined` (or call with no argument) to restore the default. Any other value throws.
+
+Keys outside the trigger are never claimed. _Escape_ still ends a drag under every trigger.
+
+The setting is global to the document and applies to every dndzone; different zones cannot use
+different triggers at the same time. It can be called at any time, including after the zones have
+rendered. The built-in screen-reader instruction follows it automatically.
+
 #### Translating the screen-reader messages
 
 `autoAriaDisabled` disables all automatically added ARIA attributes, roles, instructions and alerts. If you only want to translate the screen-reader wording, import `setAriaStrings` and leave `autoAriaDisabled` off:
 
 ```javascript
 import {setAriaStrings} from "svelte-dnd-action";
+
+const instructionsParTouche = {
+    space: `Tabulez jusqu'à un élément et appuyez sur espace pour le déplacer`,
+    enter: `Tabulez jusqu'à un élément et appuyez sur entrée pour le déplacer`,
+    space_or_enter: `Tabulez jusqu'à un élément et appuyez sur espace ou entrée pour le déplacer`
+};
 
 setAriaStrings({
     dragStarted: ({itemLabel, zoneLabel, canMoveBetweenZones}) =>
@@ -181,12 +207,20 @@ setAriaStrings({
     movedToZoneStart: ({itemLabel, zoneLabel}) => `${itemLabel} déplacé au début de la liste ${zoneLabel}`,
     // The default message omits the destination, but custom messages can include it
     dropped: ({itemLabel, zoneLabel, position, count}) => `${itemLabel} déposé dans ${zoneLabel}, ${position} sur ${count}`,
-    zoneActiveInstruction: `Tabulez jusqu'à un élément et appuyez sur espace ou entrée pour le déplacer`,
+    zoneActiveInstruction: ({keyboardDragTrigger}) => instructionsParTouche[keyboardDragTrigger],
     zoneDragDisabledInstruction: `Cette liste de glisser-déposer est désactivée`
 });
 ```
 
-Every key is optional. Omitted keys use their English defaults. The five announcement keys are formatter functions, so translations can control word order and pluralisation. Each formatter receives `itemLabel` and `zoneLabel` from the consumer-provided `aria-label` attributes, plus `position` and `count` for the item's 1-based position and the number of items in the relevant zone. `dragStarted` also receives `canMoveBetweenZones`. Destructure only the fields your wording needs; the built-in English messages do not use every field, but custom messages can.
+Every key is optional. Omitted keys use their English defaults. The five announcement keys are formatter
+functions, so translations can control word order and pluralisation. Each formatter receives `itemLabel`
+and `zoneLabel` from the consumer-provided `aria-label` attributes, plus `position` and `count` for the
+item's 1-based position and the number of items in the relevant zone. `dragStarted` also receives
+`canMoveBetweenZones`. Destructure only the fields your wording needs; the built-in English messages do not
+use every field, but custom messages can.
+
+`zoneActiveInstruction` takes a string or a formatter receiving the value set through
+[`setKeyboardDragTrigger`](#choosing-the-keyboard-drag-trigger).
 
 Call `setAriaStrings` during app-level initialization and again whenever the application locale changes. Each call defines the complete active locale by applying its overrides to the English defaults, so omitted keys return to English rather than retaining values from the previous locale. Existing instruction elements update immediately. Pass `null` to restore all English defaults. Unknown keys and values of the wrong type throw an error.
 
@@ -195,10 +229,10 @@ The setting is global to the document and applies to every dndzone. Different zo
 ##### Keyboard support
 
 -   Tab into a dnd container to get a description and instructions
--   Tab into an item and press the _Space_/_Enter_ key to enter dragging-mode. The reader will tell the user a drag has started.
+-   Tab into an item and press the _Space_/_Enter_ key to enter dragging-mode (see `setKeyboardDragTrigger` to narrow this to one key). The reader will tell the user a drag has started.
 -   Use the _arrow keys_ while in dragging-mode to change the item's position in the list (down and right are the same, up and left are the same). The reader will tell the user about position changes.
 -   Tab to another dnd container while in dragging-mode in order to move the item to it (the item will be moved to it when it gets focus). The reader will tell the user that item was added to the new list.
--   Press _Space_/_Enter_ key while focused on an item, or the _Escape_ key anywhere to exit dragging mode. The reader will tell the user that they are no longer dragging.
+-   Press the drag-trigger key while focused on an item, or the _Escape_ key anywhere to exit dragging mode. The reader will tell the user that they are no longer dragging.
 -   Clicking on another item while in drag mode will make it the new drag target. Clicking outside of any draggable will exit dragging-mode (and tell the user)
 -   Mouse drag and drop can be preformed independently of keyboard dragging (as in an item can be dragged with the mouse while in or out of keyboard initiated dragging-mode)
 -   Keyboard drag uses the same `consider` (only on drag start) and `finalize` (every time the item is moved) events but share only some of the `TRIGGERS`. The same handlers should work fine for both.

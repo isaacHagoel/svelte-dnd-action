@@ -68,12 +68,6 @@ export interface Options<T extends Item = Item> {
      * Use cursor position instead of dragged element center for drop zone detection
      */
     useCursorForDetection?: boolean;
-    /**
-     * Which key(s) on a focused item start and stop a keyboard drag. Keys outside the trigger are
-     * left completely untouched (no preventDefault/stopPropagation), so the app can use them -
-     * ex: "space" keeps Enter free to activate the focused item. Defaults to "space_or_enter".
-     */
-    keyboardDragTrigger?: "space" | "enter" | "space_or_enter";
 }
 
 export interface DndZoneAttributes<T> {

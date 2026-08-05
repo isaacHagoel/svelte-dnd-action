@@ -1,14 +1,10 @@
-import {DEFAULT_KEYBOARD_DRAG_TRIGGER, KEYBOARD_DRAG_TRIGGER_KEYS, SOURCES, TRIGGERS} from "../constants";
+import {SOURCES, TRIGGERS} from "../constants";
+import {isKeyboardDragTriggerKey} from "../keyboardDragTrigger";
 import {dndzone} from "../action";
 import {createStore} from "./simpleStore";
 
 const isItemsDragDisabled = createStore(true);
 const userDragDisabled = createStore(false);
-
-// mirrors the zone's keyboardDragTrigger option so dragHandle, which has no access to the
-// zone's options, doesn't unlock dragging on a key the zone will not grab with.
-// Module-level like the stores above, so it shares their known one-zone-at-a-time limitation.
-let currentKeyboardDragTrigger = DEFAULT_KEYBOARD_DRAG_TRIGGER;
 
 function getAddedOptions() {
     return {
@@ -36,9 +32,6 @@ export function dragHandleZone(node, options) {
         ...currentOptions,
         ...getAddedOptions()
     });
-
-    // Only update the mirror after dndzone validates the keyboardDragTrigger option
-    currentKeyboardDragTrigger = options?.keyboardDragTrigger ?? DEFAULT_KEYBOARD_DRAG_TRIGGER;
 
     function updateZone() {
         zone.update({
@@ -83,8 +76,6 @@ export function dragHandleZone(node, options) {
             // keep store in sync with external prop
             userDragDisabled.set(currentOptions?.dragDisabled ?? false);
             updateZone();
-            // Only update the mirror after updateZone validates the keyboardDragTrigger option
-            currentKeyboardDragTrigger = currentOptions?.keyboardDragTrigger ?? DEFAULT_KEYBOARD_DRAG_TRIGGER;
         },
         destroy: () => {
             zone.destroy();
@@ -114,7 +105,7 @@ export function dragHandle(handle) {
     }
 
     function handleKeyDown(e) {
-        if (KEYBOARD_DRAG_TRIGGER_KEYS[currentKeyboardDragTrigger].includes(e.key)) isItemsDragDisabled.set(false);
+        if (isKeyboardDragTriggerKey(e.key)) isItemsDragDisabled.set(false);
     }
 
     function resetStartDrag() {

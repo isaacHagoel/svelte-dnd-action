@@ -1,12 +1,5 @@
-import {
-    decrementActiveDropZoneCount,
-    incrementActiveDropZoneCount,
-    DEFAULT_KEYBOARD_DRAG_TRIGGER,
-    ITEM_ID_KEY,
-    KEYBOARD_DRAG_TRIGGER_KEYS,
-    SOURCES,
-    TRIGGERS
-} from "./constants";
+import {decrementActiveDropZoneCount, incrementActiveDropZoneCount, ITEM_ID_KEY, SOURCES, TRIGGERS} from "./constants";
+import {isKeyboardDragTriggerKey} from "./keyboardDragTrigger";
 import {styleActiveDropZones, styleInactiveDropZones} from "./helpers/styler";
 import {dispatchConsiderEvent, dispatchFinalizeEvent} from "./helpers/dispatcher";
 import {initAria, announceToScreenReader, destroyAria} from "./helpers/aria";
@@ -225,8 +218,7 @@ export function dndzone(node, options) {
         dropFromOthersDisabled: false,
         dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses: [],
-        autoAriaDisabled: false,
-        keyboardDragTrigger: DEFAULT_KEYBOARD_DRAG_TRIGGER
+        autoAriaDisabled: false
     };
 
     function swap(arr, i, j) {
@@ -240,7 +232,7 @@ export function dndzone(node, options) {
             case "Enter":
             case " ": {
                 // keys outside the configured trigger belong to the consumer - don't claim them in any way
-                if (!KEYBOARD_DRAG_TRIGGER_KEYS[config.keyboardDragTrigger].includes(e.key)) {
+                if (!isKeyboardDragTriggerKey(e.key)) {
                     return;
                 }
                 // we don't want to affect nested input elements or clickable elements
@@ -361,8 +353,7 @@ export function dndzone(node, options) {
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
         dropTargetClasses = [],
-        autoAriaDisabled = false,
-        keyboardDragTrigger = DEFAULT_KEYBOARD_DRAG_TRIGGER
+        autoAriaDisabled = false
     }) {
         config.items = [...items];
         config.dragDisabled = dragDisabled;
@@ -372,7 +363,6 @@ export function dndzone(node, options) {
         config.dropTargetStyle = dropTargetStyle;
         config.dropTargetClasses = dropTargetClasses;
         config.autoAriaDisabled = autoAriaDisabled;
-        config.keyboardDragTrigger = keyboardDragTrigger;
         if (config.type && newType !== config.type) {
             unregisterDropZone(node, config.type);
         }

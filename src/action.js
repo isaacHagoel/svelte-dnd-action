@@ -1,6 +1,6 @@
 import {dndzone as pointerDndZone} from "./pointerAction";
 import {dndzone as keyboardDndZone} from "./keyboardAction";
-import {ITEM_ID_KEY, KEYBOARD_DRAG_TRIGGER_KEYS, SHADOW_ELEMENT_HINT_ATTRIBUTE_NAME} from "./constants";
+import {ITEM_ID_KEY, SHADOW_ELEMENT_HINT_ATTRIBUTE_NAME} from "./constants";
 import {toString} from "./helpers/util";
 
 /**
@@ -23,7 +23,6 @@ import {toString} from "./helpers/util";
  * @property {boolean|number} [delayTouchStart] - On touch devices, wait this long before converting the gesture to a drag.
  * `true` uses the built-in default (80 ms).
  * @property {boolean} [dropAnimationDisabled] - cancels the drop animation to place
- * @property {"space"|"enter"|"space_or_enter"} [keyboardDragTrigger] - which key(s) start and stop a keyboard drag on a focused item; keys outside the trigger are left untouched for the app. Defaults to "space_or_enter"
  * @property {function} [transformDraggedElement]
  * @param {HTMLElement} node - the element to enhance
  * @param {Options} options
@@ -81,7 +80,6 @@ function validateOptions(options) {
         useCursorForDetection,
         delayTouchStart,
         dropAnimationDisabled,
-        keyboardDragTrigger,
         ...rest
     } = options;
     /*eslint-enable*/
@@ -114,13 +112,6 @@ function validateOptions(options) {
                 )}`
             );
         }
-    }
-    if (keyboardDragTrigger !== undefined && !{}.hasOwnProperty.call(KEYBOARD_DRAG_TRIGGER_KEYS, keyboardDragTrigger)) {
-        throw new Error(
-            `keyboardDragTrigger should be one of ${Object.keys(KEYBOARD_DRAG_TRIGGER_KEYS)
-                .map(key => `"${key}"`)
-                .join(", ")} but instead it is a ${typeof keyboardDragTrigger}, ${toString(keyboardDragTrigger)}`
-        );
     }
 }
 

@@ -22,7 +22,8 @@ export function svelteNodeClone(el) {
         for (let i = 0; i < clonedSelects.length; i++) {
             const select = clonedSelects[i];
             const value = values[i];
-            const optionEl = select.querySelector(`option[value="${value}"`);
+            const options = [...select.querySelectorAll("option")];
+            const optionEl = options.find((option) => option.value === value);
             if (optionEl) {
                 optionEl.setAttribute("selected", true);
             }

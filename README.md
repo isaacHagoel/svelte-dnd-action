@@ -192,6 +192,12 @@ rendered. The built-in screen-reader instruction follows it automatically.
 ```javascript
 import {setAriaStrings} from "svelte-dnd-action";
 
+const instructionsParTouche = {
+    space: `Tabulez jusqu'à un élément et appuyez sur espace pour le déplacer`,
+    enter: `Tabulez jusqu'à un élément et appuyez sur entrée pour le déplacer`,
+    space_or_enter: `Tabulez jusqu'à un élément et appuyez sur espace ou entrée pour le déplacer`
+};
+
 setAriaStrings({
     dragStarted: ({itemLabel, zoneLabel, canMoveBetweenZones}) =>
         `Déplacement de ${itemLabel} commencé. Utilisez les flèches pour le déplacer dans la liste ${zoneLabel}` +
@@ -201,12 +207,20 @@ setAriaStrings({
     movedToZoneStart: ({itemLabel, zoneLabel}) => `${itemLabel} déplacé au début de la liste ${zoneLabel}`,
     // The default message omits the destination, but custom messages can include it
     dropped: ({itemLabel, zoneLabel, position, count}) => `${itemLabel} déposé dans ${zoneLabel}, ${position} sur ${count}`,
-    zoneActiveInstruction: `Tabulez jusqu'à un élément et appuyez sur espace ou entrée pour le déplacer`,
+    zoneActiveInstruction: ({keyboardDragTrigger}) => instructionsParTouche[keyboardDragTrigger],
     zoneDragDisabledInstruction: `Cette liste de glisser-déposer est désactivée`
 });
 ```
 
-Every key is optional. Omitted keys use their English defaults. The five announcement keys are formatter functions, so translations can control word order and pluralisation. Each formatter receives `itemLabel` and `zoneLabel` from the consumer-provided `aria-label` attributes, plus `position` and `count` for the item's 1-based position and the number of items in the relevant zone. `dragStarted` also receives `canMoveBetweenZones`. Destructure only the fields your wording needs; the built-in English messages do not use every field, but custom messages can.
+Every key is optional. Omitted keys use their English defaults. The five announcement keys are formatter
+functions, so translations can control word order and pluralisation. Each formatter receives `itemLabel`
+and `zoneLabel` from the consumer-provided `aria-label` attributes, plus `position` and `count` for the
+item's 1-based position and the number of items in the relevant zone. `dragStarted` also receives
+`canMoveBetweenZones`. Destructure only the fields your wording needs; the built-in English messages do not
+use every field, but custom messages can.
+
+`zoneActiveInstruction` takes a string or a formatter receiving the value set through
+[`setKeyboardDragTrigger`](#choosing-the-keyboard-drag-trigger).
 
 Call `setAriaStrings` during app-level initialization and again whenever the application locale changes. Each call defines the complete active locale by applying its overrides to the English defaults, so omitted keys return to English rather than retaining values from the previous locale. Existing instruction elements update immediately. Pass `null` to restore all English defaults. Unknown keys and values of the wrong type throw an error.
 

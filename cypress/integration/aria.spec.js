@@ -1,4 +1,5 @@
 import {initAria, destroyAria, setAriaStrings, announceToScreenReader} from "../../src/helpers/aria";
+import {setKeyboardDragTrigger} from "../../src/keyboardDragTrigger";
 
 describe("aria strings", () => {
     const ALERT_DIV_ID = "dnd-action-aria-alert";
@@ -15,6 +16,7 @@ describe("aria strings", () => {
 
     afterEach(() => {
         setAriaStrings(null);
+        setKeyboardDragTrigger(null);
         destroyAria();
     });
 
@@ -67,9 +69,10 @@ describe("aria strings", () => {
         expect(() => setAriaStrings({dropped: "Stopped dragging"})).to.throw("dropped");
     });
 
-    it("throws when an instruction key is given a non-string value", () => {
-        // Instruction keys are strings; reject formatter functions instead of exposing their source text.
-        expect(() => setAriaStrings({zoneActiveInstruction: () => "Tab to an item"})).to.throw("zoneActiveInstruction");
+    it("throws when zoneActiveInstruction is given neither a string nor a function", () => {
+        // zoneActiveInstruction accepts a string or a formatter; everything else is a missing/mistyped translation.
+        expect(() => setAriaStrings({zoneActiveInstruction: undefined})).to.throw("zoneActiveInstruction");
+        expect(() => setAriaStrings({zoneActiveInstruction: 42})).to.throw("zoneActiveInstruction");
     });
 
     it("leaves the string table untouched when a value fails validation", () => {
@@ -78,7 +81,7 @@ describe("aria strings", () => {
         expect(() =>
             setAriaStrings({
                 dropped: ({itemLabel}) => `${itemLabel} abgelegt`,
-                zoneActiveInstruction: () => "not a string"
+                zoneActiveInstruction: 42
             })
         ).to.throw("zoneActiveInstruction");
 
@@ -144,5 +147,64 @@ describe("aria strings", () => {
         const div = document.getElementById(ZONE_ACTIVE_ID);
         expect(div.querySelectorAll("img").length, "should not build elements from the string").to.equal(0);
         expect(div.textContent).to.equal("<img src=x onerror=alert(1)> press space");
+    });
+
+    it("phrases the default instruction to match the active trigger", () => {
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal(
+            "Tab to one the items and press space-bar or enter to start dragging it"
+        );
+
+        setKeyboardDragTrigger("space");
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal("Tab to one the items and press space-bar to start dragging it");
+
+        setKeyboardDragTrigger("enter");
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal("Tab to one the items and press enter to start dragging it");
+
+        setKeyboardDragTrigger(null);
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal(
+            "Tab to one the items and press space-bar or enter to start dragging it"
+        );
+    });
+
+    it("gives instruction formatters the configured trigger", () => {
+        const seen = [];
+        setAriaStrings({
+            zoneActiveInstruction: ({keyboardDragTrigger}) => {
+                seen.push(keyboardDragTrigger);
+                return `appuyez sur ${keyboardDragTrigger}`;
+            }
+        });
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal("appuyez sur space_or_enter");
+
+        setKeyboardDragTrigger("space");
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent, "a formatter should re-render on a trigger change").to.equal(
+            "appuyez sur space"
+        );
+        expect(seen, "the context should carry the configured mode, never a pressed key").to.deep.equal(["space_or_enter", "space"]);
+    });
+
+    it("keeps rendering a plain-string instruction override verbatim", () => {
+        // setAriaStrings shipped with string-only instructions; that has to keep working untouched.
+        setAriaStrings({zoneActiveInstruction: "Tabulez jusqu'à un élément et appuyez sur espace"});
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal("Tabulez jusqu'à un élément et appuyez sur espace");
+
+        setKeyboardDragTrigger("enter");
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent, "a string override is the consumer's business, not ours").to.equal(
+            "Tabulez jusqu'à un élément et appuyez sur espace"
+        );
+    });
+
+    it("falls back to the English default when an instruction formatter throws", () => {
+        // instructions render during zone init, so an escaping error would break more than an announcement
+        expect(() =>
+            setAriaStrings({
+                zoneActiveInstruction: () => {
+                    throw new Error("boom");
+                }
+            })
+        ).to.not.throw();
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal(
+            "Tab to one the items and press space-bar or enter to start dragging it"
+        );
     });
 });

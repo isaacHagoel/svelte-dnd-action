@@ -1,5 +1,6 @@
 import {DEFAULT_KEYBOARD_DRAG_TRIGGER, KEYBOARD_DRAG_TRIGGER_KEYS} from "./constants";
 import {toString} from "./helpers/util";
+import {setInstructionContext} from "./helpers/aria";
 
 let activeTrigger = DEFAULT_KEYBOARD_DRAG_TRIGGER;
 
@@ -15,16 +16,16 @@ let activeTrigger = DEFAULT_KEYBOARD_DRAG_TRIGGER;
 export function setKeyboardDragTrigger(trigger) {
     if (trigger === null || trigger === undefined) {
         activeTrigger = DEFAULT_KEYBOARD_DRAG_TRIGGER;
-        return;
-    }
-    if (typeof trigger !== "string" || !Object.prototype.hasOwnProperty.call(KEYBOARD_DRAG_TRIGGER_KEYS, trigger)) {
+    } else if (typeof trigger !== "string" || !Object.prototype.hasOwnProperty.call(KEYBOARD_DRAG_TRIGGER_KEYS, trigger)) {
         throw new Error(
             `setKeyboardDragTrigger expects one of ${Object.keys(KEYBOARD_DRAG_TRIGGER_KEYS)
                 .map(key => `"${key}"`)
                 .join(", ")} or null but instead got a ${typeof trigger}, ${toString(trigger)}`
         );
+    } else {
+        activeTrigger = trigger;
     }
-    activeTrigger = trigger;
+    setInstructionContext({keyboardDragTrigger: activeTrigger});
 }
 
 /**

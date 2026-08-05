@@ -90,7 +90,7 @@ export interface AriaStrings {
     movedToZoneEnd?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     movedToZoneStart?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     dropped?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
-    zoneActiveInstruction?: string;
+    zoneActiveInstruction?: string | ((ctx: {keyboardDragTrigger: "space" | "enter" | "space_or_enter"}) => string);
     zoneDragDisabledInstruction?: string;
 }
 

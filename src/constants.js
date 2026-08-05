@@ -18,8 +18,9 @@ export const SOURCES = {
     KEYBOARD: "keyboard"
 };
 
-// Maps each valid `keyboardDragTrigger` option value to the KeyboardEvent.key values it covers.
-// Keys that are not part of the active trigger are left completely untouched by the library.
+// Maps each valid global keyboardDragTrigger value (see setKeyboardDragTrigger) to the
+// KeyboardEvent.key values it covers. Keys that are not part of the active trigger are left
+// completely untouched by the library.
 export const KEYBOARD_DRAG_TRIGGER_KEYS = {
     space: [" "],
     enter: ["Enter"],

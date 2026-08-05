@@ -4,6 +4,7 @@ import {TRIGGERS} from "../../src/constants";
 import {dragHandle, dragHandleZone} from "../../src/wrappers/withDragHandles";
 import {getKeyboardDragTrigger, isKeyboardDragTriggerKey, setKeyboardDragTrigger} from "../../src/keyboardDragTrigger";
 import * as publicApi from "../../src/index";
+import {destroyAria, initAria} from "../../src/helpers/aria";
 
 describe("keyboardDragTrigger", () => {
     const actions = [];
@@ -235,6 +236,18 @@ describe("keyboardDragTrigger", () => {
         it("is exported from the package entry point", () => {
             // guards against the module existing but never being re-exported
             expect(publicApi.setKeyboardDragTrigger).to.equal(setKeyboardDragTrigger);
+        });
+
+        it("updates the rendered screen-reader instruction", () => {
+            initAria();
+            try {
+                setKeyboardDragTrigger("space");
+                expect(document.getElementById("dnd-zone-active").textContent).to.equal(
+                    "Tab to one the items and press space-bar to start dragging it"
+                );
+            } finally {
+                destroyAria();
+            }
         });
     });
 

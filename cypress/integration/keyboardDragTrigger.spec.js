@@ -2,6 +2,8 @@ import {dndzone} from "../../src/keyboardAction";
 import {dndzone as fullDndzone} from "../../src/action";
 import {TRIGGERS} from "../../src/constants";
 import {dragHandle, dragHandleZone} from "../../src/wrappers/withDragHandles";
+import {getKeyboardDragTrigger, isKeyboardDragTriggerKey, setKeyboardDragTrigger} from "../../src/keyboardDragTrigger";
+import * as publicApi from "../../src/index";
 
 describe("keyboardDragTrigger", () => {
     const actions = [];
@@ -137,27 +139,67 @@ describe("keyboardDragTrigger", () => {
         });
     });
 
-    describe("option validation", () => {
-        it("rejects a value that is not one of the documented strings", () => {
-            const zone = document.createElement("div");
-            document.body.appendChild(zone);
-            zones.push(zone);
-            expect(() => fullDndzone(zone, {items: [], keyboardDragTrigger: "shift"})).to.throw("keyboardDragTrigger");
-            expect(() => fullDndzone(zone, {items: [], keyboardDragTrigger: "constructor"})).to.throw("keyboardDragTrigger");
+    describe("setKeyboardDragTrigger", () => {
+        afterEach(() => {
+            setKeyboardDragTrigger(null);
         });
 
-        it("accepts every documented value without warning about unknown options", () => {
-            const originalWarn = console.warn;
-            const warnings = [];
-            console.warn = (...args) => warnings.push(args);
-            try {
-                ["space", "enter", "space_or_enter", undefined].forEach(keyboardDragTrigger => {
-                    createZone([], {keyboardDragTrigger}, fullDndzone);
-                });
-            } finally {
-                console.warn = originalWarn;
-            }
-            expect(warnings).to.deep.equal([]);
+        it("defaults to space_or_enter", () => {
+            expect(getKeyboardDragTrigger()).to.equal("space_or_enter");
+            expect(isKeyboardDragTriggerKey(" ")).to.equal(true);
+            expect(isKeyboardDragTriggerKey("Enter")).to.equal(true);
+        });
+
+        it("narrows the keys it claims to the configured trigger", () => {
+            setKeyboardDragTrigger("space");
+            expect(getKeyboardDragTrigger()).to.equal("space");
+            expect(isKeyboardDragTriggerKey(" ")).to.equal(true);
+            expect(isKeyboardDragTriggerKey("Enter")).to.equal(false);
+
+            setKeyboardDragTrigger("enter");
+            expect(isKeyboardDragTriggerKey(" ")).to.equal(false);
+            expect(isKeyboardDragTriggerKey("Enter")).to.equal(true);
+        });
+
+        it("never claims a key outside the trigger vocabulary", () => {
+            setKeyboardDragTrigger("space_or_enter");
+            expect(isKeyboardDragTriggerKey("Escape")).to.equal(false);
+            expect(isKeyboardDragTriggerKey("ArrowDown")).to.equal(false);
+        });
+
+        it("restores the default when passed null or undefined", () => {
+            setKeyboardDragTrigger("enter");
+            setKeyboardDragTrigger(null);
+            expect(getKeyboardDragTrigger()).to.equal("space_or_enter");
+
+            setKeyboardDragTrigger("enter");
+            setKeyboardDragTrigger(undefined);
+            expect(getKeyboardDragTrigger()).to.equal("space_or_enter");
+        });
+
+        it("rejects values that are not one of the documented strings", () => {
+            // Cypress 15.18.1 does not match RegExp error assertions reliably, so compare substrings.
+            expect(() => setKeyboardDragTrigger("shift")).to.throw("setKeyboardDragTrigger");
+            expect(() => setKeyboardDragTrigger("shift")).to.throw("space_or_enter");
+            expect(() => setKeyboardDragTrigger("SPACE")).to.throw("setKeyboardDragTrigger");
+            expect(() => setKeyboardDragTrigger(0)).to.throw("setKeyboardDragTrigger");
+            expect(() => setKeyboardDragTrigger({})).to.throw("setKeyboardDragTrigger");
+        });
+
+        it("rejects prototype key names rather than treating them as valid triggers", () => {
+            expect(() => setKeyboardDragTrigger("constructor")).to.throw("setKeyboardDragTrigger");
+            expect(() => setKeyboardDragTrigger("toString")).to.throw("setKeyboardDragTrigger");
+        });
+
+        it("leaves the active trigger untouched when a call fails validation", () => {
+            setKeyboardDragTrigger("space");
+            expect(() => setKeyboardDragTrigger("shift")).to.throw("setKeyboardDragTrigger");
+            expect(getKeyboardDragTrigger()).to.equal("space");
+        });
+
+        it("is exported from the package entry point", () => {
+            // guards against the module existing but never being re-exported
+            expect(publicApi.setKeyboardDragTrigger).to.equal(setKeyboardDragTrigger);
         });
     });
 

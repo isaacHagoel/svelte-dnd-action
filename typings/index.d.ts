@@ -110,6 +110,15 @@ export interface AriaStrings {
 export declare function setAriaStrings(overrides: AriaStrings | null): void;
 
 /**
+ * Chooses which key(s) start and stop a keyboard drag on a focused item. Keys outside the trigger are left
+ * completely untouched by the library, so the app can use them - ex: "space" keeps Enter free to activate the
+ * focused item. This is global and applies to all dndzones. It can be called at any time.
+ * Pass null to restore the default, "space_or_enter".
+ * @throws {Error} if given anything other than the documented values or null
+ */
+export declare function setKeyboardDragTrigger(trigger: "space" | "enter" | "space_or_enter" | null): void;
+
+/**
  * Allows using another key instead of "id" in the items data. This is global and applies to all dndzones.
  * Has to be called when there are no rendered dndzones whatsoever.
  * @throws {Error} if it was called when there are rendered dndzones or if it is given the wrong type (not a string)

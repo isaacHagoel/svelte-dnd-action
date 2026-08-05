@@ -1,6 +1,7 @@
 export {dndzone} from "./action.js";
 export {dragHandleZone, dragHandle} from "./wrappers/withDragHandles";
 export {alertToScreenReader, setAriaStrings} from "./helpers/aria";
+export {setKeyboardDragTrigger} from "./keyboardDragTrigger";
 export {
     TRIGGERS,
     SOURCES,

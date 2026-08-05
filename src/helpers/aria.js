@@ -1,4 +1,4 @@
-import {DEFAULT_KEYBOARD_DRAG_TRIGGER, isOnServer, printDebug} from "../constants";
+import {DEFAULT_KEYBOARD_DRAG_TRIGGER, KEYBOARD_DRAG_TRIGGER_PHRASES, isOnServer, printDebug} from "../constants";
 import {toString} from "./util";
 
 const INSTRUCTION_IDs = {
@@ -8,13 +8,6 @@ const INSTRUCTION_IDs = {
 const INSTRUCTION_ID_TO_STRING_KEY = {
     [INSTRUCTION_IDs.DND_ZONE_ACTIVE]: "zoneActiveInstruction",
     [INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED]: "zoneDragDisabledInstruction"
-};
-
-// The instruction has to name the key(s) the library actually claims - see setKeyboardDragTrigger.
-const KEYBOARD_DRAG_TRIGGER_PHRASES = {
-    space: "space-bar",
-    enter: "enter",
-    space_or_enter: "space-bar or enter"
 };
 
 const DEFAULT_ARIA_STRINGS = {

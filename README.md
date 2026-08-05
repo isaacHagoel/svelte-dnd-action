@@ -176,8 +176,8 @@ import {setKeyboardDragTrigger} from "svelte-dnd-action";
 setKeyboardDragTrigger("space");
 ```
 
-Accepted values are `"space"`, `"enter"` and `"space_or_enter"` (the default). Pass `null` to
-restore the default. Any other value throws.
+Accepted values are `"space"`, `"enter"` and `"space_or_enter"` (the default). Pass `null` or
+`undefined` (or call with no argument) to restore the default. Any other value throws.
 
 Keys outside the trigger are never claimed. _Escape_ still ends a drag under every trigger.
 

@@ -159,6 +159,40 @@ describe("keyboardDragTrigger", () => {
             expect(triggers).to.deep.equal([TRIGGERS.DRAG_STARTED]);
         });
 
+        it("keeps the configured trigger for an item a consumer moves into another zone", () => {
+            setKeyboardDragTrigger("space");
+            const {
+                zone: zoneA,
+                action: actionA,
+                children: [itemA]
+            } = createZone([{id: "a"}, {id: "b"}]);
+            const {zone: zoneB, action: actionB} = createZone([]);
+            const triggersB = recordTriggers(zoneB);
+
+            itemA.focus();
+            press(itemA, " ");
+
+            // simulate a consumer's finalize handler moving the grabbed item into zoneB
+            zoneA.removeChild(itemA);
+            zoneB.appendChild(itemA);
+            actionA.update({items: [{id: "b"}]});
+            actionB.update({items: [{id: "a"}]});
+
+            expect(document.activeElement, "should keep the moved item focused").to.equal(itemA);
+
+            let bubbledEvent;
+            const bodyListener = e => (bubbledEvent = e);
+            document.body.addEventListener("keydown", bodyListener);
+            const enterEvent = press(itemA, "Enter");
+            document.body.removeEventListener("keydown", bodyListener);
+            expect(triggersB, "Enter should still be left untouched in the new zone").to.deep.equal([]);
+            expect(enterEvent.defaultPrevented).to.equal(false);
+            expect(bubbledEvent, "the event should propagate past the new zone").to.equal(enterEvent);
+
+            press(itemA, " ");
+            expect(triggersB, "Space should still drop the item in the new zone").to.deep.equal([TRIGGERS.DRAG_STOPPED]);
+        });
+
         it("no longer accepts keyboardDragTrigger as a zone option", () => {
             // validateOptions warns as `console.warn("dndzone will ignore unknown options", rest)`,
             // so the option name is a key of the second argument, not part of the message string.
@@ -176,10 +210,6 @@ describe("keyboardDragTrigger", () => {
     });
 
     describe("setKeyboardDragTrigger", () => {
-        afterEach(() => {
-            setKeyboardDragTrigger(null);
-        });
-
         it("defaults to space_or_enter", () => {
             expect(getKeyboardDragTrigger()).to.equal("space_or_enter");
             expect(isKeyboardDragTriggerKey(" ")).to.equal(true);
@@ -242,6 +272,20 @@ describe("keyboardDragTrigger", () => {
             initAria();
             try {
                 setKeyboardDragTrigger("space");
+                expect(document.getElementById("dnd-zone-active").textContent).to.equal(
+                    "Tab to one the items and press space-bar to start dragging it"
+                );
+            } finally {
+                destroyAria();
+            }
+        });
+
+        it("renders the instruction for a trigger set before initAria", () => {
+            // initAriaOnBrowser is a distinct formatting path from the setKeyboardDragTrigger re-render -
+            // make sure the trigger already in effect at init time is picked up too.
+            setKeyboardDragTrigger("space");
+            initAria();
+            try {
                 expect(document.getElementById("dnd-zone-active").textContent).to.equal(
                     "Tab to one the items and press space-bar to start dragging it"
                 );

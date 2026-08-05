@@ -9,9 +9,9 @@ let activeTrigger = DEFAULT_KEYBOARD_DRAG_TRIGGER;
  * left completely untouched by the library (no preventDefault, no stopPropagation), so the app can use
  * them - ex: "space" keeps Enter free to activate the focused item.
  * This setting is global to the document and applies to every dndzone. It can be called at any time.
- * Pass null to restore the default, "space_or_enter".
- * @param {"space"|"enter"|"space_or_enter"|null} trigger
- * @throws {Error} if given anything other than the documented values or null
+ * Pass null or undefined (or call with no argument) to restore the default, "space_or_enter".
+ * @param {"space"|"enter"|"space_or_enter"|null|undefined} [trigger]
+ * @throws {Error} if given anything other than the documented values, null, or undefined
  */
 export function setKeyboardDragTrigger(trigger) {
     if (trigger === null || trigger === undefined) {

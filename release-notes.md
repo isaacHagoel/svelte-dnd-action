@@ -1,5 +1,13 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.78](https://github.com/isaacHagoel/svelte-dnd-action/pull/702)
+
+Feature: add global `setKeyboardDragTrigger` configuration for choosing whether _Space_, _Enter_ or either key starts and stops keyboard dragging.
+
+-   Leave the unselected key completely untouched so applications can use it for actions such as opening or editing the focused item.
+-   Apply the setting consistently to every dndzone and drag handle, including changes made after zones have rendered.
+-   Keep the built-in screen-reader instruction synchronized and support trigger-aware translated instructions.
+
 ### [0.9.77](https://github.com/isaacHagoel/svelte-dnd-action/pull/698)
 
 Feature: add `setAriaStrings` for localizing the built-in screen-reader instructions and keyboard-drag announcements.

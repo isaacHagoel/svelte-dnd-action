@@ -185,6 +185,48 @@ The setting is global to the document and applies to every dndzone; different zo
 different triggers at the same time. It can be called at any time, including after the zones have
 rendered. The built-in screen-reader instruction follows it automatically.
 
+#### One tab stop per group of zones (roving tabindex)
+
+By default every draggable item is a tab stop, which items carrying their own buttons or links multiply quickly.
+Name one or more zone `type`s and all the zones of those types share a **single item tab stop**, moved by the
+arrow keys:
+
+```javascript
+import {setRovingTabindexTypes} from "svelte-dnd-action";
+
+setRovingTabindexTypes(["columns"]); // every zone with type: "columns" now shares one item tab stop
+```
+
+The grouping is the `type` you already use to decide what can be dragged where, so the zones sharing a tab stop
+are the zones an item can travel between. Call with `null` or no argument to turn it off everywhere, the default.
+
+A zone that names no `type` still has one, so `null` as an **element** names those zones:
+`setRovingTabindexTypes([null, "columns"])` gives them one group and the `"columns"` zones another. Anything else
+in the array throws.
+
+The setting is global to the document and can be called at any time: a type you add collapses its zones on the
+spot, a type you remove hands every item its `zoneItemTabIndex` back. A call naming the types already in effect is
+inert, so `$: setRovingTabindexTypes(types)` can fire as often as Svelte likes. **A type no zone uses is silently
+inert** — types only exist as zones mount — so check the spelling if a zone will not join its neighbours.
+
+Zone containers are unaffected: they keep their `zoneTabIndex` (`0` by default), so three grouped zones have three container tab stops plus the one item stop. Pass `zoneTabIndex: -1` to take them out too. Every item stays focusable and draggable; only how many appear in the Tab sequence changes.
+
+**The focusable elements inside an item follow the tab stop.** While an item does not hold it, its links, buttons, form controls, `contenteditable` and anything else carrying a `tabindex` get `tabindex="-1"` as well, restored when the item becomes active and when the zone is destroyed or leaves the group. Arrow to an item and Tab moves into its controls; keys pressed inside those controls are left to them. During a keyboard drag the grabbed item is the active one, so Tab visits its controls before moving on to the drop zones. Items of a **nested** dnd-zone are left alone: that zone manages its own items' tabindex.
+
+An arrow key means the same thing whether or not an item is grabbed: **go to the zone in that direction if the group has one there, otherwise move within the current zone.** At rest that moves the tab stop; during a drag it moves the grabbed item, landing it as tabbing to that zone would. So with the group's lists side by side, left/right change list and up/down move within one; stacked, the other way round; in a grid of single-slot zones every arrow moves a slot. With one zone in the group, both axes move within it.
+
+Not destinations: a zone with `display: none`; an empty zone at rest, though it is one during a drag; and during a drag, a zone with `dropFromOthersDisabled`. An arrow looks past a non-destination to the next zone that way, so it always does something. A zone hidden with `visibility: hidden` or `opacity: 0` still occupies its box and is still a destination.
+
+**The screen-reader instructions follow the group.** A zone in a group gets its own instruction — arrow between the items and the lists, rather than tab to an item — while every other zone keeps the ordinary one, and the drag-start message says the arrows move the item between lists. Both go through [`setAriaStrings`](#translating-the-screen-reader-messages): `zoneActiveRovingInstruction`, and `canMoveBetweenZonesWithArrows` on `dragStarted`.
+
+Zones outside the group keep their per-item tab stops and arrows never cross into them — including zones of another roving type, which form a group of their own, and zones with `dragDisabled: true`, which have no key handling to move a tab stop off themselves. **A nested zone stays out of its parent's group even when it shares its `type`**, the ordinary setup for dragging between nested lists: it keeps one tab stop per item.
+
+**Within a zone this navigates a list, not a grid.** The arrow keys step in list order, as they already do when reordering during a drag, so if a zone's items wrap into a grid `ArrowDown` moves to the next item rather than the one visually below.
+
+**Known limit.** What was suppressed is recorded per item. Move a suppressed element out of its item — a keyed re-render reusing a node, a portal, a bare `appendChild` — and its `tabindex` comes back only if that item becomes active again, never once it unmounts. Detecting the move would mean observing mutations on every item. Re-rendering the element, or clearing a `tabindex` you never set, un-strands it.
+
+The flip side of the same rule: where multi-item zones are themselves arranged in two dimensions, an arrow with a zone in its direction leaves the current zone rather than moving within it. Single-slot zones are unaffected, having nowhere within them to move.
+
 #### Translating the screen-reader messages
 
 `autoAriaDisabled` disables all automatically added ARIA attributes, roles, instructions and alerts. If you only want to translate the screen-reader wording, import `setAriaStrings` and leave `autoAriaDisabled` off:
@@ -198,16 +240,28 @@ const instructionsParTouche = {
     space_or_enter: `Tabulez jusqu'à un élément et appuyez sur espace ou entrée pour le déplacer`
 };
 
+// only used by the zones whose type was passed to setRovingTabindexTypes
+const instructionsRovingParTouche = {
+    space: `Utilisez les flèches pour naviguer entre les éléments et les listes, et appuyez sur espace pour déplacer l'élément ciblé`,
+    enter: `Utilisez les flèches pour naviguer entre les éléments et les listes, et appuyez sur entrée pour déplacer l'élément ciblé`,
+    space_or_enter: `Utilisez les flèches pour naviguer entre les éléments et les listes, et appuyez sur espace ou entrée pour déplacer l'élément ciblé`
+};
+
 setAriaStrings({
-    dragStarted: ({itemLabel, zoneLabel, canMoveBetweenZones}) =>
+    dragStarted: ({itemLabel, zoneLabel, canMoveBetweenZones, canMoveBetweenZonesWithArrows}) =>
         `Déplacement de ${itemLabel} commencé. Utilisez les flèches pour le déplacer dans la liste ${zoneLabel}` +
-        (canMoveBetweenZones ? `, ou tabulez vers une autre liste` : ``),
+        (canMoveBetweenZonesWithArrows
+            ? `, ou vers une autre liste dans cette direction`
+            : canMoveBetweenZones
+            ? `, ou tabulez vers une autre liste`
+            : ``),
     movedToPosition: ({itemLabel, zoneLabel, position}) => `${itemLabel} déplacé en position ${position} dans la liste ${zoneLabel}`,
     movedToZoneEnd: ({itemLabel, zoneLabel}) => `${itemLabel} déplacé à la fin de la liste ${zoneLabel}`,
     movedToZoneStart: ({itemLabel, zoneLabel}) => `${itemLabel} déplacé au début de la liste ${zoneLabel}`,
     // The default message omits the destination, but custom messages can include it
     dropped: ({itemLabel, zoneLabel, position, count}) => `${itemLabel} déposé dans ${zoneLabel}, ${position} sur ${count}`,
     zoneActiveInstruction: ({keyboardDragTrigger}) => instructionsParTouche[keyboardDragTrigger],
+    zoneActiveRovingInstruction: ({keyboardDragTrigger}) => instructionsRovingParTouche[keyboardDragTrigger],
     zoneDragDisabledInstruction: `Cette liste de glisser-déposer est désactivée`
 });
 ```
@@ -216,11 +270,18 @@ Every key is optional. Omitted keys use their English defaults. The five announc
 functions, so translations can control word order and pluralisation. Each formatter receives `itemLabel`
 and `zoneLabel` from the consumer-provided `aria-label` attributes, plus `position` and `count` for the
 item's 1-based position and the number of items in the relevant zone. `dragStarted` also receives
-`canMoveBetweenZones`. Destructure only the fields your wording needs; the built-in English messages do not
-use every field, but custom messages can.
+`canMoveBetweenZones` (there is another zone the item can be moved to) and `canMoveBetweenZonesWithArrows`
+(that zone can be reached with the arrow keys, because the item's zone is in a
+[roving-tabindex group](#one-tab-stop-per-group-of-zones-roving-tabindex) — the default English message
+says the arrows move the item between the lists rather than only within its own when this is set).
+Destructure only the fields your wording needs; the built-in English messages do not use every field, but
+custom messages can.
 
-`zoneActiveInstruction` takes a string or a formatter receiving the value set through
-[`setKeyboardDragTrigger`](#choosing-the-keyboard-drag-trigger).
+An active zone points at one of two instruction keys: a zone in a roving-tabindex group uses
+`zoneActiveRovingInstruction`, since its items are reached with the arrow keys, and every other zone uses
+`zoneActiveInstruction`. Both take a string or a formatter receiving the value set through
+[`setKeyboardDragTrigger`](#choosing-the-keyboard-drag-trigger). `zoneActiveRovingInstruction` can be left out
+if you never call `setRovingTabindexTypes`.
 
 Call `setAriaStrings` during app-level initialization and again whenever the application locale changes. Each call defines the complete active locale by applying its overrides to the English defaults, so omitted keys return to English rather than retaining values from the previous locale. Existing instruction elements update immediately. Pass `null` to restore all English defaults. Unknown keys and values of the wrong type throw an error.
 

@@ -1,9 +1,11 @@
 import {initAria, destroyAria, setAriaStrings, announceToScreenReader} from "../../src/helpers/aria";
 import {setKeyboardDragTrigger} from "../../src/keyboardDragTrigger";
+import {setRovingTabindexTypes} from "../../src/rovingTabindexTypes";
 
 describe("aria strings", () => {
     const ALERT_DIV_ID = "dnd-action-aria-alert";
     const ZONE_ACTIVE_ID = "dnd-zone-active";
+    const ZONE_ACTIVE_ROVING_ID = "dnd-zone-active-roving";
     const ZONE_DRAG_DISABLED_ID = "dnd-zone-drag-disabled";
 
     function alertText() {
@@ -12,11 +14,14 @@ describe("aria strings", () => {
 
     beforeEach(() => {
         initAria();
+        // the roving instruction only exists once the feature is turned on; ariaRovingInstruction.spec.js covers that
+        setRovingTabindexTypes(["roving"]);
     });
 
     afterEach(() => {
         setAriaStrings(null);
         setKeyboardDragTrigger(null);
+        setRovingTabindexTypes(null);
         destroyAria();
     });
 
@@ -44,7 +49,23 @@ describe("aria strings", () => {
         expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal(
             "Tab to one the items and press space-bar or enter to start dragging it"
         );
+        expect(document.getElementById(ZONE_ACTIVE_ROVING_ID).textContent).to.equal(
+            "Use the arrow keys to move between the items and the lists, and press space-bar or enter to start dragging the focused item"
+        );
         expect(document.getElementById(ZONE_DRAG_DISABLED_ID).textContent).to.equal("This is a disabled drag and drop list");
+    });
+
+    it("tells a roving zone's dragger that the arrows move the item between the lists", () => {
+        // in a roving group an arrow carries the grabbed item into the zone it points at, so "within its list" understates it
+        announceToScreenReader("dragStarted", {
+            itemLabel: "Card A",
+            zoneLabel: "To do",
+            canMoveBetweenZones: true,
+            canMoveBetweenZonesWithArrows: true
+        });
+        expect(alertText()).to.equal(
+            "Started dragging item Card A. Use the arrow keys to move it within its list To do, or into another list in that direction"
+        );
     });
 
     it("overrides only the keys it is given", () => {
@@ -73,6 +94,38 @@ describe("aria strings", () => {
         // zoneActiveInstruction accepts a string or a formatter; everything else is a missing/mistyped translation.
         expect(() => setAriaStrings({zoneActiveInstruction: undefined})).to.throw("zoneActiveInstruction");
         expect(() => setAriaStrings({zoneActiveInstruction: 42})).to.throw("zoneActiveInstruction");
+    });
+
+    it("throws when zoneActiveRovingInstruction is given neither a string nor a function", () => {
+        // the roving instruction is validated exactly like the ordinary one
+        expect(() => setAriaStrings({zoneActiveRovingInstruction: undefined})).to.throw("zoneActiveRovingInstruction");
+        expect(() => setAriaStrings({zoneActiveRovingInstruction: 42})).to.throw("zoneActiveRovingInstruction");
+    });
+
+    it("overrides the roving instruction on its own, leaving the ordinary one English", () => {
+        setAriaStrings({zoneActiveRovingInstruction: "Utilisez les flèches pour naviguer"});
+
+        expect(document.getElementById(ZONE_ACTIVE_ROVING_ID).textContent).to.equal("Utilisez les flèches pour naviguer");
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent, "the two instructions are separate keys").to.equal(
+            "Tab to one the items and press space-bar or enter to start dragging it"
+        );
+    });
+
+    it("phrases the default roving instruction to match the active trigger", () => {
+        setKeyboardDragTrigger("space");
+        expect(document.getElementById(ZONE_ACTIVE_ROVING_ID).textContent).to.equal(
+            "Use the arrow keys to move between the items and the lists, and press space-bar to start dragging the focused item"
+        );
+
+        setKeyboardDragTrigger("enter");
+        expect(document.getElementById(ZONE_ACTIVE_ROVING_ID).textContent).to.equal(
+            "Use the arrow keys to move between the items and the lists, and press enter to start dragging the focused item"
+        );
+
+        setKeyboardDragTrigger(null);
+        expect(document.getElementById(ZONE_ACTIVE_ROVING_ID).textContent).to.equal(
+            "Use the arrow keys to move between the items and the lists, and press space-bar or enter to start dragging the focused item"
+        );
     });
 
     it("leaves the string table untouched when a value fails validation", () => {

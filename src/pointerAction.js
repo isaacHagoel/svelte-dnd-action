@@ -1,5 +1,6 @@
 import {
     decrementActiveDropZoneCount,
+    DEFAULT_DROP_ZONE_TYPE,
     incrementActiveDropZoneCount,
     ITEM_ID_KEY,
     printDebug,
@@ -35,7 +36,6 @@ import {
 import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, toString} from "./helpers/util";
 import {getBoundingRectNoTransforms, findCenterOfElement} from "./helpers/intersection";
 
-const DEFAULT_DROP_ZONE_TYPE = "--any--";
 const MIN_OBSERVATION_INTERVAL_MS = 100;
 const DISABLED_OBSERVATION_INTERVAL_MS = 20;
 const MIN_MOVEMENT_BEFORE_DRAG_START_PX = 3;

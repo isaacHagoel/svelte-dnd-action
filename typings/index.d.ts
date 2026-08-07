@@ -83,14 +83,25 @@ export interface DndZoneAttributes<T> {
 export declare function alertToScreenReader(txt: string): void;
 
 // Every message key receives the same core context - itemLabel, zoneLabel, position, count -
-// so a consumer can word any of them positionally. Only dragStarted carries an extra.
+// so a consumer can word any of them positionally. Only dragStarted carries extras.
 export interface AriaStrings {
-    dragStarted?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number; canMoveBetweenZones: boolean}) => string;
+    dragStarted?: (ctx: {
+        itemLabel: string;
+        zoneLabel: string;
+        position: number;
+        count: number;
+        canMoveBetweenZones: boolean;
+        // true when the item's zone is in a roving-tabindex group, where the arrow keys move it between the
+        // zones as well as within its own - see setRovingTabindexTypes
+        canMoveBetweenZonesWithArrows: boolean;
+    }) => string;
     movedToPosition?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     movedToZoneEnd?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     movedToZoneStart?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     dropped?: (ctx: {itemLabel: string; zoneLabel: string; position: number; count: number}) => string;
     zoneActiveInstruction?: string | ((ctx: {keyboardDragTrigger: "space" | "enter" | "space_or_enter"}) => string);
+    // used instead of zoneActiveInstruction by a zone whose type was passed to setRovingTabindexTypes
+    zoneActiveRovingInstruction?: string | ((ctx: {keyboardDragTrigger: "space" | "enter" | "space_or_enter"}) => string);
     zoneDragDisabledInstruction?: string;
 }
 
@@ -111,6 +122,21 @@ export declare function setAriaStrings(overrides: AriaStrings | null): void;
  * @throws {Error} if given anything other than the documented values, null, or undefined
  */
 export declare function setKeyboardDragTrigger(trigger?: "space" | "enter" | "space_or_enter" | null): void;
+
+/**
+ * Chooses which dnd-zone types behave as roving-tabindex composites. All the zones sharing a listed type get a single
+ * item tab stop between them instead of one per item, with the arrow keys moving that tab stop at rest and the grabbed
+ * item during a keyboard drag. A zone nested inside another zone of the same type stays out of the group and keeps its
+ * per-item tab stops. A zone that names no type has one all the same, so null (or undefined) as an *element* of the
+ * array means "the zones that set no type", which form a group like any other.
+ * This is global and applies to all dndzones. It can be called at any time, including after
+ * the zones have rendered - a type added collapses on the spot, and a type removed gets its per-item tab stops back.
+ * A type no zone uses is silently inert, and a call naming the types already in effect triggers no re-render.
+ * Pass null or undefined instead of the array (or call with no argument) to turn the feature off everywhere, which is
+ * the default.
+ * @throws {Error} if given anything other than an array of non-empty strings and nulls, null, or undefined
+ */
+export declare function setRovingTabindexTypes(types?: (string | null | undefined)[] | null): void;
 
 /**
  * Allows using another key instead of "id" in the items data. This is global and applies to all dndzones.

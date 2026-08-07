@@ -36,6 +36,10 @@ export const KEYBOARD_DRAG_TRIGGER_PHRASES = {
     space_or_enter: "space-bar or enter"
 };
 
+// the type a zone that names none is filed under. Shared because setRovingTabindexTypes lets a consumer name it
+// as `null`, and the two modules have to agree on what an untyped zone is called
+export const DEFAULT_DROP_ZONE_TYPE = "--any--";
+
 export const SHADOW_ITEM_MARKER_PROPERTY_NAME = "isDndShadowItem";
 export const SHADOW_ELEMENT_ATTRIBUTE_NAME = "data-is-dnd-shadow-item-internal";
 export const SHADOW_ELEMENT_HINT_ATTRIBUTE_NAME = "data-is-dnd-shadow-item-hint";

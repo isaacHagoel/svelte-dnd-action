@@ -3,37 +3,50 @@ import {toString} from "./util";
 
 const INSTRUCTION_IDs = {
     DND_ZONE_ACTIVE: "dnd-zone-active",
+    DND_ZONE_ACTIVE_ROVING: "dnd-zone-active-roving",
     DND_ZONE_DRAG_DISABLED: "dnd-zone-drag-disabled"
 };
 const INSTRUCTION_ID_TO_STRING_KEY = {
     [INSTRUCTION_IDs.DND_ZONE_ACTIVE]: "zoneActiveInstruction",
+    [INSTRUCTION_IDs.DND_ZONE_ACTIVE_ROVING]: "zoneActiveRovingInstruction",
     [INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED]: "zoneDragDisabledInstruction"
 };
 
 const DEFAULT_ARIA_STRINGS = {
-    dragStarted: ({itemLabel, zoneLabel, canMoveBetweenZones}) =>
+    dragStarted: ({itemLabel, zoneLabel, canMoveBetweenZones, canMoveBetweenZonesWithArrows}) =>
         `Started dragging item ${itemLabel}. Use the arrow keys to move it within its list ${zoneLabel}` +
-        (canMoveBetweenZones ? ", or tab to another list in order to move the item into it" : ""),
+        (canMoveBetweenZonesWithArrows
+            ? ", or into another list in that direction"
+            : canMoveBetweenZones
+            ? ", or tab to another list in order to move the item into it"
+            : ""),
     movedToPosition: ({itemLabel, zoneLabel, position}) => `Moved item ${itemLabel} to position ${position} in the list ${zoneLabel}`,
     movedToZoneEnd: ({itemLabel, zoneLabel}) => `Moved item ${itemLabel} to the end of the list ${zoneLabel}`,
     movedToZoneStart: ({itemLabel, zoneLabel}) => `Moved item ${itemLabel} to the beginning of the list ${zoneLabel}`,
     dropped: ({itemLabel}) => `Stopped dragging item ${itemLabel}`,
     zoneActiveInstruction: ({keyboardDragTrigger}) =>
         `Tab to one the items and press ${KEYBOARD_DRAG_TRIGGER_PHRASES[keyboardDragTrigger]} to start dragging it`,
+    zoneActiveRovingInstruction: ({keyboardDragTrigger}) =>
+        `Use the arrow keys to move between the items and the lists, and press ${KEYBOARD_DRAG_TRIGGER_PHRASES[keyboardDragTrigger]} to start dragging the focused item`,
     zoneDragDisabledInstruction: "This is a disabled drag and drop list"
 };
 
 const FUNCTION_ARIA_STRING_KEYS = ["dragStarted", "movedToPosition", "movedToZoneEnd", "movedToZoneStart", "dropped"];
-// zoneActiveInstruction names the key that starts a drag, so a translation may need to vary it with the trigger.
-const STRING_OR_FUNCTION_ARIA_STRING_KEYS = ["zoneActiveInstruction"];
+// both active-zone instructions name the key that starts a drag, so a translation may need to vary it with the trigger.
+const STRING_OR_FUNCTION_ARIA_STRING_KEYS = ["zoneActiveInstruction", "zoneActiveRovingInstruction"];
 // zoneDragDisabledInstruction has no drag to start and thus no key to name, so it stays string-only.
 const STRING_ONLY_ARIA_STRING_KEYS = ["zoneDragDisabledInstruction"];
 
 let ariaStrings = {...DEFAULT_ARIA_STRINGS};
 let instructionCtx = {keyboardDragTrigger: DEFAULT_KEYBOARD_DRAG_TRIGGER};
 
+// the ordinary instructions every consumer needs. The roving one is created on demand instead (see
+// ensureRovingInstruction), so a consumer who never calls setRovingTabindexTypes gets exactly the DOM they got before
+const EAGER_INSTRUCTION_IDs = [INSTRUCTION_IDs.DND_ZONE_ACTIVE, INSTRUCTION_IDs.DND_ZONE_DRAG_DISABLED];
+
 const ALERT_DIV_ID = "dnd-action-aria-alert";
 let alertsDiv;
+let isRovingInstructionNeeded = false;
 
 function initAriaOnBrowser() {
     if (alertsDiv) {
@@ -58,14 +71,35 @@ function initAriaOnBrowser() {
     document.body.prepend(alertsDiv);
 
     // setting the instructions
-    Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) =>
-        document.body.prepend(instructionToHiddenDiv(id, formatWithFallback(key, instructionCtx)))
-    );
+    EAGER_INSTRUCTION_IDs.forEach(prependInstruction);
+    // the types may have been registered before this ran - ex: a consumer calling the setter at module scope
+    if (isRovingInstructionNeeded) prependInstruction(INSTRUCTION_IDs.DND_ZONE_ACTIVE_ROVING);
+}
+
+function prependInstruction(id) {
+    document.body.prepend(instructionToHiddenDiv(id, formatWithFallback(INSTRUCTION_ID_TO_STRING_KEY[id], instructionCtx)));
+}
+
+/**
+ * Creates the roving-tabindex instruction element, which only exists once the feature is turned on.
+ * Called by setRovingTabindexTypes, so it has to work in both orders: after the aria init has run it creates the
+ * element on the spot, and before it (a consumer calling the setter at module scope, or before DOMContentLoaded)
+ * it records the intent for initAriaOnBrowser to act on.
+ * The element is never removed when the type list is emptied again: it is inert once no zone references it, whereas
+ * removing it could leave a dangling aria-describedby on a zone that hasn't re-configured itself yet.
+ */
+export function ensureRovingInstruction() {
+    if (isOnServer) return;
+    isRovingInstructionNeeded = true;
+    // the init hasn't run yet - the flag above will make it create the element
+    if (!alertsDiv) return;
+    if (document.getElementById(INSTRUCTION_IDs.DND_ZONE_ACTIVE_ROVING)) return;
+    prependInstruction(INSTRUCTION_IDs.DND_ZONE_ACTIVE_ROVING);
 }
 
 /**
  * Initializes the static aria instructions so they can be attached to zones
- * @return {{DND_ZONE_ACTIVE: string, DND_ZONE_DRAG_DISABLED: string} | null} - the IDs for static aria instruction (to be used via aria-describedby) or null on the server
+ * @return {{DND_ZONE_ACTIVE: string, DND_ZONE_ACTIVE_ROVING: string, DND_ZONE_DRAG_DISABLED: string} | null} - the IDs for static aria instruction (to be used via aria-describedby) or null on the server
  */
 export function initAria() {
     if (isOnServer) return null;
@@ -128,8 +162,10 @@ export function alertToScreenReader(txt) {
  * Pass null to restore the built-in English strings.
  * @param {Object | null} overrides - any subset of: dragStarted, movedToPosition, movedToZoneEnd,
  * movedToZoneStart, dropped (functions taking a context object and returning a string);
- * zoneActiveInstruction (a string, or a function taking {keyboardDragTrigger} and returning a string -
- * useful because a hard-coded translation can't name the right key if the app varies the trigger);
+ * zoneActiveInstruction and zoneActiveRovingInstruction (a string, or a function taking
+ * {keyboardDragTrigger} and returning a string - useful because a hard-coded translation can't name the
+ * right key if the app varies the trigger; the roving one describes a zone whose type was passed to
+ * setRovingTabindexTypes, where the arrow keys rather than Tab move between the items);
  * zoneDragDisabledInstruction (a string only - a disabled zone has no drag to start, so there is no key
  * for a formatter to name)
  * @throws {Error} if overrides is not an object or null, contains an unknown key, or contains a value of

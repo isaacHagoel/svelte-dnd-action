@@ -310,6 +310,7 @@ Notes:
 -   [Super basic, single list, with animation](https://svelte.dev/playground/3d544791e5c24fd4aa1eb983d749f776?version=3)
 -   [Multiple dndzones, multiple types](https://svelte.dev/playground/4d23eb3b9e184b90b58f0867010ad258?version=3)
 -   [Board (nested zones and multiple types), scrolling containers, scrolling page](https://svelte.dev/playground/e2ef044af75c4b16b424b8219fb31fd9?version=3)
+-   [Experimental: make an entire board skippable in the Tab order while preserving keyboard drag and drop](https://svelte.dev/playground/14286b9c0f924d8e94d5267d219f8424?version=5.56.8) — a prototype wrapper built using the existing tabindex options; see the example for current limitations.
 -   [Selectively enable/disable drag/drop](https://svelte.dev/playground/44c9229556f3456e9883c10fc0aa0ee9?version=3)
 -   [Custom active dropzone styling](https://svelte.dev/playground/4ceecc5bae54490b811bd62d4d613e59?version=3)
 -   [Customizing the dragged element](https://svelte.dev/playground/438fca28bb1f4eb1b34eff9dc6a728dc?version=3)

@@ -7,6 +7,7 @@ const CONSIDER_EVENT_NAME = "consider";
  * @property {string} trigger
  * @property {string} id
  * @property {string} source
+ * @property {Point} dropMousePosition
  * @param {Node} el
  * @param {Array} items
  * @param {Info} info

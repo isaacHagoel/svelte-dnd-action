@@ -1,4 +1,4 @@
-import {isElementOffDocument} from "../../src/helpers/intersection";
+import {getBoundingRectNoTransforms, isElementOffDocument} from "../../src/helpers/intersection";
 
 function makeDiv(widthPx = 50, heightPx = 50) {
     const el = document.createElement("div");
@@ -8,6 +8,29 @@ function makeDiv(widthPx = 50, heightPx = 50) {
 }
 
 describe("intersection", () => {
+    describe("getBoundingRectNoTransforms", () => {
+        it("returns finite coordinates for an element with a flip transform", () => {
+            const el = makeDiv(80, 40);
+            el.style.position = "fixed";
+            el.style.left = "120px";
+            el.style.top = "160px";
+            el.style.transform = "translate(25px, 35px)";
+            el.style.transformOrigin = "0 0";
+            document.body.appendChild(el);
+
+            try {
+                const rect = getBoundingRectNoTransforms(el);
+
+                expect(rect.left).to.be.closeTo(120, 0.01);
+                expect(rect.top).to.be.closeTo(160, 0.01);
+                expect(rect.right).to.be.closeTo(200, 0.01);
+                expect(rect.bottom).to.be.closeTo(200, 0.01);
+            } finally {
+                el.remove();
+            }
+        });
+    });
+
     describe("isElementOffDocument", () => {
         before(() => {
             document.body.style.width = "100vw";

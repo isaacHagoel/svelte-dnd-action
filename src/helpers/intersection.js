@@ -31,8 +31,8 @@ export function getBoundingRectNoTransforms(el, onlyVisible = true) {
         }
 
         const to = style.transformOrigin;
-        const x = rect.x - dx - (1 - sx) * parseFloat(to);
-        const y = rect.y - dy - (1 - sy) * parseFloat(to.slice(to.indexOf(" ") + 1));
+        const x = rect.left - dx - (1 - sx) * parseFloat(to);
+        const y = rect.top - dy - (1 - sy) * parseFloat(to.slice(to.indexOf(" ") + 1));
         const w = sx ? rect.width / sx : el.offsetWidth;
         const h = sy ? rect.height / sy : el.offsetHeight;
         return {

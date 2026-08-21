@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.79](https://github.com/isaacHagoel/svelte-dnd-action/pull/707)
+
+Bugfix: keep drop-position detection accurate while list items are moving with Svelte's `animate:flip`, preventing the shadow element from becoming stuck at a previously visited position. Fixes [#706](https://github.com/isaacHagoel/svelte-dnd-action/issues/706).
+
 ### [0.9.78](https://github.com/isaacHagoel/svelte-dnd-action/pull/702)
 
 Feature: add global `setKeyboardDragTrigger` configuration for choosing whether _Space_, _Enter_ or either key starts and stops keyboard dragging.

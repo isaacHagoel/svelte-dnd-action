@@ -32,7 +32,7 @@ import {
     DRAGGED_LEFT_TYPES,
     DRAGGED_OVER_INDEX_EVENT_NAME
 } from "./helpers/dispatcher";
-import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, toString} from "./helpers/util";
+import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, getWindowOf, toString} from "./helpers/util";
 import {getBoundingRectNoTransforms, findCenterOfElement} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
@@ -66,6 +66,9 @@ let touchHoldElapsed = false;
 let useCursorForDetectionActive = false;
 let pendingDragOwner;
 let watchedDropZones = new Set();
+// The window of the drag in progress: the dragged item's own window, which is not the one that
+// loaded this module when the zone lives in a same-origin iframe or a popup.
+let dragWindow;
 
 // a map from type to a set of drop-zones
 const typeToDropZones = new Map();
@@ -107,7 +110,7 @@ function watchDraggedElement() {
         dz.addEventListener(DRAGGED_LEFT_EVENT_NAME, handleDraggedLeft);
         dz.addEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
-    window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
+    dragWindow.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
 
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
     const setIntervalMs = Math.max(...Array.from(watchedDropZones).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
@@ -116,8 +119,8 @@ function watchDraggedElement() {
     // Returns reference point in document coordinates - either cursor position or element center
     const getReferencePoint = useCursorForDetectionActive
         ? () => ({
-              x: currentMousePosition.x + window.scrollX,
-              y: currentMousePosition.y + window.scrollY
+              x: currentMousePosition.x + dragWindow.scrollX,
+              y: currentMousePosition.y + dragWindow.scrollY
           })
         : () => findCenterOfElement(draggedEl);
     observe(draggedEl, watchedDropZones, observationIntervalMs * 1.07, multiScroller, getReferencePoint);
@@ -130,7 +133,7 @@ function unWatchDraggedElement() {
         dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
     watchedDropZones = new Set();
-    window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
+    dragWindow.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // ensuring multiScroller is not already destroyed before destroying
     if (multiScroller) {
         multiScroller.destroy();
@@ -246,10 +249,10 @@ function handleDrop() {
     printDebug(() => "dropped");
     finalizingPreviousDrag = true;
     // cleanup
-    window.removeEventListener("mousemove", handleMouseMove);
-    window.removeEventListener("touchmove", handleMouseMove);
-    window.removeEventListener("mouseup", handleDrop);
-    window.removeEventListener("touchend", handleDrop);
+    dragWindow.removeEventListener("mousemove", handleMouseMove);
+    dragWindow.removeEventListener("touchmove", handleMouseMove);
+    dragWindow.removeEventListener("mouseup", handleDrop);
+    dragWindow.removeEventListener("touchend", handleDrop);
     unWatchDraggedElement();
     moveDraggedElementToWasDroppedState(draggedEl);
 
@@ -323,10 +326,10 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
 function scheduleDZForRemovalAfterDrop(dz, destroy) {
     const scheduledRemoval = {dz, destroy};
     scheduledForRemovalAfterDrop.push(scheduledRemoval);
-    window.requestAnimationFrame(() => {
+    getWindowOf(dz).requestAnimationFrame(() => {
         if (!scheduledForRemovalAfterDrop.includes(scheduledRemoval)) return;
         hideElement(dz);
-        document.body.appendChild(dz);
+        dz.ownerDocument.body.appendChild(dz);
     });
 }
 /* cleanup */
@@ -392,16 +395,16 @@ export function dndzone(node, options) {
     let elToIdx = new Map();
 
     function addMaybeListeners() {
-        window.addEventListener("mousemove", handleMouseMoveMaybeDragStart, {passive: false});
-        window.addEventListener("touchmove", handleMouseMoveMaybeDragStart, {passive: false, capture: false});
-        window.addEventListener("mouseup", handleFalseAlarm, {passive: false});
-        window.addEventListener("touchend", handleFalseAlarm, {passive: false});
+        dragWindow.addEventListener("mousemove", handleMouseMoveMaybeDragStart, {passive: false});
+        dragWindow.addEventListener("touchmove", handleMouseMoveMaybeDragStart, {passive: false, capture: false});
+        dragWindow.addEventListener("mouseup", handleFalseAlarm, {passive: false});
+        dragWindow.addEventListener("touchend", handleFalseAlarm, {passive: false});
     }
     function removeMaybeListeners() {
-        window.removeEventListener("mousemove", handleMouseMoveMaybeDragStart);
-        window.removeEventListener("touchmove", handleMouseMoveMaybeDragStart);
-        window.removeEventListener("mouseup", handleFalseAlarm);
-        window.removeEventListener("touchend", handleFalseAlarm);
+        dragWindow.removeEventListener("mousemove", handleMouseMoveMaybeDragStart);
+        dragWindow.removeEventListener("touchmove", handleMouseMoveMaybeDragStart);
+        dragWindow.removeEventListener("mouseup", handleFalseAlarm);
+        dragWindow.removeEventListener("touchend", handleFalseAlarm);
         if (touchDragHoldTimer) {
             clearTimeout(touchDragHoldTimer);
             touchDragHoldTimer = undefined;
@@ -493,6 +496,7 @@ export function dndzone(node, options) {
         dragStartMousePosition = {x: c.clientX, y: c.clientY};
         currentMousePosition = {...dragStartMousePosition};
         originalDragTarget = e.currentTarget;
+        dragWindow = getWindowOf(originalDragTarget);
 
         if (useDelay) {
             const pendingTarget = originalDragTarget;
@@ -552,10 +556,10 @@ export function dndzone(node, options) {
                 // to prevent the outline from disappearing
                 draggedEl.focus();
             } else {
-                window.requestAnimationFrame(keepOriginalElementInDom);
+                dragWindow.requestAnimationFrame(keepOriginalElementInDom);
             }
         }
-        window.requestAnimationFrame(keepOriginalElementInDom);
+        dragWindow.requestAnimationFrame(keepOriginalElementInDom);
 
         styleActiveDropZones(
             Array.from(typeToDropZones.get(config.type)).filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
@@ -570,10 +574,10 @@ export function dndzone(node, options) {
         dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
 
         // handing over to global handlers - starting to watch the element
-        window.addEventListener("mousemove", handleMouseMove, {passive: false});
-        window.addEventListener("touchmove", handleMouseMove, {passive: false, capture: false});
-        window.addEventListener("mouseup", handleDrop, {passive: false});
-        window.addEventListener("touchend", handleDrop, {passive: false});
+        dragWindow.addEventListener("mousemove", handleMouseMove, {passive: false});
+        dragWindow.addEventListener("touchmove", handleMouseMove, {passive: false, capture: false});
+        dragWindow.addEventListener("mouseup", handleDrop, {passive: false});
+        dragWindow.addEventListener("touchend", handleDrop, {passive: false});
     }
 
     function configure({

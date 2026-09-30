@@ -1,3 +1,5 @@
+import {getWindowOf} from "./util";
+
 // This is based off https://stackoverflow.com/questions/27745438/how-to-compute-getboundingclientrect-without-considering-transforms/57876601#57876601
 // It removes the transforms that are potentially applied by the flip animations
 /**
@@ -57,11 +59,12 @@ export function getBoundingRectNoTransforms(el, onlyVisible = true) {
  */
 export function getAbsoluteRectNoTransforms(el) {
     const rect = getBoundingRectNoTransforms(el);
+    const win = getWindowOf(el);
     return {
-        top: rect.top + window.scrollY,
-        bottom: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        right: rect.right + window.scrollX
+        top: rect.top + win.scrollY,
+        bottom: rect.bottom + win.scrollY,
+        left: rect.left + win.scrollX,
+        right: rect.right + win.scrollX
     };
 }
 
@@ -72,11 +75,12 @@ export function getAbsoluteRectNoTransforms(el) {
  */
 export function getAbsoluteRect(el) {
     const rect = el.getBoundingClientRect();
+    const win = getWindowOf(el);
     return {
-        top: rect.top + window.scrollY,
-        bottom: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        right: rect.right + window.scrollX
+        top: rect.top + win.scrollY,
+        bottom: rect.bottom + win.scrollY,
+        left: rect.left + win.scrollX,
+        right: rect.right + win.scrollX
     };
 }
 
@@ -144,7 +148,8 @@ export function calcDistanceFromPointToCenter(point, el) {
  */
 export function isElementOffDocument(el) {
     const rect = getAbsoluteRect(el);
-    return rect.right < 0 || rect.left > document.documentElement.scrollWidth || rect.bottom < 0 || rect.top > document.documentElement.scrollHeight;
+    const {documentElement} = el.ownerDocument;
+    return rect.right < 0 || rect.left > documentElement.scrollWidth || rect.bottom < 0 || rect.top > documentElement.scrollHeight;
 }
 
 /**
@@ -178,7 +183,7 @@ function getVisibleRectRecursive(element) {
 
     // walk up and clip ONLY by scrollable ancestors
     let parent = element.parentElement;
-    while (parent && parent !== document.body) {
+    while (parent && parent !== element.ownerDocument.body) {
         const style = window.getComputedStyle(parent);
         const overflowY = style.overflowY;
         const overflowX = style.overflowX;

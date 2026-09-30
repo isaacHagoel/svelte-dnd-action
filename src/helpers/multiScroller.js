@@ -27,7 +27,7 @@ export function createMultiScroller(baseElementsForScrolling = [], getPointerPos
             return false;
         }
         const scrollContainersUnderCursor = scrollingContainersDeepToShallow.filter(
-            el => isPointInsideRect(mousePosition, el.getBoundingClientRect()) || el === document.scrollingElement
+            el => isPointInsideRect(mousePosition, el.getBoundingClientRect()) || el === el.ownerDocument.scrollingElement
         );
         for (let i = 0; i < scrollContainersUnderCursor.length; i++) {
             const scrolled = scrollIfNeeded(mousePosition, scrollContainersUnderCursor[i]);
@@ -63,13 +63,11 @@ function findRelevantScrollContainers(dropZones) {
     const scrollingContainers = new Set();
     for (let dz of dropZones) {
         findScrollableParents(dz).forEach(container => scrollingContainers.add(container));
-    }
-    // The scrolling element might have overflow visible and still be scrollable
-    if (
-        document.scrollingElement.scrollHeight > document.scrollingElement.clientHeight ||
-        document.scrollingElement.scrollWidth > document.scrollingElement.clientHeight
-    ) {
-        scrollingContainers.add(document.scrollingElement);
+        // The scrolling element might have overflow visible and still be scrollable
+        const {scrollingElement} = dz.ownerDocument;
+        if (scrollingElement.scrollHeight > scrollingElement.clientHeight || scrollingElement.scrollWidth > scrollingElement.clientHeight) {
+            scrollingContainers.add(scrollingElement);
+        }
     }
     return scrollingContainers;
 }

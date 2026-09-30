@@ -1,3 +1,4 @@
+import {getWindowOf} from "./util";
 // external events
 const FINALIZE_EVENT_NAME = "finalize";
 const CONSIDER_EVENT_NAME = "consider";
@@ -80,7 +81,7 @@ export function dispatchDraggedElementIsOverIndex(containerEl, indexObj, dragged
     );
 }
 export function dispatchDraggedLeftDocument(draggedEl) {
-    window.dispatchEvent(
+    getWindowOf(draggedEl).dispatchEvent(
         new CustomEvent(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, {
             detail: {draggedEl}
         })

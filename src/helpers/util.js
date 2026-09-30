@@ -1,4 +1,14 @@
 /**
+ * The window an element lives in. A drop zone can live in another window than the one that
+ * loaded this module, for example a same-origin iframe or a popup opened with window.open.
+ * @param {Node} el
+ * @return {Window}
+ */
+export function getWindowOf(el) {
+    return el.ownerDocument.defaultView || window;
+}
+
+/**
  * @param {Object} object
  * @return {string}
  */

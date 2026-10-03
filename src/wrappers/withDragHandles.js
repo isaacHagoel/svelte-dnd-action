@@ -2,6 +2,7 @@ import {SOURCES, TRIGGERS} from "../constants";
 import {isKeyboardDragTriggerKey} from "../keyboardDragTrigger";
 import {dndzone} from "../action";
 import {createStore} from "./simpleStore";
+import {getWindowOf} from "../helpers/util";
 
 const isItemsDragDisabled = createStore(true);
 const userDragDisabled = createStore(false);
@@ -100,8 +101,8 @@ export function dragHandle(handle) {
         isItemsDragDisabled.set(false);
 
         // Reset the startDrag/isItemsDragDisabled if the user releases the mouse/touch without initiating a drag
-        window.addEventListener("mouseup", resetStartDrag);
-        window.addEventListener("touchend", resetStartDrag);
+        getWindowOf(handle).addEventListener("mouseup", resetStartDrag);
+        getWindowOf(handle).addEventListener("touchend", resetStartDrag);
     }
 
     function handleKeyDown(e) {
@@ -110,8 +111,8 @@ export function dragHandle(handle) {
 
     function resetStartDrag() {
         isItemsDragDisabled.set(true);
-        window.removeEventListener("mouseup", resetStartDrag);
-        window.removeEventListener("touchend", resetStartDrag);
+        getWindowOf(handle).removeEventListener("mouseup", resetStartDrag);
+        getWindowOf(handle).removeEventListener("touchend", resetStartDrag);
     }
 
     const recomputeHandleState = () => {

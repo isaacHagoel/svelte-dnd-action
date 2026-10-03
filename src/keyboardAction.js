@@ -3,7 +3,7 @@ import {isKeyboardDragTriggerKey} from "./keyboardDragTrigger";
 import {styleActiveDropZones, styleInactiveDropZones} from "./helpers/styler";
 import {dispatchConsiderEvent, dispatchFinalizeEvent} from "./helpers/dispatcher";
 import {initAria, announceToScreenReader, destroyAria} from "./helpers/aria";
-import {toString} from "./helpers/util";
+import {getWindowOf, toString} from "./helpers/util";
 import {printDebug} from "./constants";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
@@ -24,6 +24,9 @@ const elToFocusListeners = new WeakMap();
 const dzToHandles = new Map();
 const dzToConfig = new Map();
 const typeToDropZones = new Map();
+// A map from a document to the number of drop zones in it. A zone can live in another window than the one that loaded this
+// module, so each document with zones gets its own aria elements and keydown and click handlers.
+const docToDropZoneCount = new Map();
 
 /* TODO (potentially)
  * what's the deal with the black border of voice-reader not following focus?
@@ -35,16 +38,19 @@ let INSTRUCTION_IDs;
 /* drop-zones registration management */
 function registerDropZone(dropZoneEl, type) {
     printDebug(() => "registering drop-zone if absent");
-    if (typeToDropZones.size === 0) {
-        printDebug(() => "adding global keydown and click handlers");
-        INSTRUCTION_IDs = initAria();
-        window.addEventListener("keydown", globalKeyDownHandler);
-        window.addEventListener("click", globalClickHandler);
-    }
     if (!typeToDropZones.has(type)) {
         typeToDropZones.set(type, new Set());
     }
     if (!typeToDropZones.get(type).has(dropZoneEl)) {
+        const doc = dropZoneEl.ownerDocument;
+        const dropZoneCount = docToDropZoneCount.get(doc) || 0;
+        if (dropZoneCount === 0) {
+            printDebug(() => "adding global keydown and click handlers");
+            INSTRUCTION_IDs = initAria(doc);
+            getWindowOf(dropZoneEl).addEventListener("keydown", globalKeyDownHandler);
+            getWindowOf(dropZoneEl).addEventListener("click", globalClickHandler);
+        }
+        docToDropZoneCount.set(doc, dropZoneCount + 1);
         typeToDropZones.get(type).add(dropZoneEl);
         incrementActiveDropZoneCount();
     }
@@ -60,12 +66,17 @@ function unregisterDropZone(dropZoneEl, type) {
     if (dropZones.size === 0) {
         typeToDropZones.delete(type);
     }
-    if (typeToDropZones.size === 0) {
+    const doc = dropZoneEl.ownerDocument;
+    const dropZoneCount = docToDropZoneCount.get(doc) - 1;
+    if (dropZoneCount === 0) {
         printDebug(() => "removing global keydown and click handlers");
-        window.removeEventListener("keydown", globalKeyDownHandler);
-        window.removeEventListener("click", globalClickHandler);
-        INSTRUCTION_IDs = undefined;
-        destroyAria();
+        docToDropZoneCount.delete(doc);
+        // defaultView is null once the zone's window has closed, and its handlers went with it
+        doc.defaultView?.removeEventListener("keydown", globalKeyDownHandler);
+        doc.defaultView?.removeEventListener("click", globalClickHandler);
+        destroyAria(doc);
+    } else {
+        docToDropZoneCount.set(doc, dropZoneCount);
     }
 }
 
@@ -79,9 +90,9 @@ function globalKeyDownHandler(e) {
     }
 }
 
-function globalClickHandler() {
+function globalClickHandler(e) {
     if (!isDragging) return;
-    if (!allDragTargets.has(document.activeElement)) {
+    if (!allDragTargets.has(e.currentTarget.document.activeElement)) {
         printDebug(() => "clicked outside of any draggable");
         handleDrop();
     }
@@ -125,22 +136,30 @@ function handleZoneFocus(e) {
     ) {
         targetItems.push(itemToMove);
         if (!autoAriaDisabled) {
-            announceToScreenReader("movedToZoneEnd", {
-                itemLabel: focusedItemLabel,
-                zoneLabel: focusedDzLabel,
-                position: targetItems.length,
-                count: targetItems.length
-            });
+            announceToScreenReader(
+                "movedToZoneEnd",
+                {
+                    itemLabel: focusedItemLabel,
+                    zoneLabel: focusedDzLabel,
+                    position: targetItems.length,
+                    count: targetItems.length
+                },
+                newlyFocusedDz.ownerDocument
+            );
         }
     } else {
         targetItems.unshift(itemToMove);
         if (!autoAriaDisabled) {
-            announceToScreenReader("movedToZoneStart", {
-                itemLabel: focusedItemLabel,
-                zoneLabel: focusedDzLabel,
-                position: 1,
-                count: targetItems.length
-            });
+            announceToScreenReader(
+                "movedToZoneStart",
+                {
+                    itemLabel: focusedItemLabel,
+                    zoneLabel: focusedDzLabel,
+                    position: 1,
+                    count: targetItems.length
+                },
+                newlyFocusedDz.ownerDocument
+            );
         }
     }
     const dzFrom = focusedDz;
@@ -169,15 +188,20 @@ function handleDrop(dispatchConsider = true) {
         // Include the destination and final position so localized messages can describe the completed drop.
         const droppedItems = droppedConfig.items;
         const droppedIdx = droppedItems.findIndex(item => item[ITEM_ID_KEY] === droppedItemId);
-        announceToScreenReader("dropped", {
-            itemLabel: focusedItemLabel,
-            zoneLabel: focusedDzLabel,
-            position: (droppedIdx < 0 ? 0 : droppedIdx) + 1,
-            count: droppedItems.length
-        });
+        announceToScreenReader(
+            "dropped",
+            {
+                itemLabel: focusedItemLabel,
+                zoneLabel: focusedDzLabel,
+                position: (droppedIdx < 0 ? 0 : droppedIdx) + 1,
+                count: droppedItems.length
+            },
+            droppedDz.ownerDocument
+        );
     }
-    if (allDragTargets.has(document.activeElement)) {
-        document.activeElement.blur();
+    const {activeElement} = droppedDz.ownerDocument;
+    if (allDragTargets.has(activeElement)) {
+        activeElement.blur();
     }
     // Clear global drag state before dispatching. A synchronous handler may destroy the
     // focused zone, and unregisterDropZone must not recursively enter handleDrop.
@@ -261,12 +285,16 @@ export function dndzone(node, options) {
                 printDebug(() => ["arrow down", idx]);
                 if (idx < children.length - 1) {
                     if (!config.autoAriaDisabled) {
-                        announceToScreenReader("movedToPosition", {
-                            itemLabel: focusedItemLabel,
-                            zoneLabel: focusedDzLabel,
-                            position: idx + 2,
-                            count: items.length
-                        });
+                        announceToScreenReader(
+                            "movedToPosition",
+                            {
+                                itemLabel: focusedItemLabel,
+                                zoneLabel: focusedDzLabel,
+                                position: idx + 2,
+                                count: items.length
+                            },
+                            node.ownerDocument
+                        );
                     }
                     swap(items, idx, idx + 1);
                     dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
@@ -284,12 +312,16 @@ export function dndzone(node, options) {
                 printDebug(() => ["arrow up", idx]);
                 if (idx > 0) {
                     if (!config.autoAriaDisabled) {
-                        announceToScreenReader("movedToPosition", {
-                            itemLabel: focusedItemLabel,
-                            zoneLabel: focusedDzLabel,
-                            position: idx,
-                            count: items.length
-                        });
+                        announceToScreenReader(
+                            "movedToPosition",
+                            {
+                                itemLabel: focusedItemLabel,
+                                zoneLabel: focusedDzLabel,
+                                position: idx,
+                                count: items.length
+                            },
+                            node.ownerDocument
+                        );
                     }
                     swap(items, idx, idx - 1);
                     dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
@@ -315,13 +347,17 @@ export function dndzone(node, options) {
             // Include the starting position so localized messages can describe where the item was picked up.
             const startItems = dzToConfig.get(node).items;
             const startIdx = startItems.findIndex(item => item[ITEM_ID_KEY] === focusedItemId);
-            announceToScreenReader("dragStarted", {
-                itemLabel: focusedItemLabel,
-                zoneLabel: focusedDzLabel,
-                position: (startIdx < 0 ? 0 : startIdx) + 1,
-                count: startItems.length,
-                canMoveBetweenZones: dropTargets.length > 1
-            });
+            announceToScreenReader(
+                "dragStarted",
+                {
+                    itemLabel: focusedItemLabel,
+                    zoneLabel: focusedDzLabel,
+                    position: (startIdx < 0 ? 0 : startIdx) + 1,
+                    count: startItems.length,
+                    canMoveBetweenZones: dropTargets.length > 1
+                },
+                node.ownerDocument
+            );
         }
         dispatchConsiderEvent(node, dzToConfig.get(node).items, {trigger: TRIGGERS.DRAG_STARTED, id: focusedItemId, source: SOURCES.KEYBOARD});
         triggerAllDzsUpdate();

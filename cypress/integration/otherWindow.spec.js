@@ -90,4 +90,42 @@ describe("a drop zone in another window", () => {
             created.frame.remove();
         });
     });
+
+    it("only considers the zones in the drag's window", () => {
+        // A same-type zone in the loading document that covers the iframe zone's coordinates. It is
+        // nested one level deeper, so it would be checked first if it were a candidate.
+        const wrapper = document.createElement("div");
+        const loadingZone = document.createElement("div");
+        Object.assign(loadingZone.style, {position: "absolute", top: "0", left: "0", width: "400px", height: "400px"});
+        loadingZone.appendChild(document.createElement("div"));
+        wrapper.appendChild(loadingZone);
+        document.body.appendChild(wrapper);
+        const loadingTriggers = [];
+        loadingZone.addEventListener("consider", e => loadingTriggers.push(e.detail.info.trigger));
+        const loadingAction = dndzone(loadingZone, {items: [{id: 2}], dropAnimationDisabled: true});
+        let created;
+        cy.then(() => {
+            created = createZoneInFrame({dropAnimationDisabled: true});
+            // Model the framework re-rendering the list on drag start, which starts the observation.
+            created.zone.addEventListener("consider", () => created.item.remove(), {once: true});
+            startMouseDrag(created);
+        });
+        cy.window().should(() => {
+            expect(loadingTriggers).to.deep.equal([]);
+            expect(created.triggers).to.include(TRIGGERS.DRAGGED_ENTERED);
+            expect(loadingZone.style.outline, "should not style the other window's zone as a drop target").to.equal("");
+        });
+        cy.then(() => {
+            created.win.dispatchEvent(mouse(created.win, "mouseup", 10));
+        });
+        cy.window().should(() => {
+            expect(created.doc.getElementById(DRAGGED_ELEMENT_ID)).to.equal(null);
+        });
+        cy.then(() => {
+            created.action.destroy();
+            created.frame.remove();
+            loadingAction.destroy();
+            wrapper.remove();
+        });
+    });
 });

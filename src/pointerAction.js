@@ -96,12 +96,17 @@ function unregisterDropZone(dropZoneEl, type) {
         typeToDropZones.delete(type);
     }
 }
+// The pointer is only tracked in the drag's window and each window has its own coordinates, so zones in other windows
+// are not candidates
+function getDropZonesInDragWindow(type) {
+    return Array.from(typeToDropZones.get(type) || []).filter(dz => getWindowOf(dz) === dragWindow);
+}
 
 /* functions to manage observing the dragged element and trigger custom drag-events */
 function watchDraggedElement() {
     printDebug(() => "watching dragged element");
-    const dropZones = typeToDropZones.get(draggedElType);
-    if (!dropZones || dropZones.size === 0) return;
+    const dropZones = getDropZonesInDragWindow(draggedElType);
+    if (dropZones.length === 0) return;
     if (watchedDropZones.size > 0) unWatchDraggedElement();
     watchedDropZones = new Set(dropZones);
 
@@ -263,7 +268,7 @@ function handleDrop() {
     printDebug(() => ["dropped in dz", shadowElDropZone]);
     let {items, type} = dzToConfig.get(shadowElDropZone);
     styleInactiveDropZones(
-        typeToDropZones.get(type),
+        getDropZonesInDragWindow(type),
         dz => dzToConfig.get(dz).dropTargetStyle,
         dz => dzToConfig.get(dz).dropTargetClasses
     );
@@ -562,7 +567,7 @@ export function dndzone(node, options) {
         dragWindow.requestAnimationFrame(keepOriginalElementInDom);
 
         styleActiveDropZones(
-            Array.from(typeToDropZones.get(config.type)).filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
+            getDropZonesInDragWindow(config.type).filter(dz => dz === originDropZone || !dzToConfig.get(dz).dropFromOthersDisabled),
             dz => dzToConfig.get(dz).dropTargetStyle,
             dz => dzToConfig.get(dz).dropTargetClasses
         );

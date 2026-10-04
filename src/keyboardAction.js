@@ -26,10 +26,11 @@ const elToFocusListeners = new WeakMap();
 const dzToHandles = new Map();
 const dzToConfig = new Map();
 const typeToDropZones = new Map();
-// Each document with zones gets its own aria elements and keydown and click handlers, because a zone can live in another
-// window than the one that loaded this module. A zone is counted in the document it registered in, and released from that
-// document even if it has moved to another one since.
-const dzToDocument = new Map();
+// Each document with zones gets its own aria elements, because a zone can live in another window than the one that loaded
+// this module. That document and the same-origin documents around it, up to the loading document, get keydown, click and
+// pagehide handlers, so that Escape and a click outside end a drag from any of them. A zone is released from the documents
+// it registered with, even if it has moved to another document since.
+const dzToDocuments = new Map();
 const documentToRegistration = new Map();
 
 /* TODO (potentially)
@@ -40,33 +41,51 @@ const documentToRegistration = new Map();
 let INSTRUCTION_IDs;
 
 /* drop-zones registration management */
-function retainDocument(dropZoneEl) {
-    const doc = dropZoneEl.ownerDocument;
-    let registration = documentToRegistration.get(doc);
-    if (!registration) {
-        printDebug(() => "adding global keydown and click handlers");
-        registration = {win: getWindowOf(dropZoneEl), zoneCount: 0};
-        documentToRegistration.set(doc, registration);
-        INSTRUCTION_IDs = initAria(doc);
-        registration.win.addEventListener("keydown", globalKeyDownHandler);
-        registration.win.addEventListener("click", globalClickHandler);
-        registration.win.addEventListener("pagehide", handleWindowHidden);
+function getDocumentsAround(doc) {
+    const docs = [doc];
+    // eslint-disable-next-line no-restricted-globals -- the documents above the loading one belong to whatever hosts the app
+    for (let frame = doc.defaultView?.frameElement; frame && docs[docs.length - 1] !== document; frame = getWindowOf(frame).frameElement) {
+        docs.push(frame.ownerDocument);
     }
-    registration.zoneCount++;
-    dzToDocument.set(dropZoneEl, doc);
+    return docs;
 }
-function releaseDocument(dropZoneEl) {
-    const doc = dzToDocument.get(dropZoneEl);
-    if (!doc) return;
-    dzToDocument.delete(dropZoneEl);
-    const registration = documentToRegistration.get(doc);
-    if (--registration.zoneCount > 0) return;
-    printDebug(() => "removing global keydown and click handlers");
-    documentToRegistration.delete(doc);
-    registration.win.removeEventListener("keydown", globalKeyDownHandler);
-    registration.win.removeEventListener("click", globalClickHandler);
-    registration.win.removeEventListener("pagehide", handleWindowHidden);
-    destroyAria(doc);
+function retainDocuments(dropZoneEl) {
+    const docs = getDocumentsAround(dropZoneEl.ownerDocument);
+    docs.forEach((doc, idx) => {
+        let registration = documentToRegistration.get(doc);
+        if (!registration) {
+            printDebug(() => "adding global keydown and click handlers");
+            // Handlers of its own, so that removing them through a window that has since navigated to another document
+            // leaves the handlers of that document alone
+            const handlers = {keydown: globalKeyDownHandler, click: globalClickHandler, pagehide: handleWindowHidden};
+            registration = {win: doc.defaultView, zoneCount: 0, documentCount: 0, handlers: {}};
+            Object.entries(handlers).forEach(([type, handler]) => {
+                registration.handlers[type] = e => handler(e);
+                registration.win?.addEventListener(type, registration.handlers[type]);
+            });
+            documentToRegistration.set(doc, registration);
+        }
+        registration.documentCount++;
+        if (idx === 0 && registration.zoneCount++ === 0) {
+            INSTRUCTION_IDs = initAria(doc);
+        }
+    });
+    dzToDocuments.set(dropZoneEl, docs);
+}
+function releaseDocuments(dropZoneEl) {
+    const docs = dzToDocuments.get(dropZoneEl);
+    if (!docs) return;
+    dzToDocuments.delete(dropZoneEl);
+    docs.forEach((doc, idx) => {
+        const registration = documentToRegistration.get(doc);
+        if (idx === 0 && --registration.zoneCount === 0) {
+            destroyAria(doc);
+        }
+        if (--registration.documentCount > 0) return;
+        printDebug(() => "removing global keydown and click handlers");
+        documentToRegistration.delete(doc);
+        Object.entries(registration.handlers).forEach(([type, handler]) => registration.win?.removeEventListener(type, handler));
+    });
 }
 function registerDropZone(dropZoneEl, type) {
     printDebug(() => "registering drop-zone if absent");
@@ -78,9 +97,9 @@ function registerDropZone(dropZoneEl, type) {
         incrementActiveDropZoneCount();
     }
     // a zone that moved to another document since it registered takes its registration along
-    if (dzToDocument.get(dropZoneEl) !== dropZoneEl.ownerDocument) {
-        releaseDocument(dropZoneEl);
-        retainDocument(dropZoneEl);
+    if (dzToDocuments.get(dropZoneEl)?.[0] !== dropZoneEl.ownerDocument) {
+        releaseDocuments(dropZoneEl);
+        retainDocuments(dropZoneEl);
     }
 }
 function unregisterDropZone(dropZoneEl, type) {
@@ -94,7 +113,7 @@ function unregisterDropZone(dropZoneEl, type) {
     if (dropZones.size === 0) {
         typeToDropZones.delete(type);
     }
-    releaseDocument(dropZoneEl);
+    releaseDocuments(dropZoneEl);
 }
 
 function globalKeyDownHandler(e) {

@@ -222,6 +222,45 @@ describe("keyboard drags across the documents of one tab", () => {
         ).not.to.equal(null);
     });
 
+    it("ends a keyboard drag in an iframe on Escape or on a click in the page around the iframe", () => {
+        const {doc} = frame();
+        const frameList = list(doc, {label: "Frame", names: ["f1"]});
+        const button = document.createElement("button");
+        document.body.appendChild(button);
+        cleanups.push(() => button.remove());
+
+        grab(frameList, "f1");
+        button.focus();
+        button.click();
+        expect(last(frameList), "a click in the page should end the drag").to.equal(TRIGGERS.DRAG_STOPPED);
+
+        grab(frameList, "f1");
+        key(window, "Escape");
+        expect(
+            frameList.triggers.filter(trigger => trigger === TRIGGERS.DRAG_STOPPED),
+            "Escape in the page should end the drag"
+        ).to.have.length(2);
+    });
+
+    it("keeps the keyboard handlers of an iframe's next document when the app destroys the previous document's zone late", () => {
+        const {frame: frameEl} = frame();
+        const previousList = createList(frameEl.contentDocument, {label: "Previous", names: ["p1"]});
+        cy.then(
+            () =>
+                new Cypress.Promise(resolve => {
+                    frameEl.addEventListener("load", resolve, {once: true});
+                    frameEl.srcdoc = "<!DOCTYPE html><body style='margin:0'></body>";
+                })
+        );
+        cy.then(() => {
+            const nextList = list(frameEl.contentDocument, {label: "Next", names: ["n1"]});
+            previousList.action.destroy();
+            grab(nextList, "n1");
+            key(frameEl.contentWindow, "Escape");
+            expect(last(nextList)).to.equal(TRIGGERS.DRAG_STOPPED);
+        });
+    });
+
     it("ends a keyboard drag whose iframe is removed, and the loading window keeps working", () => {
         const parentList = list(document, {label: "Parent", names: ["p1", "p2"]});
         const {frame: frameEl, doc} = createFrame();

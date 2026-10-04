@@ -200,6 +200,8 @@ function handleZoneFocus(e) {
 
     if (!grabIsAlive()) return;
 
+    const dzFrom = focusedDz;
+    const movedItemId = focusedItemId;
     focusedDzLabel = newlyFocusedDz.getAttribute("aria-label") || "";
     const {items: originItems} = dzToConfig.get(focusedDz);
     const originItem = originItems.find(item => item[ITEM_ID_KEY] === focusedItemId);
@@ -235,9 +237,8 @@ function handleZoneFocus(e) {
             );
         }
     }
-    const dzFrom = focusedDz;
-    const movedItemId = focusedItemId;
-    focusedDz = newlyFocusedDz;
+    // An announcement formatter can end the drag, for example by removing its window. The item still moves.
+    if (isDragging) focusedDz = newlyFocusedDz;
     dispatchFinalizeEvent(dzFrom, originItems, {trigger: TRIGGERS.DROPPED_INTO_ANOTHER, id: movedItemId, source: SOURCES.KEYBOARD});
     if (dzToConfig.has(newlyFocusedDz)) {
         dispatchFinalizeEvent(newlyFocusedDz, targetItems, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: movedItemId, source: SOURCES.KEYBOARD});
@@ -256,6 +257,20 @@ function handleDrop(dispatchConsider = true) {
     const droppedItemId = focusedItemId;
     const droppedItemType = draggedItemType;
     if (!droppedConfig) return;
+    const droppedItemLabel = focusedItemLabel;
+    const droppedDzLabel = focusedDzLabel;
+    const droppedTopWindow = dragTopWindow;
+    // Clear global drag state before running any consumer code: an announcement formatter, a blur handler or a consider
+    // handler. A synchronous handler may destroy the focused zone or remove its window, and neither must recursively
+    // enter handleDrop.
+    focusedItem = null;
+    focusedItemId = null;
+    focusedItemLabel = "";
+    draggedItemType = null;
+    focusedDz = null;
+    focusedDzLabel = "";
+    dragTopWindow = undefined;
+    isDragging = false;
 
     if (!droppedConfig.autoAriaDisabled) {
         // Include the destination and final position so localized messages can describe the completed drop.
@@ -264,8 +279,8 @@ function handleDrop(dispatchConsider = true) {
         announceToScreenReader(
             "dropped",
             {
-                itemLabel: focusedItemLabel,
-                zoneLabel: focusedDzLabel,
+                itemLabel: droppedItemLabel,
+                zoneLabel: droppedDzLabel,
                 position: (droppedIdx < 0 ? 0 : droppedIdx) + 1,
                 count: droppedItems.length
             },
@@ -276,18 +291,6 @@ function handleDrop(dispatchConsider = true) {
     if (allDragTargets.has(activeElement)) {
         activeElement.blur();
     }
-    const droppedTopWindow = dragTopWindow;
-    // Clear global drag state before dispatching. A synchronous handler may destroy the
-    // focused zone, and unregisterDropZone must not recursively enter handleDrop.
-    focusedItem = null;
-    focusedItemId = null;
-    focusedItemLabel = "";
-    draggedItemType = null;
-    focusedDz = null;
-    focusedDzLabel = "";
-    dragTopWindow = undefined;
-    isDragging = false;
-
     if (dispatchConsider) {
         dispatchConsiderEvent(droppedDz, droppedConfig.items, {
             trigger: TRIGGERS.DRAG_STOPPED,
@@ -371,6 +374,8 @@ export function dndzone(node, options) {
                             node.ownerDocument
                         );
                     }
+                    // an announcement formatter can end the drag, for example by removing its window
+                    if (!isDragging) break;
                     swap(items, idx, idx + 1);
                     dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
                 }
@@ -398,6 +403,8 @@ export function dndzone(node, options) {
                             node.ownerDocument
                         );
                     }
+                    // an announcement formatter can end the drag, for example by removing its window
+                    if (!isDragging) break;
                     swap(items, idx, idx - 1);
                     dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
                 }
@@ -437,6 +444,8 @@ export function dndzone(node, options) {
                 node.ownerDocument
             );
         }
+        // an announcement formatter can end the drag, for example by removing its window
+        if (!isDragging) return;
         dispatchConsiderEvent(node, dzToConfig.get(node).items, {trigger: TRIGGERS.DRAG_STARTED, id: focusedItemId, source: SOURCES.KEYBOARD});
         triggerAllDzsUpdate();
     }
@@ -527,7 +536,8 @@ export function dndzone(node, options) {
                 draggableEl.focus();
             }
         }
-        if (itemMovedToThisZone) {
+        // Focusing the replacement item runs its focus handler, which can end the drag, for example by removing its window
+        if (itemMovedToThisZone && isDragging) {
             // Nested actions are configured before their parent action. Refresh only
             // after focusedItem points at the replacement so nested zones stay untabbable.
             refreshActiveDragTabIndices();

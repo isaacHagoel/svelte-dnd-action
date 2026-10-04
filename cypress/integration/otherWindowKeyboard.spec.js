@@ -1,3 +1,4 @@
+import {dndzone} from "../../src/action";
 import {TRIGGERS} from "../../src/constants";
 import {alertToScreenReader, destroyAria, setAriaStrings} from "../../src/helpers/aria";
 import {alertText, createFrame, createList, failOnListenerErrors, key, openPopup, trackListeners} from "./helpers/otherWindow";
@@ -274,6 +275,89 @@ describe("keyboard drags across the documents of one tab", () => {
         grab(parentList, "p1");
         expect(parentList.triggers).to.deep.equal([TRIGGERS.DRAG_STARTED]);
         key(window, "Escape");
+    });
+
+    // An announcement formatter or a handler of the app can remove the iframe in the middle of a keyboard operation, which
+    // ends the drag right there. The operation must not carry on with the drag that has ended.
+    describe("when the iframe is removed in the middle of an operation", () => {
+        afterEach(() => setAriaStrings(null));
+
+        // A detached document's elements lose their listeners, so watch what the library dispatches on the zone itself.
+        function recordDispatchedTriggers(zone) {
+            const triggers = [];
+            const {dispatchEvent} = zone;
+            zone.dispatchEvent = event => {
+                triggers.push(event.detail.info.trigger);
+                return dispatchEvent.call(zone, event);
+            };
+            return triggers;
+        }
+        function removingFrameFormatter(frameEl) {
+            return ({itemLabel}) => {
+                frameEl.remove();
+                return itemLabel;
+            };
+        }
+        function expectAParentDragToWork(parentList) {
+            grab(parentList, "p1");
+            expect(parentList.triggers[parentList.triggers.length - 1]).to.equal(TRIGGERS.DRAG_STARTED);
+            key(window, "Escape");
+        }
+
+        it("stops the drag once when it ends while announcing the drop", () => {
+            const parentList = list(document, {label: "Parent", names: ["p1"]});
+            const {frame: frameEl, doc, win} = createFrame();
+            const frameList = createList(doc, {label: "Frame", names: ["f1"]});
+            cleanups.push(() => frameList.action.destroy());
+            const dispatched = recordDispatchedTriggers(frameList.zone);
+            setAriaStrings({dropped: removingFrameFormatter(frameEl)});
+            grab(frameList, "f1");
+            key(win, "Escape");
+            expect(dispatched).to.deep.equal([TRIGGERS.DRAG_STARTED, TRIGGERS.DRAG_STOPPED]);
+            expectAParentDragToWork(parentList);
+        });
+
+        it("does not start the drag when it ends while announcing the start", () => {
+            const parentList = list(document, {label: "Parent", names: ["p1"]});
+            const {frame: frameEl, doc} = createFrame();
+            const frameList = createList(doc, {label: "Frame", names: ["f1"]});
+            cleanups.push(() => frameList.action.destroy());
+            const dispatched = recordDispatchedTriggers(frameList.zone);
+            setAriaStrings({dragStarted: removingFrameFormatter(frameEl)});
+            grab(frameList, "f1");
+            expect(dispatched).to.deep.equal([TRIGGERS.DRAG_STOPPED]);
+            expectAParentDragToWork(parentList);
+        });
+
+        it("still moves the item when the drag ends while announcing the move to another list", () => {
+            const {parentList, frameList} = parentAndFrameLists();
+            const dispatched = recordDispatchedTriggers(frameList.zone);
+            setAriaStrings({movedToZoneEnd: removingFrameFormatter(frameList.win.frameElement)});
+            grab(frameList, "f1");
+            parentList.zone.focus();
+            expect(parentList.names()).to.deep.equal(["p1", "p2", "f1"]);
+            expect(dispatched).to.deep.equal([TRIGGERS.DRAG_STARTED, TRIGGERS.DRAG_STOPPED, TRIGGERS.DROPPED_INTO_ANOTHER]);
+            expect(parentList.element("p1").tabIndex, "the drag should have ended").to.equal(0);
+            expectAParentDragToWork(parentList);
+        });
+
+        it("ends the drag when the focus handler of an item the app moved into the iframe removes it", () => {
+            const parentList = list(document, {label: "Parent", names: ["p1", "p2"]});
+            const {frame: frameEl, doc} = createFrame();
+            const frameZone = doc.createElement("div");
+            doc.body.appendChild(frameZone);
+            const frameAction = dndzone(frameZone, {items: []});
+            cleanups.push(() => frameAction.destroy());
+            grab(parentList, "p1");
+
+            // The app moves the grabbed item into the iframe's zone itself.
+            const movedItem = doc.createElement("div");
+            movedItem.addEventListener("focus", () => frameEl.remove());
+            frameZone.appendChild(movedItem);
+            frameAction.update({items: [{id: "p1", name: "p1"}]});
+
+            expect(parentList.element("p2").tabIndex, "the drag should have ended").to.equal(0);
+        });
     });
 
     it("announces a custom alert in the given document", () => {

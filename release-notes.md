@@ -8,6 +8,7 @@ Feature: support dndzones in same-origin iframes and other windows, including po
 -   Both pointer and keyboard transfers stay within the document they started in. Lists inside an iframe or popup work normally, but neither input transfers items between documents.
 -   Custom screen-reader announcements accept an optional document: `alertToScreenReader(text, zone.ownerDocument)`.
 -   Enforce keyboard drop restrictions even when a disabled or other-type destination is focused by a click or application code.
+-   Restrict keyboard reordering to the grabbed item, leaving arrow keys in nested controls and unrelated items untouched.
 -   Exclude lists nested inside the grabbed item from destination styling and move-between-lists announcements.
 -   Keep mid-pointer-drag styles and classes limited to eligible destinations, removing the previously applied styling when options change.
 

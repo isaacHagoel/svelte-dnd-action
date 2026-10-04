@@ -315,6 +315,11 @@ export function dndzone(node, options) {
         arr.splice(j, 1, arr.splice(i, 1, arr[j])[0]);
     }
 
+    function ownsArrowKey(e) {
+        // Only the grabbed item owns reorder keys. Nested controls and other items keep their own key behaviour.
+        return isDragging && node === focusedDz && isInDragDocument(node) && e.currentTarget === focusedItem && e.target === focusedItem;
+    }
+
     function handleKeyDown(e) {
         printDebug(() => ["handling key down", e.key]);
         switch (e.key) {
@@ -341,7 +346,7 @@ export function dndzone(node, options) {
             }
             case "ArrowDown":
             case "ArrowRight": {
-                if (!isDragging) return;
+                if (!ownsArrowKey(e)) return;
                 e.preventDefault(); // prevent scrolling
                 e.stopPropagation();
                 const {items} = dzToConfig.get(node);
@@ -361,8 +366,8 @@ export function dndzone(node, options) {
                             node.ownerDocument
                         );
                     }
-                    // an announcement formatter can end the drag, for example by removing its window
-                    if (!isDragging) break;
+                    // An announcement formatter can end or move the drag, for example by removing its window.
+                    if (!ownsArrowKey(e)) break;
                     swap(items, idx, idx + 1);
                     dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
                 }
@@ -370,7 +375,7 @@ export function dndzone(node, options) {
             }
             case "ArrowUp":
             case "ArrowLeft": {
-                if (!isDragging) return;
+                if (!ownsArrowKey(e)) return;
                 e.preventDefault(); // prevent scrolling
                 e.stopPropagation();
                 const {items} = dzToConfig.get(node);
@@ -390,8 +395,8 @@ export function dndzone(node, options) {
                             node.ownerDocument
                         );
                     }
-                    // an announcement formatter can end the drag, for example by removing its window
-                    if (!isDragging) break;
+                    // An announcement formatter can end or move the drag, for example by removing its window.
+                    if (!ownsArrowKey(e)) break;
                     swap(items, idx, idx - 1);
                     dispatchFinalizeEvent(node, items, {trigger: TRIGGERS.DROPPED_INTO_ZONE, id: focusedItemId, source: SOURCES.KEYBOARD});
                 }

@@ -332,6 +332,27 @@ describe("a drag in another window that goes away", () => {
         expectALoadingWindowDragToWork();
     });
 
+    it("finalizes once when the app removes the iframe while the drag enters its first zone", () => {
+        let finalizeCount;
+        cy.then({timeout: 10000}, () => {
+            const created = listInFrame();
+            created.list.zone.addEventListener("consider", e => {
+                if (e.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) created.frame.remove();
+            });
+            startDrag(created);
+            // The first observation runs on the iframe's next animation frame.
+            return new Promise(resolve => window.setTimeout(resolve, 200)).then(() => {
+                finalizeCount = created.list.triggers.filter(trigger => trigger === TRIGGERS.DROPPED_INTO_ZONE).length;
+                try {
+                    expectALoadingWindowDragToWork();
+                } finally {
+                    created.list.action.destroy();
+                }
+            });
+        });
+        cy.then(() => expect(finalizeCount).to.equal(1));
+    });
+
     it("finalizes once when the app removes the iframe while handling the finalize event", () => {
         cy.then({timeout: 10000}, () => {
             const created = listInFrame({dropAnimationDisabled: false, flipDurationMs: 50});

@@ -581,6 +581,8 @@ export function dndzone(node, options) {
                 originDropZoneRoot.appendChild(originalDragTarget);
                 // have to watch before we hide, otherwise Svelte 5 $state gets confused
                 watchDraggedElement();
+                // a consider handler during the first observation can end the drag, for example by removing its window
+                if (!draggedEl) return;
                 hideElement(originalDragTarget);
                 // after the removal of the original element we can give the shadow element the original item id so that the host zone can find it and render it correctly if it does lookups by id
                 shadowElData[ITEM_ID_KEY] = draggedElData[ITEM_ID_KEY];

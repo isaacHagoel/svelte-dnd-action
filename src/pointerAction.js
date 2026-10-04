@@ -177,6 +177,8 @@ function handleDraggedEntered(e) {
             id: draggedElData[ITEM_ID_KEY],
             source: SOURCES.POINTER
         });
+        // the handler can end the drag, for example by removing its window
+        if (!isWorkingOnPreviousDrag) return;
     }
     const {index: shadowElIdx} = e.detail.indexObj;
     shadowElDropZone = e.currentTarget;
@@ -216,6 +218,8 @@ function handleDraggedLeft(e) {
             id: draggedElData[ITEM_ID_KEY],
             source: SOURCES.POINTER
         });
+        // the handler can end the drag, for example by removing its window
+        if (!isWorkingOnPreviousDrag) return;
     }
     // for the origin dz, when the dragged is outside of any, this will be fired in addition to the previous. this is for simplicity
     dispatchConsiderEvent(e.currentTarget, items, {

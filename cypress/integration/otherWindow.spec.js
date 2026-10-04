@@ -33,8 +33,8 @@ function createZoneInFrame(options = {}, makeZone = dndzone) {
     return {action, doc, frame, item, triggers, win, zone};
 }
 
-function mouse(win, type, x) {
-    return new win.MouseEvent(type, {button: 0, clientX: x, clientY: x, bubbles: true, cancelable: true});
+function mouse(win, type, x, y = x) {
+    return new win.MouseEvent(type, {button: 0, clientX: x, clientY: y, bubbles: true, cancelable: true});
 }
 
 function startMouseDrag({item, win}) {
@@ -351,6 +351,41 @@ describe("a drag in another window that goes away", () => {
             });
         });
         cy.then(() => expect(finalizeCount).to.equal(1));
+    });
+
+    [
+        {trigger: TRIGGERS.DRAGGED_LEFT_ALL, moveTo: [250, 180], zones: 1},
+        {trigger: TRIGGERS.DRAGGED_ENTERED_ANOTHER, moveTo: [50, 130], zones: 2}
+    ].forEach(({trigger, moveTo, zones}) => {
+        it(`finalizes once when the app removes the iframe while handling ${trigger}`, () => {
+            let finalizeCount;
+            cy.then({timeout: 10000}, () => {
+                const created = listInFrame();
+                const other = zones > 1 ? createList(created.doc, {label: "Other", names: ["o1"], style: {marginTop: "40px"}}) : undefined;
+                created.list.zone.addEventListener("consider", e => {
+                    if (e.detail.info.trigger === trigger) created.frame.remove();
+                });
+                startDrag(created);
+                const sleep = ms => new Promise(resolve => window.setTimeout(resolve, ms));
+                return sleep(100)
+                    .then(() => {
+                        created.win.dispatchEvent(mouse(created.win, "mousemove", ...moveTo));
+                        return sleep(200);
+                    })
+                    .then(() => {
+                        finalizeCount = created.list.triggers.filter(
+                            t => t === TRIGGERS.DROPPED_INTO_ZONE || t === TRIGGERS.DROPPED_OUTSIDE_OF_ANY
+                        ).length;
+                        try {
+                            expectALoadingWindowDragToWork();
+                        } finally {
+                            created.list.action.destroy();
+                            other?.action.destroy();
+                        }
+                    });
+            });
+            cy.then(() => expect(finalizeCount).to.equal(1));
+        });
     });
 
     it("finalizes once when the app removes the iframe while handling the finalize event", () => {

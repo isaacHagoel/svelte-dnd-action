@@ -124,3 +124,20 @@ export function trackListeners(win, types) {
         }
     };
 }
+
+/**
+ * Fails a test on an error thrown by an event listener. Cypress can let a test pass, and skip its queued commands, when a
+ * listener throws during the test's synchronous part, and the library runs in listeners.
+ */
+export function failOnListenerErrors() {
+    let errors;
+    const onError = e => errors.push(e.message);
+    beforeEach(() => {
+        errors = [];
+        window.addEventListener("error", onError);
+    });
+    afterEach(() => {
+        window.removeEventListener("error", onError);
+        expect(errors, "errors thrown by listeners").to.deep.equal([]);
+    });
+}

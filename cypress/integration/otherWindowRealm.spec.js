@@ -1,5 +1,7 @@
 import {DRAGGED_ELEMENT_ID, TRIGGERS} from "../../src/constants";
-import {createFrame, createList, mouse, sleepIn} from "./helpers/otherWindow";
+import {createFrame, createList, failOnListenerErrors, mouse, sleepIn} from "./helpers/otherWindow";
+
+failOnListenerErrors();
 
 // A drag in another window runs on that window's timers and reads its computed styles, so it keeps going
 // when the loading window is hidden and the browser throttles or stops that window's timers and frames.

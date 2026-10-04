@@ -1,6 +1,8 @@
 import {TRIGGERS} from "../../src/constants";
-import {alertToScreenReader, destroyAria} from "../../src/helpers/aria";
-import {alertText, createFrame, createList, key, openPopup, trackListeners} from "./helpers/otherWindow";
+import {alertToScreenReader, destroyAria, setAriaStrings} from "../../src/helpers/aria";
+import {alertText, createFrame, createList, failOnListenerErrors, key, openPopup, trackListeners} from "./helpers/otherWindow";
+
+failOnListenerErrors();
 
 const STARTED_IN_PARENT = "Started dragging item p1. Use the arrow keys to move it within its list Parent";
 const MOVE_BETWEEN_LISTS = ", or tab to another list in order to move the item into it";
@@ -263,6 +265,7 @@ describe("keyboard drags across the documents of one tab", () => {
         const parentList = list(document, {label: "Parent", names: ["p1", "p2"]});
         const {frame: frameEl, doc} = createFrame();
         const frameList = createList(doc, {label: "Frame", names: ["f1"]});
+        cleanups.push(() => frameList.action.destroy());
         grab(frameList, "f1");
         frameEl.remove();
         expect(last(frameList), "the app should get the drag-stopped event").to.equal(TRIGGERS.DRAG_STOPPED);
@@ -271,8 +274,6 @@ describe("keyboard drags across the documents of one tab", () => {
         grab(parentList, "p1");
         expect(parentList.triggers).to.deep.equal([TRIGGERS.DRAG_STARTED]);
         key(window, "Escape");
-        // The app destroys its zone after the iframe is gone.
-        frameList.action.destroy();
     });
 
     it("announces a custom alert in the given document", () => {

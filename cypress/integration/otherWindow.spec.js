@@ -3,7 +3,9 @@ import {dndzone as pointerAndKeyboardDndzone} from "../../src/action";
 import {dragHandle, dragHandleZone} from "../../src/wrappers/withDragHandles";
 import {setAriaStrings} from "../../src/helpers/aria";
 import {DRAGGED_ELEMENT_ID, TRIGGERS} from "../../src/constants";
-import {createFrame, createList, openPopup} from "./helpers/otherWindow";
+import {createFrame, createList, failOnListenerErrors, openPopup} from "./helpers/otherWindow";
+
+failOnListenerErrors();
 
 // A same-origin iframe stands in for any other window the zone can live in (for example a popup
 // opened with window.open): its own Window and Document, while this module was loaded by the

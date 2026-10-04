@@ -76,6 +76,7 @@ function initAriaOnBrowser(doc) {
  */
 export function initAria(doc) {
     if (isOnServer) return null;
+    // eslint-disable-next-line no-restricted-globals -- the documented default
     doc = doc || document;
     if (doc.readyState === "complete") {
         initAriaOnBrowser(doc);
@@ -91,6 +92,7 @@ export function initAria(doc) {
  */
 export function destroyAria(doc) {
     if (isOnServer) return;
+    // eslint-disable-next-line no-restricted-globals -- the documented default
     doc = doc || document;
     const alertsDiv = docToAlertsDiv.get(doc);
     if (!alertsDiv) return;
@@ -124,6 +126,7 @@ function renderInstruction(div, txt) {
  */
 export function alertToScreenReader(txt, doc) {
     if (isOnServer) return;
+    // eslint-disable-next-line no-restricted-globals -- the documented default
     doc = doc || document;
     if (!docToAlertsDiv.has(doc)) {
         initAriaOnBrowser(doc);

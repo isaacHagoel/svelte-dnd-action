@@ -5,6 +5,7 @@
  * @return {Window}
  */
 export function getWindowOf(el) {
+    // eslint-disable-next-line no-restricted-globals -- for a document without a window, e.g. after its window closed
     return el.ownerDocument.defaultView || window;
 }
 

@@ -327,7 +327,13 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
     const transition = `transform ${dropAnimationDurationMs}ms ease`;
     draggedEl.style.transition = draggedEl.style.transition ? draggedEl.style.transition + "," + transition : transition;
     draggedEl.style.transform = `translate3d(${newTransform.x}px, ${newTransform.y}px, 0)`;
-    dropFinalization = {timeout: setTimeoutIn(dragWindow, callback, dropAnimationDurationMs), finalize: callback};
+    dropFinalization = {timeout: setTimeoutIn(dragWindow, finishDropAnimation, dropAnimationDurationMs), finalize: callback};
+}
+function finishDropAnimation() {
+    const {finalize} = dropFinalization;
+    // cleared first, because a finalize handler can remove the drag's window
+    dropFinalization = undefined;
+    finalize();
 }
 
 // The drag's window is going away: it was closed or navigated, or its iframe was removed. Its events, timers and animation
@@ -339,7 +345,7 @@ function handleDragWindowHidden() {
     }
     if (dropFinalization) {
         clearTimeoutIn(dropFinalization.timeout);
-        dropFinalization.finalize();
+        finishDropAnimation();
     }
 }
 
@@ -376,7 +382,6 @@ function cleanupPostDrop() {
     finalizingPreviousDrag = false;
     unlockOriginDzMinDimensions = undefined;
     isDraggedOutsideOfAnyDz = false;
-    dropFinalization = undefined;
     dragWindow.removeEventListener("pagehide", handleDragWindowHidden);
     clearTimeoutIn(touchDragHoldTimer);
     touchDragHoldTimer = undefined;
@@ -595,14 +600,15 @@ export function dndzone(node, options) {
         items.splice(currentIdx, 1, shadowElData);
         unlockOriginDzMinDimensions = preventShrinking(originDropZone);
 
-        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
-
-        // handing over to global handlers - starting to watch the element
+        // handing over to global handlers - starting to watch the element. This happens before the consider event because
+        // its handler can remove the drag's window, which ends the drag.
         dragWindow.addEventListener("mousemove", handleMouseMove, {passive: false});
         dragWindow.addEventListener("touchmove", handleMouseMove, {passive: false, capture: false});
         dragWindow.addEventListener("mouseup", handleDrop, {passive: false});
         dragWindow.addEventListener("touchend", handleDrop, {passive: false});
         dragWindow.addEventListener("pagehide", handleDragWindowHidden);
+
+        dispatchConsiderEvent(originDropZone, items, {trigger: TRIGGERS.DRAG_STARTED, id: draggedElData[ITEM_ID_KEY], source: SOURCES.POINTER});
     }
 
     function configure({

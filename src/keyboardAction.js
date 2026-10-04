@@ -276,6 +276,7 @@ function handleDrop(dispatchConsider = true) {
     if (allDragTargets.has(activeElement)) {
         activeElement.blur();
     }
+    const destinations = Array.from(typeToDropZones.get(droppedItemType) || []).filter(isReachableByKeyboard);
     // Clear global drag state before dispatching. A synchronous handler may destroy the
     // focused zone, and unregisterDropZone must not recursively enter handleDrop.
     focusedItem = null;
@@ -284,6 +285,7 @@ function handleDrop(dispatchConsider = true) {
     draggedItemType = null;
     focusedDz = null;
     focusedDzLabel = "";
+    dragTopWindow = undefined;
     isDragging = false;
 
     if (dispatchConsider) {
@@ -293,14 +295,11 @@ function handleDrop(dispatchConsider = true) {
             source: SOURCES.KEYBOARD
         });
     }
-    const dropZones = typeToDropZones.get(droppedItemType);
-    if (dropZones) {
-        styleInactiveDropZones(
-            Array.from(dropZones).filter(isReachableByKeyboard),
-            dz => dzToConfig.get(dz).dropTargetStyle,
-            dz => dzToConfig.get(dz).dropTargetClasses
-        );
-    }
+    styleInactiveDropZones(
+        destinations,
+        dz => dzToConfig.get(dz).dropTargetStyle,
+        dz => dzToConfig.get(dz).dropTargetClasses
+    );
     triggerAllDzsUpdate();
 }
 //////

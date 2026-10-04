@@ -383,6 +383,7 @@ function cleanupPostDrop() {
     unlockOriginDzMinDimensions = undefined;
     isDraggedOutsideOfAnyDz = false;
     dragWindow.removeEventListener("pagehide", handleDragWindowHidden);
+    dragWindow = undefined;
     clearTimeoutIn(touchDragHoldTimer);
     touchDragHoldTimer = undefined;
     touchHoldElapsed = false;
@@ -441,6 +442,7 @@ export function dndzone(node, options) {
     function cancelPendingDrag() {
         if (pendingDragOwner !== node) return;
         removeMaybeListeners();
+        dragWindow = undefined;
         pendingDragOwner = undefined;
         originalDragTarget = undefined;
         dragStartMousePosition = undefined;

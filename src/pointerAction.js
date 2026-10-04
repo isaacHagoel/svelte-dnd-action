@@ -99,9 +99,9 @@ function unregisterDropZone(dropZoneEl, type) {
     }
 }
 // The pointer is only tracked in the drag's window and each window has its own coordinates, so zones in other windows
-// are not candidates
+// are not candidates, and neither are zones whose window is gone
 function getDropZonesInDragWindow(type) {
-    return Array.from(typeToDropZones.get(type) || []).filter(dz => getWindowOf(dz) === dragWindow);
+    return Array.from(typeToDropZones.get(type) || []).filter(dz => dz.ownerDocument.defaultView === dragWindow);
 }
 
 /* functions to manage observing the dragged element and trigger custom drag-events */

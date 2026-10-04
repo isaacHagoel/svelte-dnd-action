@@ -308,6 +308,23 @@ describe("a drag in another window that goes away", () => {
         });
     });
 
+    it("leaves a zone whose iframe is gone out of a pointer drag in the loading window", () => {
+        const created = listInFrame();
+        created.frame.remove();
+        const list = createList(document, {label: "Loading", names: ["l1"], dropAnimationDisabled: true});
+        try {
+            list.element("l1").dispatchEvent(mouse(window, "mousedown", 5));
+            window.dispatchEvent(mouse(window, "mousemove", 10));
+            expect(list.zone.style.outline, "should style the loading window's zone").not.to.equal("");
+            expect(created.list.zone.style.outline, "should not style the removed iframe's zone").to.equal("");
+            window.dispatchEvent(mouse(window, "mouseup", 10));
+        } finally {
+            list.action.destroy();
+            list.zone.remove();
+            created.list.action.destroy();
+        }
+    });
+
     it("releases a drag handle whose iframe is removed before the mouse is released", () => {
         const loadingZone = document.createElement("div");
         const loadingItem = document.createElement("div");

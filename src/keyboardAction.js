@@ -18,6 +18,8 @@ let focusedDzLabel = "";
 let focusedItem;
 let focusedItemId;
 let focusedItemLabel = "";
+// The top-level window of the zone a keyboard drag started in
+let dragTopWindow;
 const allDragTargets = new WeakSet();
 const elToKeyDownListeners = new WeakMap();
 const elToFocusListeners = new WeakMap();
@@ -122,8 +124,39 @@ function handleWindowHidden(e) {
     }
 }
 
+// A keyboard drag can only reach what Tab reaches: the zones in the same top-level window as the drag, which includes
+// same-origin iframes, but not a separate popup window. So those are its destinations.
+function isReachableByKeyboard(dropZoneEl) {
+    return dropZoneEl.ownerDocument.defaultView?.top === dragTopWindow;
+}
+
+// The position of an element in the viewport of its top-level window, so zones in different documents can be compared
+function getPositionInTopWindow(el) {
+    let {top, left} = el.getBoundingClientRect();
+    for (let frame = getWindowOf(el).frameElement; frame; frame = getWindowOf(frame).frameElement) {
+        const frameRect = frame.getBoundingClientRect();
+        const {paddingTop, paddingLeft} = getWindowOf(frame).getComputedStyle(frame);
+        top += frameRect.top + frame.clientTop + parseFloat(paddingTop);
+        left += frameRect.left + frame.clientLeft + parseFloat(paddingLeft);
+    }
+    return {top, left};
+}
+
+function isAboveOrLeftOf(el, otherEl) {
+    const inOneDocument = el.ownerDocument === otherEl.ownerDocument;
+    const position = inOneDocument ? el.getBoundingClientRect() : getPositionInTopWindow(el);
+    const otherPosition = inOneDocument ? otherEl.getBoundingClientRect() : getPositionInTopWindow(otherEl);
+    return position.top < otherPosition.top || position.left < otherPosition.left;
+}
+
 function getActiveDragTabIndex(dropZoneEl, config) {
-    return dropZoneEl === focusedDz || focusedItem.contains(dropZoneEl) || config.dropFromOthersDisabled || config.type !== draggedItemType ? -1 : 0;
+    return dropZoneEl === focusedDz ||
+        focusedItem.contains(dropZoneEl) ||
+        config.dropFromOthersDisabled ||
+        config.type !== draggedItemType ||
+        !isReachableByKeyboard(dropZoneEl)
+        ? -1
+        : 0;
 }
 
 function refreshActiveDragTabIndices() {
@@ -144,7 +177,7 @@ function handleZoneFocus(e) {
     printDebug(() => "zone focus");
     if (!isDragging) return;
     const newlyFocusedDz = e.currentTarget;
-    if (newlyFocusedDz === focusedDz) return;
+    if (newlyFocusedDz === focusedDz || !isReachableByKeyboard(newlyFocusedDz)) return;
 
     if (!grabIsAlive()) return;
 
@@ -154,10 +187,7 @@ function handleZoneFocus(e) {
     const originIdx = originItems.indexOf(originItem);
     const itemToMove = originItems.splice(originIdx, 1)[0];
     const {items: targetItems, autoAriaDisabled} = dzToConfig.get(newlyFocusedDz);
-    if (
-        newlyFocusedDz.getBoundingClientRect().top < focusedDz.getBoundingClientRect().top ||
-        newlyFocusedDz.getBoundingClientRect().left < focusedDz.getBoundingClientRect().left
-    ) {
+    if (isAboveOrLeftOf(newlyFocusedDz, focusedDz)) {
         targetItems.push(itemToMove);
         if (!autoAriaDisabled) {
             announceToScreenReader(
@@ -247,7 +277,7 @@ function handleDrop(dispatchConsider = true) {
     const dropZones = typeToDropZones.get(droppedItemType);
     if (dropZones) {
         styleInactiveDropZones(
-            dropZones,
+            Array.from(dropZones).filter(isReachableByKeyboard),
             dz => dzToConfig.get(dz).dropTargetStyle,
             dz => dzToConfig.get(dz).dropTargetClasses
         );
@@ -361,7 +391,10 @@ export function dndzone(node, options) {
         focusedDzLabel = node.getAttribute("aria-label") || "";
         draggedItemType = config.type;
         isDragging = true;
-        const dropTargets = Array.from(typeToDropZones.get(config.type)).filter(dz => dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled);
+        dragTopWindow = getWindowOf(node).top;
+        const dropTargets = Array.from(typeToDropZones.get(config.type)).filter(
+            dz => (dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled) && isReachableByKeyboard(dz)
+        );
         styleActiveDropZones(
             dropTargets,
             dz => dzToConfig.get(dz).dropTargetStyle,

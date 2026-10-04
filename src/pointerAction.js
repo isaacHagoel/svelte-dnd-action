@@ -634,6 +634,9 @@ export function dndzone(node, options) {
         dropAnimationDisabled = false,
         delayTouchStart: delayTouchStartOpt = false
     }) {
+        const isInDragWindow = isWorkingOnPreviousDrag && node.ownerDocument.defaultView === dragWindow;
+        const wasDropTarget = node === originDropZone || (config.type === draggedElType && !config.dropFromOthersDisabled);
+        const isDropTarget = node === originDropZone || (newType === draggedElType && !dropFromOthersDisabled);
         config.dropAnimationDurationMs = dropAnimationDurationMs;
 
         let effectiveDelayMs = 0;
@@ -656,49 +659,33 @@ export function dndzone(node, options) {
         config.useCursorForDetection = useCursorForDetection;
         config.dropAnimationDisabled = dropAnimationDisabled;
 
-        // a drag only styles the zones in its own window
-        const isInDragWindow = isWorkingOnPreviousDrag && node.ownerDocument.defaultView === dragWindow;
-        // realtime update for dropTargetStyle
+        // Realtime styling follows the same eligibility as drag start. Remove the previously applied styles and
+        // classes before storing the new options, including when disabling incoming drops and changing styles together.
         if (
             initialized &&
             isInDragWindow &&
             !finalizingPreviousDrag &&
-            (!areObjectsShallowEqual(dropTargetStyle, config.dropTargetStyle) ||
+            (wasDropTarget !== isDropTarget ||
+                !areObjectsShallowEqual(dropTargetStyle, config.dropTargetStyle) ||
                 !areArraysShallowEqualSameOrder(dropTargetClasses, config.dropTargetClasses))
         ) {
-            styleInactiveDropZones(
-                [node],
-                () => config.dropTargetStyle,
-                () => dropTargetClasses
-            );
-            styleActiveDropZones(
-                [node],
-                () => dropTargetStyle,
-                () => dropTargetClasses
-            );
-        }
-        config.dropTargetStyle = dropTargetStyle;
-        config.dropTargetClasses = [...dropTargetClasses];
-
-        // realtime update for dropFromOthersDisabled
-        function getConfigProp(dz, propName) {
-            return dzToConfig.get(dz) ? dzToConfig.get(dz)[propName] : config[propName];
-        }
-        if (initialized && isInDragWindow && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
-            if (dropFromOthersDisabled) {
+            if (wasDropTarget) {
                 styleInactiveDropZones(
                     [node],
-                    dz => getConfigProp(dz, "dropTargetStyle"),
-                    dz => getConfigProp(dz, "dropTargetClasses")
+                    () => config.dropTargetStyle,
+                    () => config.dropTargetClasses
                 );
-            } else {
+            }
+            if (isDropTarget) {
                 styleActiveDropZones(
                     [node],
-                    dz => getConfigProp(dz, "dropTargetStyle"),
-                    dz => getConfigProp(dz, "dropTargetClasses")
+                    () => dropTargetStyle,
+                    () => dropTargetClasses
                 );
             }
         }
+        config.dropTargetStyle = dropTargetStyle;
+        config.dropTargetClasses = [...dropTargetClasses];
         config.dropFromOthersDisabled = dropFromOthersDisabled;
 
         dzToConfig.set(node, config);

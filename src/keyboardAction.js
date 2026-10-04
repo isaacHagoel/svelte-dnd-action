@@ -168,19 +168,22 @@ function isAboveOrLeftOf(el, otherEl) {
     return position.top < otherPosition.top || position.left < otherPosition.left;
 }
 
-function getActiveDragTabIndex(dropZoneEl, config) {
-    return dropZoneEl === focusedDz ||
-        focusedItem.contains(dropZoneEl) ||
-        config.dropFromOthersDisabled ||
-        config.type !== draggedItemType ||
-        !isReachableByKeyboard(dropZoneEl)
-        ? -1
-        : 0;
+// Tab order, focus-driven transfers, styling and announcements must agree about which zones can receive the item.
+// tabindex=-1 alone is not a restriction: a click or consumer code can still focus a zone.
+function isKeyboardDropTarget(dropZoneEl) {
+    const config = dzToConfig.get(dropZoneEl);
+    return (
+        config.type === draggedItemType && !config.dropFromOthersDisabled && !focusedItem.contains(dropZoneEl) && isReachableByKeyboard(dropZoneEl)
+    );
+}
+
+function getActiveDragTabIndex(dropZoneEl) {
+    return dropZoneEl !== focusedDz && isKeyboardDropTarget(dropZoneEl) ? 0 : -1;
 }
 
 function refreshActiveDragTabIndices() {
-    dzToConfig.forEach((config, dropZoneEl) => {
-        dropZoneEl.tabIndex = getActiveDragTabIndex(dropZoneEl, config);
+    dzToConfig.forEach((_, dropZoneEl) => {
+        dropZoneEl.tabIndex = getActiveDragTabIndex(dropZoneEl);
     });
 }
 
@@ -196,7 +199,7 @@ function handleZoneFocus(e) {
     printDebug(() => "zone focus");
     if (!isDragging) return;
     const newlyFocusedDz = e.currentTarget;
-    if (newlyFocusedDz === focusedDz || !isReachableByKeyboard(newlyFocusedDz)) return;
+    if (newlyFocusedDz === focusedDz || !isKeyboardDropTarget(newlyFocusedDz)) return;
 
     if (!grabIsAlive()) return;
 
@@ -420,9 +423,7 @@ export function dndzone(node, options) {
         draggedItemType = config.type;
         isDragging = true;
         dragTopWindow = getWindowOf(node).top;
-        const dropTargets = Array.from(typeToDropZones.get(config.type)).filter(
-            dz => (dz === focusedDz || !dzToConfig.get(dz).dropFromOthersDisabled) && isReachableByKeyboard(dz)
-        );
+        const dropTargets = Array.from(typeToDropZones.get(config.type)).filter(dz => dz === focusedDz || isKeyboardDropTarget(dz));
         styleActiveDropZones(
             dropTargets,
             dz => dzToConfig.get(dz).dropTargetStyle,
@@ -505,7 +506,7 @@ export function dndzone(node, options) {
                 focusedDz = node;
                 focusedDzLabel = node.getAttribute("aria-label") || "";
             }
-            node.tabIndex = getActiveDragTabIndex(node, config);
+            node.tabIndex = getActiveDragTabIndex(node);
         } else {
             node.tabIndex = config.zoneTabIndex;
         }

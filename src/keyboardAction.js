@@ -24,9 +24,11 @@ const elToFocusListeners = new WeakMap();
 const dzToHandles = new Map();
 const dzToConfig = new Map();
 const typeToDropZones = new Map();
-// A map from a document to the number of drop zones in it. A zone can live in another window than the one that loaded this
-// module, so each document with zones gets its own aria elements and keydown and click handlers.
-const docToDropZoneCount = new Map();
+// Each document with zones gets its own aria elements and keydown and click handlers, because a zone can live in another
+// window than the one that loaded this module. A zone is counted in the document it registered in, and released from that
+// document even if it has moved to another one since.
+const dzToDocument = new Map();
+const documentToRegistration = new Map();
 
 /* TODO (potentially)
  * what's the deal with the black border of voice-reader not following focus?
@@ -36,23 +38,45 @@ const docToDropZoneCount = new Map();
 let INSTRUCTION_IDs;
 
 /* drop-zones registration management */
+function retainDocument(dropZoneEl) {
+    const doc = dropZoneEl.ownerDocument;
+    let registration = documentToRegistration.get(doc);
+    if (!registration) {
+        printDebug(() => "adding global keydown and click handlers");
+        registration = {win: getWindowOf(dropZoneEl), zoneCount: 0};
+        documentToRegistration.set(doc, registration);
+        INSTRUCTION_IDs = initAria(doc);
+        registration.win.addEventListener("keydown", globalKeyDownHandler);
+        registration.win.addEventListener("click", globalClickHandler);
+    }
+    registration.zoneCount++;
+    dzToDocument.set(dropZoneEl, doc);
+}
+function releaseDocument(dropZoneEl) {
+    const doc = dzToDocument.get(dropZoneEl);
+    if (!doc) return;
+    dzToDocument.delete(dropZoneEl);
+    const registration = documentToRegistration.get(doc);
+    if (--registration.zoneCount > 0) return;
+    printDebug(() => "removing global keydown and click handlers");
+    documentToRegistration.delete(doc);
+    registration.win.removeEventListener("keydown", globalKeyDownHandler);
+    registration.win.removeEventListener("click", globalClickHandler);
+    destroyAria(doc);
+}
 function registerDropZone(dropZoneEl, type) {
     printDebug(() => "registering drop-zone if absent");
     if (!typeToDropZones.has(type)) {
         typeToDropZones.set(type, new Set());
     }
     if (!typeToDropZones.get(type).has(dropZoneEl)) {
-        const doc = dropZoneEl.ownerDocument;
-        const dropZoneCount = docToDropZoneCount.get(doc) || 0;
-        if (dropZoneCount === 0) {
-            printDebug(() => "adding global keydown and click handlers");
-            INSTRUCTION_IDs = initAria(doc);
-            getWindowOf(dropZoneEl).addEventListener("keydown", globalKeyDownHandler);
-            getWindowOf(dropZoneEl).addEventListener("click", globalClickHandler);
-        }
-        docToDropZoneCount.set(doc, dropZoneCount + 1);
         typeToDropZones.get(type).add(dropZoneEl);
         incrementActiveDropZoneCount();
+    }
+    // a zone that moved to another document since it registered takes its registration along
+    if (dzToDocument.get(dropZoneEl) !== dropZoneEl.ownerDocument) {
+        releaseDocument(dropZoneEl);
+        retainDocument(dropZoneEl);
     }
 }
 function unregisterDropZone(dropZoneEl, type) {
@@ -66,18 +90,7 @@ function unregisterDropZone(dropZoneEl, type) {
     if (dropZones.size === 0) {
         typeToDropZones.delete(type);
     }
-    const doc = dropZoneEl.ownerDocument;
-    const dropZoneCount = docToDropZoneCount.get(doc) - 1;
-    if (dropZoneCount === 0) {
-        printDebug(() => "removing global keydown and click handlers");
-        docToDropZoneCount.delete(doc);
-        // defaultView is null once the zone's window has closed, and its handlers went with it
-        doc.defaultView?.removeEventListener("keydown", globalKeyDownHandler);
-        doc.defaultView?.removeEventListener("click", globalClickHandler);
-        destroyAria(doc);
-    } else {
-        docToDropZoneCount.set(doc, dropZoneCount);
-    }
+    releaseDocument(dropZoneEl);
 }
 
 function globalKeyDownHandler(e) {

@@ -336,10 +336,21 @@ describe("a drag in another window that goes away", () => {
 
     it("finalizes once when the app removes the iframe while the drag enters its first zone", () => {
         let finalizeCount;
+        let timeoutsAfterRemoval = 0;
         cy.then({timeout: 10000}, () => {
             const created = listInFrame();
+            // the observation must not schedule its next tick on the removed iframe's window
+            let removed = false;
+            const {setTimeout: iframeSetTimeout} = created.win;
+            created.win.setTimeout = (...args) => {
+                if (removed) timeoutsAfterRemoval++;
+                return iframeSetTimeout.apply(created.win, args);
+            };
             created.list.zone.addEventListener("consider", e => {
-                if (e.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) created.frame.remove();
+                if (e.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) {
+                    created.frame.remove();
+                    removed = true;
+                }
             });
             startDrag(created);
             // The first observation runs on the iframe's next animation frame.
@@ -352,7 +363,7 @@ describe("a drag in another window that goes away", () => {
                 }
             });
         });
-        cy.then(() => expect(finalizeCount).to.equal(1));
+        cy.then(() => expect({finalizeCount, timeoutsAfterRemoval}).to.deep.equal({finalizeCount: 1, timeoutsAfterRemoval: 0}));
     });
 
     [

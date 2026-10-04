@@ -648,10 +648,12 @@ export function dndzone(node, options) {
         config.useCursorForDetection = useCursorForDetection;
         config.dropAnimationDisabled = dropAnimationDisabled;
 
+        // a drag only styles the zones in its own window
+        const isInDragWindow = isWorkingOnPreviousDrag && node.ownerDocument.defaultView === dragWindow;
         // realtime update for dropTargetStyle
         if (
             initialized &&
-            isWorkingOnPreviousDrag &&
+            isInDragWindow &&
             !finalizingPreviousDrag &&
             (!areObjectsShallowEqual(dropTargetStyle, config.dropTargetStyle) ||
                 !areArraysShallowEqualSameOrder(dropTargetClasses, config.dropTargetClasses))
@@ -674,7 +676,7 @@ export function dndzone(node, options) {
         function getConfigProp(dz, propName) {
             return dzToConfig.get(dz) ? dzToConfig.get(dz)[propName] : config[propName];
         }
-        if (initialized && isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
+        if (initialized && isInDragWindow && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
             if (dropFromOthersDisabled) {
                 styleInactiveDropZones(
                     [node],

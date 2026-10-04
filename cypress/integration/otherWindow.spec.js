@@ -155,6 +155,27 @@ describe("a drop zone in another window", () => {
             wrapper.remove();
         });
     });
+
+    it("does not style a zone in another window when its options change during a drag", () => {
+        const loadingList = createList(document, {label: "Loading", names: ["l1"]});
+        const created = listInFrame();
+        const updateLoadingList = options => loadingList.action.update({items: [{id: "l1", name: "l1"}], ...options});
+        try {
+            startDrag(created);
+            updateLoadingList({dropTargetStyle: {outline: "rgb(255, 0, 0) solid 1px"}, dropTargetClasses: ["target"]});
+            updateLoadingList({dropFromOthersDisabled: true});
+            updateLoadingList({dropFromOthersDisabled: false});
+            expect(loadingList.zone.style.outline).to.equal("");
+            expect(loadingList.zone.classList.contains("target")).to.equal(false);
+            created.win.dispatchEvent(mouse(created.win, "mouseup", 20));
+            expect(loadingList.zone.style.outline).to.equal("");
+        } finally {
+            created.list.action.destroy();
+            created.frame.remove();
+            loadingList.action.destroy();
+            loadingList.zone.remove();
+        }
+    });
 });
 
 describe("keyboard and aria support for a drop zone in another window", () => {

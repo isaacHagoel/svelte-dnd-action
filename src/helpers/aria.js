@@ -59,6 +59,8 @@ function initAriaOnBrowser(doc) {
         alertsDiv.setAttribute("role", "alert");
     })();
     doc.body.prepend(alertsDiv);
+    // forget the documents whose window is gone
+    docToAlertsDiv.forEach((_, knownDoc) => !knownDoc.defaultView && docToAlertsDiv.delete(knownDoc));
     docToAlertsDiv.set(doc, alertsDiv);
 
     // setting the instructions
@@ -72,8 +74,9 @@ function initAriaOnBrowser(doc) {
  * @param {Document} [doc] - the document of the zones, defaults to the one that loaded this module
  * @return {{DND_ZONE_ACTIVE: string, DND_ZONE_DRAG_DISABLED: string} | null} - the IDs for static aria instruction (to be used via aria-describedby) or null on the server
  */
-export function initAria(doc = document) {
+export function initAria(doc) {
     if (isOnServer) return null;
+    doc = doc || document;
     if (doc.readyState === "complete") {
         initAriaOnBrowser(doc);
     } else {
@@ -86,9 +89,11 @@ export function initAria(doc = document) {
  * Removes all the artifacts (dom elements) added by this module to the given document
  * @param {Document} [doc] - defaults to the document that loaded this module
  */
-export function destroyAria(doc = document) {
+export function destroyAria(doc) {
+    if (isOnServer) return;
+    doc = doc || document;
     const alertsDiv = docToAlertsDiv.get(doc);
-    if (isOnServer || !alertsDiv) return;
+    if (!alertsDiv) return;
     Object.keys(INSTRUCTION_ID_TO_STRING_KEY).forEach(id => doc.getElementById(id)?.remove());
     alertsDiv.remove();
     docToAlertsDiv.delete(doc);
@@ -114,13 +119,12 @@ function renderInstruction(div, txt) {
 /**
  * Will make the screen reader alert the provided text to the user
  * @param {string} txt
+ * @param {Document} [doc] - the document to announce in, for a zone in another window such as an iframe or a popup.
+ * Defaults to the document that loaded this module.
  */
-export function alertToScreenReader(txt) {
+export function alertToScreenReader(txt, doc) {
     if (isOnServer) return;
-    alertInDocument(txt, document);
-}
-
-function alertInDocument(txt, doc) {
+    doc = doc || document;
     if (!docToAlertsDiv.has(doc)) {
         initAriaOnBrowser(doc);
     }
@@ -221,6 +225,6 @@ export function setInstructionContext(ctx) {
  * @param {Object} [ctx] - the interpolation context for that key
  * @param {Document} [doc] - the document of the zone the message is about, defaults to the one that loaded this module
  */
-export function announceToScreenReader(key, ctx, doc = document) {
-    alertInDocument(formatWithFallback(key, ctx), doc);
+export function announceToScreenReader(key, ctx, doc) {
+    alertToScreenReader(formatWithFallback(key, ctx), doc);
 }

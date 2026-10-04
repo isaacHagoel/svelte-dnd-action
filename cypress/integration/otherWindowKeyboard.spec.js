@@ -237,4 +237,19 @@ describe("keyboard drags across the documents of one tab", () => {
         // The app destroys its zone after the iframe is gone.
         frameList.action.destroy();
     });
+
+    it("announces a custom alert in the given document", () => {
+        const {doc} = frame();
+        const frameList = list(doc, {label: "Frame", names: ["f1"], autoAriaDisabled: true});
+        cleanups.push(() => destroyAria(document));
+        expect(frameList.zone.hasAttribute("aria-describedby")).to.equal(false);
+
+        alertToScreenReader("Picked up f1", doc);
+        expect(alertText(doc)).to.equal("Picked up f1");
+        expect(alertText(document), "should not write to the loading document").to.equal(null);
+
+        alertToScreenReader("Loading document alert");
+        expect(alertText(document), "a call without a document should keep using the loading document").to.equal("Loading document alert");
+        expect(alertText(doc)).to.equal("Picked up f1");
+    });
 });

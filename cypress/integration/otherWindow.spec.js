@@ -231,6 +231,30 @@ describe("a drag handle in another window", () => {
     });
 });
 
+describe("a keyboard drag from a drag handle in another window", () => {
+    it("starts from the handle, announces in that window and ends on Escape", () => {
+        const created = createZoneInFrame({}, dragHandleZone);
+        created.zone.setAttribute("aria-label", "To do");
+        created.item.setAttribute("aria-label", "Card A");
+        const handle = created.doc.createElement("div");
+        created.item.appendChild(handle);
+        const handleAction = dragHandle(handle);
+        try {
+            handle.focus();
+            handle.dispatchEvent(new created.win.KeyboardEvent("keydown", {key: "Enter", bubbles: true, cancelable: true}));
+            expect(created.triggers).to.deep.equal([TRIGGERS.DRAG_STARTED]);
+            expect(created.doc.getElementById("dnd-action-aria-alert").textContent).to.contain("Started dragging item Card A");
+            created.win.dispatchEvent(new created.win.KeyboardEvent("keydown", {key: "Escape", bubbles: true, cancelable: true}));
+            expect(created.triggers).to.deep.equal([TRIGGERS.DRAG_STARTED, TRIGGERS.DRAG_STOPPED]);
+            expect(handle.style.cursor, "the handle should be released").to.equal("grab");
+        } finally {
+            handleAction.destroy();
+            created.action.destroy();
+            created.frame.remove();
+        }
+    });
+});
+
 describe("a drag in another window that goes away", () => {
     const last = list => list.triggers[list.triggers.length - 1];
     function listInFrame(options = {}, parent = document) {

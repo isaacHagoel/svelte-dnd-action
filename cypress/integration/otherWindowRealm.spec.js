@@ -116,42 +116,46 @@ describe("a drag in another window uses that window's timers and styles", () => 
         cy.then(() => expect(triggers).to.include(TRIGGERS.DRAGGED_OVER_INDEX));
     });
 
-    it("auto-scrolls a list near its edge while the loading window's animation frames never fire", () => {
+    // A long observation interval leaves the scrolling to the scroller's own animation frames between two samples.
+    const LONG_OBSERVATION = {flipDurationMs: 1000, dropAnimationDisabled: true};
+    const manyNames = Array.from({length: 30}, (_, i) => `item ${i}`);
+
+    it("auto-scrolls a list near its edge on the iframe's animation frames", () => {
         let observed;
         cy.then({timeout: 10000}, () => {
-            const {win, list} = createListInFrame({
-                names: ["a", "b", "c", "d", "e"],
-                style: {overflow: "auto", height: "90px"},
-                dropAnimationDisabled: true
-            });
+            const {win, list} = createListInFrame({names: manyNames, style: {overflow: "auto", height: "90px"}, ...LONG_OBSERVATION});
             return withLoadingWindowGlobals(pausedTimers, async () => {
-                list.element("a").dispatchEvent(mouse(win, "mousedown", 50, 15));
+                list.element("item 0").dispatchEvent(mouse(win, "mousedown", 50, 15));
                 win.dispatchEvent(mouse(win, "mousemove", 50, 80));
-                await sleepIn(win, 300);
-                const scrolledWhileHeld = list.zone.scrollTop;
-                win.dispatchEvent(mouse(win, "mouseup", 50, 80));
                 await sleepIn(win, 100);
-                const scrolledAtDrop = list.zone.scrollTop;
+                const first = list.zone.scrollTop;
+                await sleepIn(win, 300);
+                const second = list.zone.scrollTop;
+                win.dispatchEvent(mouse(win, "mouseup", 50, 80));
+                await sleepIn(win, 50);
+                const atDrop = list.zone.scrollTop;
                 await sleepIn(win, 200);
-                observed = {scrolled: scrolledWhileHeld > 0, stoppedAfterDrop: list.zone.scrollTop === scrolledAtDrop};
+                observed = {kept: second > first, stoppedAfterDrop: list.zone.scrollTop === atDrop, roomLeft: atDrop < list.zone.scrollHeight - 90};
             });
         });
-        cy.then(() => expect(observed).to.deep.equal({scrolled: true, stoppedAfterDrop: true}));
+        cy.then(() => expect(observed).to.deep.equal({kept: true, stoppedAfterDrop: true, roomLeft: true}));
     });
 
     it("auto-scrolls the iframe's document near the edge of the iframe's viewport", () => {
-        let scrollTop;
+        let observed;
         cy.then({timeout: 10000}, () => {
-            const {win, doc, list} = createListInFrame({dropAnimationDisabled: true});
-            doc.body.style.height = "1000px";
+            const {win, doc, list} = createListInFrame(LONG_OBSERVATION);
+            doc.body.style.height = "3000px";
             return withLoadingWindowGlobals(pausedTimers, async () => {
                 list.element("a").dispatchEvent(mouse(win, "mousedown", 50, 15));
                 win.dispatchEvent(mouse(win, "mousemove", 50, 190));
+                await sleepIn(win, 100);
+                const first = doc.scrollingElement.scrollTop;
                 await sleepIn(win, 300);
-                scrollTop = doc.scrollingElement.scrollTop;
+                observed = {started: first > 0, kept: doc.scrollingElement.scrollTop > first};
             }).finally(() => win.dispatchEvent(mouse(win, "mouseup", 50, 190)));
         });
-        cy.then(() => expect(scrollTop).to.be.greaterThan(0));
+        cy.then(() => expect(observed).to.deep.equal({started: true, kept: true}));
     });
 
     it("finalizes the drop animation while the loading window's timers never fire", () => {

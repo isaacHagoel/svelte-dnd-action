@@ -18,8 +18,8 @@ let focusedDzLabel = "";
 let focusedItem;
 let focusedItemId;
 let focusedItemLabel = "";
-// The top-level window of the zone a keyboard drag started in
-let dragTopWindow;
+// Like pointer dragging, a keyboard drag only has destinations in the document it started in.
+let dragDocument;
 const allDragTargets = new WeakSet();
 const elToKeyDownListeners = new WeakMap();
 const elToFocusListeners = new WeakMap();
@@ -143,28 +143,14 @@ function handleWindowHidden(e) {
     }
 }
 
-// A keyboard drag can only reach what Tab reaches: the zones in the same top-level window as the drag, which includes
-// same-origin iframes, but not a separate popup window. So those are its destinations.
-function isReachableByKeyboard(dropZoneEl, topWindow = dragTopWindow) {
-    return dropZoneEl.ownerDocument.defaultView?.top === topWindow;
-}
-
-// The position of an element in the viewport of its top-level window, so zones in different documents can be compared
-function getPositionInTopWindow(el) {
-    let {top, left} = el.getBoundingClientRect();
-    for (let frame = getWindowOf(el).frameElement; frame; frame = getWindowOf(frame).frameElement) {
-        const frameRect = frame.getBoundingClientRect();
-        const {paddingTop, paddingLeft} = getWindowOf(frame).getComputedStyle(frame);
-        top += frameRect.top + frame.clientTop + parseFloat(paddingTop);
-        left += frameRect.left + frame.clientLeft + parseFloat(paddingLeft);
-    }
-    return {top, left};
+// Tab can cross iframe boundaries, but a destination must still belong to the drag's own document.
+function isInDragDocument(dropZoneEl, doc = dragDocument) {
+    return dropZoneEl.ownerDocument === doc;
 }
 
 function isAboveOrLeftOf(el, otherEl) {
-    const inOneDocument = el.ownerDocument === otherEl.ownerDocument;
-    const position = inOneDocument ? el.getBoundingClientRect() : getPositionInTopWindow(el);
-    const otherPosition = inOneDocument ? otherEl.getBoundingClientRect() : getPositionInTopWindow(otherEl);
+    const position = el.getBoundingClientRect();
+    const otherPosition = otherEl.getBoundingClientRect();
     return position.top < otherPosition.top || position.left < otherPosition.left;
 }
 
@@ -172,9 +158,7 @@ function isAboveOrLeftOf(el, otherEl) {
 // tabindex=-1 alone is not a restriction: a click or consumer code can still focus a zone.
 function isKeyboardDropTarget(dropZoneEl) {
     const config = dzToConfig.get(dropZoneEl);
-    return (
-        config.type === draggedItemType && !config.dropFromOthersDisabled && !focusedItem.contains(dropZoneEl) && isReachableByKeyboard(dropZoneEl)
-    );
+    return config.type === draggedItemType && !config.dropFromOthersDisabled && !focusedItem.contains(dropZoneEl) && isInDragDocument(dropZoneEl);
 }
 
 function getActiveDragTabIndex(dropZoneEl) {
@@ -262,7 +246,7 @@ function handleDrop(dispatchConsider = true) {
     if (!droppedConfig) return;
     const droppedItemLabel = focusedItemLabel;
     const droppedDzLabel = focusedDzLabel;
-    const droppedTopWindow = dragTopWindow;
+    const droppedDocument = dragDocument;
     // Clear global drag state before running any consumer code: an announcement formatter, a blur handler or a consider
     // handler. A synchronous handler may destroy the focused zone or remove its window, and neither must recursively
     // enter handleDrop.
@@ -272,7 +256,7 @@ function handleDrop(dispatchConsider = true) {
     draggedItemType = null;
     focusedDz = null;
     focusedDzLabel = "";
-    dragTopWindow = undefined;
+    dragDocument = undefined;
     isDragging = false;
 
     if (!droppedConfig.autoAriaDisabled) {
@@ -304,7 +288,7 @@ function handleDrop(dispatchConsider = true) {
     const dropZones = typeToDropZones.get(droppedItemType);
     if (dropZones) {
         styleInactiveDropZones(
-            Array.from(dropZones).filter(dz => isReachableByKeyboard(dz, droppedTopWindow)),
+            Array.from(dropZones).filter(dz => isInDragDocument(dz, droppedDocument)),
             dz => dzToConfig.get(dz).dropTargetStyle,
             dz => dzToConfig.get(dz).dropTargetClasses
         );
@@ -422,7 +406,7 @@ export function dndzone(node, options) {
         focusedDzLabel = node.getAttribute("aria-label") || "";
         draggedItemType = config.type;
         isDragging = true;
-        dragTopWindow = getWindowOf(node).top;
+        dragDocument = node.ownerDocument;
         const dropTargets = Array.from(typeToDropZones.get(config.type)).filter(dz => dz === focusedDz || isKeyboardDropTarget(dz));
         styleActiveDropZones(
             dropTargets,
@@ -501,7 +485,10 @@ export function dndzone(node, options) {
         let itemMovedToThisZone = false;
         if (isDragging) {
             itemMovedToThisZone =
-                config.type === draggedItemType && config.items.some(item => item[ITEM_ID_KEY] === focusedItemId) && node !== focusedDz;
+                isInDragDocument(node) &&
+                config.type === draggedItemType &&
+                config.items.some(item => item[ITEM_ID_KEY] === focusedItemId) &&
+                node !== focusedDz;
             if (itemMovedToThisZone) {
                 focusedDz = node;
                 focusedDzLabel = node.getAttribute("aria-label") || "";
@@ -528,7 +515,7 @@ export function dndzone(node, options) {
                 draggableEl.addEventListener("click", handleClick);
                 elToFocusListeners.set(draggableEl, handleClick);
             }
-            if (isDragging && config.type === draggedItemType && config.items[i]?.[ITEM_ID_KEY] === focusedItemId) {
+            if (isDragging && isInDragDocument(node) && config.type === draggedItemType && config.items[i]?.[ITEM_ID_KEY] === focusedItemId) {
                 printDebug(() => ["focusing on", {i, focusedItemId}]);
                 // if it is a nested dropzone, it was re-rendered and we need to refresh our pointer
                 focusedItem = draggableEl;

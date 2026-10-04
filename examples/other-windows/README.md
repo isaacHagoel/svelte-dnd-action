@@ -6,7 +6,9 @@ An example for Svelte 3/4's component API (the saved playground uses Svelte 4.2.
 
 Playground isolates iframe and popup documents for visitors. To run the full example there, log in, fork/save it under your account, then reload. Alternatively, use **Download app** and run it locally. The example shows an explanatory notice when the sandbox blocks these documents; the page's own two lists still work. This is a Playground restriction, not a requirement of the library.
 
-Each document contains two lists. Pointer dragging stays within that document. Keyboard dragging can transfer between the page and its same-origin iframe, but not between separate top-level windows. All list and card labels are provided so the library's automatic instructions and announcements remain enabled.
+Each document contains two lists. Both pointer and keyboard dragging stay within that document: no transfers between the page, iframe or popup. All list and card labels are provided so the library's automatic instructions and announcements remain enabled.
+
+An iframe that imports the library in its own app could already use it. This example demonstrates the different case this feature fixes: code loaded once in the parent page mounts components into other documents, without loading a separate app/library instance there.
 
 Use unique item IDs across all the same-type lists, even when they are in different documents. Destroy mounted components when their host document is removed, and close the example's popup when the parent component is destroyed.
 
@@ -27,8 +29,8 @@ After `0.9.80` is published, generate with `--published` and update/save the off
 ## Manual checks
 
 -   Reorder cards and move between both lists in the iframe with a mouse.
--   Start a keyboard drag in the page, Tab into the iframe's list, then Shift+Tab back; continue reordering and finish with Escape.
--   Repeat in reverse, and verify the item retains focus and announcements come from its current document.
+-   In each document, start a keyboard drag, reorder with arrows and move between its two lists with Tab/Shift+Tab; finish with Escape. Announcements must come from that document.
+-   During a page drag, neither the iframe nor popup lists should be highlighted or offered as destinations. Focusing a list in another document must not move the item. Repeat starting in the iframe and popup.
 -   Open the popup, reorder and transfer between its own two lists using both mouse and keyboard. It must not be advertised as a page-drag destination. If the playground blocks popups, run the downloaded example outside its sandbox.
 -   Remove/recreate the iframe and close/reopen the popup; the remaining lists must keep working.
 -   With a screen reader, verify the list labels, keyboard instructions, pickup, move and drop announcements in each document.

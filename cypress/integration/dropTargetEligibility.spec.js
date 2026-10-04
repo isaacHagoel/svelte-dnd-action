@@ -35,17 +35,17 @@ describe("drop-target eligibility", () => {
         [{type: "other"}, {dropFromOthersDisabled: true}].forEach(restriction => {
             it(`does not move a keyboard-dragged item into ${JSON.stringify(restriction)} ${where}`, () => {
                 const targetDoc = inFrame ? frame().doc : document;
-                const source = list(document, {label: "Source", names: ["a"], type: "cards"});
+                const source = list(targetDoc, {label: "Source", names: ["a"], type: "cards"});
                 const target = list(targetDoc, {label: "Target", names: ["b"], type: "cards", ...restriction});
                 grab(source, "a");
-                const announcement = alertText(document);
+                const announcement = alertText(targetDoc);
                 expect(target.zone.tabIndex).to.equal(-1);
                 // A click or application focus can reach a zone even with tabindex=-1.
                 target.zone.focus();
                 expect(source.names()).to.deep.equal(["a"]);
                 expect(target.names()).to.deep.equal(["b"]);
                 expect(target.events, "no rejected transfer events").to.deep.equal([]);
-                expect(alertText(document)).to.equal(announcement);
+                expect(alertText(targetDoc)).to.equal(announcement);
                 key(source.win, "Escape");
                 expect(source.triggers[source.triggers.length - 1]).to.equal(TRIGGERS.DRAG_STOPPED);
             });

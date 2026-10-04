@@ -82,13 +82,14 @@
 <main>
     <h1>Zones in other windows</h1>
     <p>The library is loaded once, in this page. The same action also powers lists in the iframe and popup.</p>
+    <p>Each document's two lists form an independent board. Neither mouse nor keyboard dragging moves items between documents.</p>
     <details open>
         <summary>How to try it</summary>
         <ul>
             <li><strong>Pointer:</strong> drag between the two lists inside each document. Pointer drags do not cross document boundaries.</li>
-            <li><strong>Keyboard:</strong> Tab to a card, press Enter or Space, then use arrows to reorder or Tab/Shift+Tab to move between lists—including this page and its iframe. Escape finishes.</li>
+            <li><strong>Keyboard:</strong> Tab to a card, press Enter or Space, then use arrows to reorder or Tab/Shift+Tab to move between the two lists in that same document. Escape finishes.</li>
             <li><strong>Screen reader:</strong> each document has its own list instructions and automatic drag announcements.</li>
-            <li><strong>Popup:</strong> its two lists work independently; neither pointer nor keyboard drags transfer to another top-level window.</li>
+            <li><strong>Iframe and popup:</strong> their lists work independently of the page's lists, using the same library instance loaded in the page.</li>
         </ul>
     </details>
     <div class="controls">

@@ -5,7 +5,7 @@
 Feature: support dndzones in same-origin iframes and other windows, including pointer and keyboard interaction, document-local screen-reader instructions and announcements, scrolling, and cleanup when the window closes. Thanks to [@chhoumann](https://github.com/chhoumann) for [#708](https://github.com/isaacHagoel/svelte-dnd-action/pull/708).
 
 -   Use the zone's own window for events, timers, animation frames and computed styles, so drags continue when the loading window is hidden.
--   Keyboard transfers work between same-type lists in one browser tab, including its same-origin iframes. Pointer drags remain within the window they started in; separate popup windows are not cross-window keyboard destinations.
+-   Both pointer and keyboard transfers stay within the document they started in. Lists inside an iframe or popup work normally, but neither input transfers items between documents.
 -   Custom screen-reader announcements accept an optional document: `alertToScreenReader(text, zone.ownerDocument)`.
 -   Enforce keyboard drop restrictions even when a disabled or other-type destination is focused by a click or application code.
 -   Exclude lists nested inside the grabbed item from destination styling and move-between-lists announcements.

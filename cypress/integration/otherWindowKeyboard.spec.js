@@ -11,9 +11,9 @@ const ACTIVE_INSTRUCTION_ID = "dnd-zone-active";
 const at = top => ({position: "fixed", left: "0", top});
 const last = list => list.triggers[list.triggers.length - 1];
 
-// Keyboard destinations are the same-type zones in the same top-level window, which Tab can reach: the
-// loading document and its same-origin iframes. A popup is a separate top-level window.
-describe("keyboard drags across the documents of one tab", () => {
+// A parent-loaded library can serve several documents, but each keyboard drag has document-local destinations,
+// just like pointer dragging. Focus crossing an iframe or popup boundary must not transfer the item.
+describe("keyboard drags stay within their document", () => {
     const cleanups = [];
     afterEach(() =>
         cleanups
@@ -43,8 +43,6 @@ describe("keyboard drags across the documents of one tab", () => {
         key(el, "Enter");
     }
 
-    // The iframe sits below the parent list, but the iframe list is near the top of the iframe's own
-    // viewport, so comparing raw positions across the two documents would get "above" and "below" wrong.
     function parentAndFrameLists() {
         const parentList = list(document, {label: "Parent", names: ["p1", "p2"], style: at("50px")});
         const {doc, win} = frame({style: at("300px")});
@@ -52,41 +50,50 @@ describe("keyboard drags across the documents of one tab", () => {
         return {parentList, frameList, doc, win};
     }
 
-    it("moves an item from the parent into an iframe list and continues the drag there", () => {
+    it("does not transfer a parent item into an iframe, and can still reorder in the parent", () => {
         const {parentList, frameList, doc} = parentAndFrameLists();
         grab(parentList, "p1");
-        expect(alertText(document)).to.equal(STARTED_IN_PARENT + MOVE_BETWEEN_LISTS);
-        expect(frameList.zone.tabIndex, "the iframe list should be a destination").to.equal(0);
+        expect(alertText(document), "should not promise a destination in another document").to.equal(STARTED_IN_PARENT);
+        expect(frameList.zone.tabIndex, "the iframe list is not a destination").to.equal(-1);
+        expect(frameList.zone.style.outline).to.equal("");
 
         frameList.zone.focus();
-        expect(parentList.names()).to.deep.equal(["p2"]);
-        expect(frameList.names(), "a list below takes the item at its start").to.deep.equal(["p1", "f1", "f2"]);
-        expect(doc.activeElement, "should focus the moved item in the iframe").to.equal(frameList.element("p1"));
-        expect(alertText(doc)).to.equal("Moved item p1 to the beginning of the list Frame");
+        expect(parentList.names()).to.deep.equal(["p1", "p2"]);
+        expect(frameList.names()).to.deep.equal(["f1", "f2"]);
+        expect(frameList.events, "no transfer events").to.deep.equal([]);
+        expect(alertText(doc)).to.equal("");
 
-        key(frameList.element("p1"), "ArrowDown");
-        expect(frameList.names()).to.deep.equal(["f1", "p1", "f2"]);
-        expect(alertText(doc)).to.equal("Moved item p1 to position 2 in the list Frame");
+        parentList.element("p1").focus();
+        key(parentList.element("p1"), "ArrowDown");
+        expect(parentList.names()).to.deep.equal(["p2", "p1"]);
+        expect(alertText(document)).to.equal("Moved item p1 to position 2 in the list Parent");
 
         key(window, "Escape");
-        expect(last(frameList), "Escape in the parent should end the drag").to.equal(TRIGGERS.DRAG_STOPPED);
-        expect(alertText(doc)).to.equal("Stopped dragging item p1");
+        expect(last(parentList)).to.equal(TRIGGERS.DRAG_STOPPED);
+        expect(alertText(document)).to.equal("Stopped dragging item p1");
         expect(frameList.zone.tabIndex).to.equal(0);
-        expect(frameList.element("p1").tabIndex).to.equal(0);
+        expect(frameList.element("f1").tabIndex).to.equal(0);
     });
 
-    it("moves an item from an iframe list into the parent and continues the drag there", () => {
+    it("does not transfer an iframe item into the parent, and can still reorder in the iframe", () => {
         const {parentList, frameList, doc, win} = parentAndFrameLists();
         grab(frameList, "f1");
+        expect(alertText(doc)).to.equal("Started dragging item f1. Use the arrow keys to move it within its list Frame");
+        expect(parentList.zone.tabIndex).to.equal(-1);
+        expect(parentList.zone.style.outline).to.equal("");
         parentList.zone.focus();
-        expect(frameList.names()).to.deep.equal(["f2"]);
-        expect(parentList.names(), "a list above takes the item at its end").to.deep.equal(["p1", "p2", "f1"]);
-        expect(document.activeElement, "should focus the moved item in the parent").to.equal(parentList.element("f1"));
-        expect(alertText(document)).to.equal("Moved item f1 to the end of the list Parent");
+        expect(frameList.names()).to.deep.equal(["f1", "f2"]);
+        expect(parentList.names()).to.deep.equal(["p1", "p2"]);
+        expect(parentList.events).to.deep.equal([]);
 
-        doc.body.dispatchEvent(new win.MouseEvent("click", {bubbles: true}));
-        expect(last(parentList), "a click in the iframe should end the drag").to.equal(TRIGGERS.DRAG_STOPPED);
-        expect(alertText(document)).to.equal("Stopped dragging item f1");
+        frameList.element("f1").focus();
+        key(frameList.element("f1"), "ArrowDown");
+        expect(frameList.names()).to.deep.equal(["f2", "f1"]);
+        expect(alertText(doc)).to.equal("Moved item f1 to position 2 in the list Frame");
+
+        key(win, "Escape");
+        expect(last(frameList), "Escape in the iframe should end the drag").to.equal(TRIGGERS.DRAG_STOPPED);
+        expect(alertText(doc)).to.equal("Stopped dragging item f1");
     });
 
     it("moves an item between two lists inside an iframe", () => {
@@ -94,6 +101,9 @@ describe("keyboard drags across the documents of one tab", () => {
         const first = list(doc, {label: "First", names: ["a1", "a2"]});
         const second = list(doc, {label: "Second", names: ["b1"]});
         grab(first, "a1");
+        expect(alertText(doc)).to.contain(MOVE_BETWEEN_LISTS);
+        expect(second.zone.tabIndex).to.equal(0);
+        expect(second.zone.style.outline).not.to.equal("");
         second.zone.focus();
         expect(second.names()).to.deep.equal(["a1", "b1"]);
         expect(doc.activeElement).to.equal(second.element("a1"));
@@ -102,21 +112,29 @@ describe("keyboard drags across the documents of one tab", () => {
         expect(last(second)).to.equal(TRIGGERS.DRAG_STOPPED);
     });
 
-    it("moves an item into a list in a nested iframe", () => {
+    it("does not transfer items between a parent and a nested iframe", () => {
         const parentList = list(document, {label: "Parent", names: ["p1", "p2"], style: at("50px")});
         const outer = frame({style: at("300px")});
-        const inner = createFrame({parent: outer.doc, style: {marginTop: "20px"}});
+        const inner = frame({parent: outer.doc, style: {marginTop: "20px"}});
         const nestedList = list(inner.doc, {label: "Nested", names: ["n1"], style: {marginTop: "10px"}});
         grab(parentList, "p1");
+        expect(alertText(document)).to.equal(STARTED_IN_PARENT);
+        expect(nestedList.zone.tabIndex).to.equal(-1);
+        expect(nestedList.zone.style.outline).to.equal("");
         nestedList.zone.focus();
-        expect(nestedList.names(), "a list below takes the item at its start").to.deep.equal(["p1", "n1"]);
-        expect(inner.doc.activeElement).to.equal(nestedList.element("p1"));
-        expect(alertText(inner.doc)).to.equal("Moved item p1 to the beginning of the list Nested");
+        expect(parentList.names()).to.deep.equal(["p1", "p2"]);
+        expect(nestedList.names()).to.deep.equal(["n1"]);
+        key(window, "Escape");
+
+        grab(nestedList, "n1");
+        parentList.zone.focus();
+        expect(parentList.names()).to.deep.equal(["p1", "p2"]);
+        expect(nestedList.names()).to.deep.equal(["n1"]);
         key(inner.win, "Escape");
         expect(last(nestedList)).to.equal(TRIGGERS.DRAG_STOPPED);
     });
 
-    it("moves an item between two lists in an iframe each, with separate aria elements", () => {
+    it("keeps sibling iframe lists separate, with independent aria elements and cleanup", () => {
         const one = frame({style: at("0px")});
         const two = frame({style: at("250px")});
         const listOne = list(one.doc, {label: "One", names: ["o1"]});
@@ -124,15 +142,20 @@ describe("keyboard drags across the documents of one tab", () => {
         [listOne, listTwo].forEach(({zone, doc}) => expect(doc.getElementById(zone.getAttribute("aria-describedby"))).not.to.equal(null));
 
         grab(listOne, "o1");
+        expect(alertText(one.doc)).not.to.contain(MOVE_BETWEEN_LISTS);
+        expect(listTwo.zone.tabIndex).to.equal(-1);
+        expect(listTwo.zone.style.outline).to.equal("");
         listTwo.zone.focus();
-        expect(listTwo.names()).to.deep.equal(["o1", "t1"]);
-        expect(two.doc.activeElement).to.equal(listTwo.element("o1"));
-        key(two.win, "Escape");
+        expect(listOne.names()).to.deep.equal(["o1"]);
+        expect(listTwo.names()).to.deep.equal(["t1"]);
+        expect(listTwo.events).to.deep.equal([]);
+        key(one.win, "Escape");
 
         listOne.action.destroy();
         expect(one.doc.getElementById(ACTIVE_INSTRUCTION_ID), "should remove the first iframe's instructions").to.equal(null);
         expect(two.doc.getElementById(ACTIVE_INSTRUCTION_ID), "should keep the second iframe's instructions").not.to.equal(null);
         grab(listTwo, "t1");
+        expect(alertText(two.doc)).not.to.contain(MOVE_BETWEEN_LISTS);
         key(two.win, "Escape");
         expect(last(listTwo)).to.equal(TRIGGERS.DRAG_STOPPED);
     });
@@ -329,32 +352,43 @@ describe("keyboard drags across the documents of one tab", () => {
             expectAParentDragToWork(parentList);
         });
 
-        it("still moves the item when the drag ends while announcing the move to another list", () => {
-            const {parentList, frameList} = parentAndFrameLists();
+        it("still moves the item within its iframe when the drag ends while announcing the move", () => {
+            const {parentList, frameList, doc} = parentAndFrameLists();
+            const target = list(doc, {label: "Target", names: ["t1"], style: at("100px")});
             const dispatched = recordDispatchedTriggers(frameList.zone);
-            setAriaStrings({movedToZoneEnd: removingFrameFormatter(frameList.win.frameElement)});
+            // Removing the iframe drops DOM listeners before the transfer event. Record its payload directly,
+            // rather than expecting the removed app's listener to re-render the destination.
+            const transferredItems = [];
+            const {dispatchEvent} = target.zone;
+            target.zone.dispatchEvent = event => {
+                transferredItems.push(event.detail.items.map(item => item.id));
+                return dispatchEvent.call(target.zone, event);
+            };
+            setAriaStrings({movedToZoneStart: removingFrameFormatter(frameList.win.frameElement)});
             grab(frameList, "f1");
-            parentList.zone.focus();
-            expect(parentList.names()).to.deep.equal(["p1", "p2", "f1"]);
+            target.zone.focus();
+            expect(transferredItems).to.deep.equal([["f1", "t1"]]);
+            expect(parentList.names()).to.deep.equal(["p1", "p2"]);
             expect(dispatched).to.deep.equal([TRIGGERS.DRAG_STARTED, TRIGGERS.DRAG_STOPPED, TRIGGERS.DROPPED_INTO_ANOTHER]);
             expect(parentList.element("p1").tabIndex, "the drag should have ended").to.equal(0);
             expectAParentDragToWork(parentList);
         });
 
-        it("ends the drag when the focus handler of an item the app moved into the iframe removes it", () => {
+        it("ends the drag when the focus handler of an item the app moved within the iframe removes it", () => {
             const parentList = list(document, {label: "Parent", names: ["p1", "p2"]});
             const {frame: frameEl, doc} = createFrame();
+            const source = list(doc, {label: "Source", names: ["s1"]});
             const frameZone = doc.createElement("div");
             doc.body.appendChild(frameZone);
             const frameAction = dndzone(frameZone, {items: []});
             cleanups.push(() => frameAction.destroy());
-            grab(parentList, "p1");
+            grab(source, "s1");
 
-            // The app moves the grabbed item into the iframe's zone itself.
+            // The app moves the grabbed item into another zone in its own document.
             const movedItem = doc.createElement("div");
             movedItem.addEventListener("focus", () => frameEl.remove());
             frameZone.appendChild(movedItem);
-            frameAction.update({items: [{id: "p1", name: "p1"}]});
+            frameAction.update({items: [{id: "s1", name: "s1"}]});
 
             expect(parentList.element("p2").tabIndex, "the drag should have ended").to.equal(0);
         });

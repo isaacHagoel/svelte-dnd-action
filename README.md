@@ -337,10 +337,11 @@ Notes:
 
 A dndzone can live in another window than the one that loaded the library: a same-origin iframe, a popup opened with `window.open`, or another Electron window. Each zone uses its own window's events, timers and document, so drags keep working while the loading window is hidden.
 
+This is useful when one app mounts components into several documents (for example, a pop-out editor). A self-contained iframe that loads its own app and imports the library there could already use it without this feature. The difference is that the code can now be loaded in one document while its zones live in another; it does not add dragging between documents.
+
 See the [official example REPL (release preview)](https://svelte.dev/playground/be37a2f642a14a21ae8c5c11bf0a8055?version=4.2.20) and its [source and setup instructions](examples/other-windows/README.md). For iframe/popup interaction inside Playground, fork/save and reload under your account, or download and run locally.
 
--   A pointer drag stays in the window it started in. It moves items between the zones in that window, not into a zone in another window or iframe.
--   A keyboard drag moves an item into any same-type zone that Tab can reach: the zones in the same browser tab, including same-origin iframes. Zones in a separate popup window are not destinations.
+-   Both pointer and keyboard drags stay in the document they started in. They can move items between eligible same-type zones inside that document, but not between the page and an iframe, between sibling iframes, or between popup windows.
 -   Each document with zones gets its own screen-reader instructions and announcements. For a custom announcement about a zone in another document, pass that document: `alertToScreenReader(text, zone.ownerDocument)`.
 -   If a window closes, or an iframe is removed, during a drag, the drag ends and the zones get their usual `finalize` event (pointer) or `consider` event with the `dragStopped` trigger (keyboard).
 

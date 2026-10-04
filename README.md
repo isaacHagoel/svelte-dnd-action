@@ -309,6 +309,7 @@ Notes:
 -   [Super basic, single list, no animation](https://svelte.dev/playground/bbd709b1a00b453e94658392c97a018a?version=3)
 -   [Super basic, single list, with animation](https://svelte.dev/playground/3d544791e5c24fd4aa1eb983d749f776?version=3)
 -   [Multiple dndzones, multiple types](https://svelte.dev/playground/4d23eb3b9e184b90b58f0867010ad258?version=3)
+-   [Zones in same-origin iframes and popup windows (0.9.80 release preview)](https://svelte.dev/playground/be37a2f642a14a21ae8c5c11bf0a8055?version=4.2.20) — for the full demo, log in, fork/save and reload, or download/run locally; Playground isolates other documents for visitors.
 -   [Board (nested zones and multiple types), scrolling containers, scrolling page](https://svelte.dev/playground/e2ef044af75c4b16b424b8219fb31fd9?version=3)
 -   [Experimental: make an entire board skippable in the Tab order while preserving keyboard drag and drop](https://svelte.dev/playground/14286b9c0f924d8e94d5267d219f8424?version=5.56.8) — a prototype wrapper built using the existing tabindex options; see the example for current limitations.
 -   [Selectively enable/disable drag/drop](https://svelte.dev/playground/44c9229556f3456e9883c10fc0aa0ee9?version=3)
@@ -335,6 +336,8 @@ Notes:
 ### Zones in iframes and other windows
 
 A dndzone can live in another window than the one that loaded the library: a same-origin iframe, a popup opened with `window.open`, or another Electron window. Each zone uses its own window's events, timers and document, so drags keep working while the loading window is hidden.
+
+See the [official example REPL (release preview)](https://svelte.dev/playground/be37a2f642a14a21ae8c5c11bf0a8055?version=4.2.20) and its [source and setup instructions](examples/other-windows/README.md). For iframe/popup interaction inside Playground, fork/save and reload under your account, or download and run locally.
 
 -   A pointer drag stays in the window it started in. It moves items between the zones in that window, not into a zone in another window or iframe.
 -   A keyboard drag moves an item into any same-type zone that Tab can reach: the zones in the same browser tab, including same-origin iframes. Zones in a separate popup window are not destinations.

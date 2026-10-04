@@ -44,6 +44,26 @@ describe("keyboardAction", () => {
         expect(dragStoppedEvents).to.equal(1);
     });
 
+    it("restores the other zones when the drag-stopped handler destroys the focused zone", () => {
+        const {
+            zone,
+            action,
+            children: [item]
+        } = createZone([{id: 1}]);
+        const {zone: otherZone} = createZone([{id: 2}]);
+        zone.addEventListener("consider", e => {
+            if (e.detail.info.trigger === TRIGGERS.DRAG_STOPPED) action.destroy();
+        });
+
+        item.dispatchEvent(new KeyboardEvent("keydown", {key: " ", bubbles: true, cancelable: true}));
+        expect(otherZone.style.outline, "should style the other zone during the drag").not.to.equal("");
+        item.dispatchEvent(new KeyboardEvent("keydown", {key: " ", bubbles: true, cancelable: true}));
+
+        expect(otherZone.style.outline).to.equal("");
+        expect(otherZone.tabIndex).to.equal(0);
+        expect(otherZone.children[0].tabIndex).to.equal(0);
+    });
+
     ["source first", "destination first"].forEach(updateOrder => {
         it(`follows the grabbed item when a consumer moves it to another zone (${updateOrder})`, () => {
             const {

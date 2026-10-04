@@ -145,8 +145,8 @@ function handleWindowHidden(e) {
 
 // A keyboard drag can only reach what Tab reaches: the zones in the same top-level window as the drag, which includes
 // same-origin iframes, but not a separate popup window. So those are its destinations.
-function isReachableByKeyboard(dropZoneEl) {
-    return dropZoneEl.ownerDocument.defaultView?.top === dragTopWindow;
+function isReachableByKeyboard(dropZoneEl, topWindow = dragTopWindow) {
+    return dropZoneEl.ownerDocument.defaultView?.top === topWindow;
 }
 
 // The position of an element in the viewport of its top-level window, so zones in different documents can be compared
@@ -276,7 +276,7 @@ function handleDrop(dispatchConsider = true) {
     if (allDragTargets.has(activeElement)) {
         activeElement.blur();
     }
-    const destinations = Array.from(typeToDropZones.get(droppedItemType) || []).filter(isReachableByKeyboard);
+    const droppedTopWindow = dragTopWindow;
     // Clear global drag state before dispatching. A synchronous handler may destroy the
     // focused zone, and unregisterDropZone must not recursively enter handleDrop.
     focusedItem = null;
@@ -295,11 +295,14 @@ function handleDrop(dispatchConsider = true) {
             source: SOURCES.KEYBOARD
         });
     }
-    styleInactiveDropZones(
-        destinations,
-        dz => dzToConfig.get(dz).dropTargetStyle,
-        dz => dzToConfig.get(dz).dropTargetClasses
-    );
+    const dropZones = typeToDropZones.get(droppedItemType);
+    if (dropZones) {
+        styleInactiveDropZones(
+            Array.from(dropZones).filter(dz => isReachableByKeyboard(dz, droppedTopWindow)),
+            dz => dzToConfig.get(dz).dropTargetStyle,
+            dz => dzToConfig.get(dz).dropTargetClasses
+        );
+    }
     triggerAllDzsUpdate();
 }
 //////

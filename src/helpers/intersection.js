@@ -11,7 +11,7 @@ import {getWindowOf} from "./util";
 export function getBoundingRectNoTransforms(el, onlyVisible = true) {
     let ta;
     const rect = onlyVisible ? getVisibleRectRecursive(el) : el.getBoundingClientRect();
-    const style = getComputedStyle(el);
+    const style = getWindowOf(el).getComputedStyle(el);
     const tx = style.transform;
 
     if (tx) {
@@ -184,7 +184,7 @@ function getVisibleRectRecursive(element) {
     // walk up and clip ONLY by scrollable ancestors
     let parent = element.parentElement;
     while (parent && parent !== element.ownerDocument.body) {
-        const style = window.getComputedStyle(parent);
+        const style = getWindowOf(parent).getComputedStyle(parent);
         const overflowY = style.overflowY;
         const overflowX = style.overflowX;
         const isScrollableY = overflowY === "scroll" || overflowY === "auto";

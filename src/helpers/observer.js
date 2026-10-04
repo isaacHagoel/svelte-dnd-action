@@ -7,7 +7,7 @@ import {
     dispatchDraggedLeftDocument,
     dispatchDraggedElementIsOverIndex
 } from "./dispatcher";
-import {getDepth} from "./util";
+import {clearTimeoutIn, getDepth, getWindowOf, setTimeoutIn} from "./util";
 import {printDebug} from "../constants";
 
 const INTERVAL_MS = 200;
@@ -28,6 +28,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
     let lastIndexFound;
     let lastIsDraggedInADropZone = false;
     let lastCentrePositionOfDragged;
+    const win = getWindowOf(draggedEl);
     // We are sorting to make sure that in case of nested zones of the same type the one "on top" is considered first
     const dropZonesFromDeepToShallow = Array.from(dropZones).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
 
@@ -44,7 +45,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
             Math.abs(lastCentrePositionOfDragged.x - referencePoint.x) < TOLERANCE_PX &&
             Math.abs(lastCentrePositionOfDragged.y - referencePoint.y) < TOLERANCE_PX
         ) {
-            next = window.setTimeout(andNow, intervalMs);
+            next = setTimeoutIn(win, andNow, intervalMs);
             return;
         }
         if (isElementOffDocument(draggedEl)) {
@@ -86,7 +87,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
         } else {
             lastIsDraggedInADropZone = true;
         }
-        next = window.setTimeout(andNow, intervalMs);
+        next = setTimeoutIn(win, andNow, intervalMs);
     }
     andNow();
 }
@@ -94,6 +95,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
 export function unobserve() {
     printDebug(() => "unobserving");
-    clearTimeout(next);
+    clearTimeoutIn(next);
+    next = undefined;
     resetIndexesCache();
 }

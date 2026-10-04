@@ -32,7 +32,7 @@ import {
     DRAGGED_LEFT_TYPES,
     DRAGGED_OVER_INDEX_EVENT_NAME
 } from "./helpers/dispatcher";
-import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, getWindowOf, toString} from "./helpers/util";
+import {areArraysShallowEqualSameOrder, areObjectsShallowEqual, clearTimeoutIn, getWindowOf, setTimeoutIn, toString} from "./helpers/util";
 import {getBoundingRectNoTransforms, findCenterOfElement} from "./helpers/intersection";
 
 const DEFAULT_DROP_ZONE_TYPE = "--any--";
@@ -325,7 +325,7 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
     const transition = `transform ${dropAnimationDurationMs}ms ease`;
     draggedEl.style.transition = draggedEl.style.transition ? draggedEl.style.transition + "," + transition : transition;
     draggedEl.style.transform = `translate3d(${newTransform.x}px, ${newTransform.y}px, 0)`;
-    window.setTimeout(callback, dropAnimationDurationMs);
+    setTimeoutIn(dragWindow, callback, dropAnimationDurationMs);
 }
 
 function scheduleDZForRemovalAfterDrop(dz, destroy) {
@@ -361,9 +361,7 @@ function cleanupPostDrop() {
     finalizingPreviousDrag = false;
     unlockOriginDzMinDimensions = undefined;
     isDraggedOutsideOfAnyDz = false;
-    if (touchDragHoldTimer) {
-        clearTimeout(touchDragHoldTimer);
-    }
+    clearTimeoutIn(touchDragHoldTimer);
     touchDragHoldTimer = undefined;
     touchHoldElapsed = false;
     useCursorForDetectionActive = false;
@@ -411,7 +409,7 @@ export function dndzone(node, options) {
         dragWindow.removeEventListener("mouseup", handleFalseAlarm);
         dragWindow.removeEventListener("touchend", handleFalseAlarm);
         if (touchDragHoldTimer) {
-            clearTimeout(touchDragHoldTimer);
+            clearTimeoutIn(touchDragHoldTimer);
             touchDragHoldTimer = undefined;
             touchHoldElapsed = false;
         }
@@ -430,7 +428,7 @@ export function dndzone(node, options) {
 
         // dragging initiated by touch events prevents onclick from initially firing
         if (e.type === "touchend") {
-            const clickEvent = new Event("click", {
+            const clickEvent = new (getWindowOf(e.target).Event)("click", {
                 bubbles: true,
                 cancelable: true
             });
@@ -453,10 +451,8 @@ export function dndzone(node, options) {
                 Math.abs(currentMousePosition.y - dragStartMousePosition.y) >= MIN_MOVEMENT_BEFORE_DRAG_START_PX
             ) {
                 // User started scrolling, cancel drag attempt.
-                if (touchDragHoldTimer) {
-                    clearTimeout(touchDragHoldTimer);
-                    touchDragHoldTimer = undefined;
-                }
+                clearTimeoutIn(touchDragHoldTimer);
+                touchDragHoldTimer = undefined;
                 handleFalseAlarm(e);
             }
             return; // Do not preventDefault so scrolling works.
@@ -506,12 +502,16 @@ export function dndzone(node, options) {
         if (useDelay) {
             const pendingTarget = originalDragTarget;
             touchHoldElapsed = false;
-            touchDragHoldTimer = window.setTimeout(() => {
-                // If this action still owns the same pending gesture, transition it to a drag.
-                if (destroyed || pendingDragOwner !== node || originalDragTarget !== pendingTarget) return;
-                touchHoldElapsed = true;
-                handleDragStart();
-            }, config.delayTouchStartMs);
+            touchDragHoldTimer = setTimeoutIn(
+                dragWindow,
+                () => {
+                    // If this action still owns the same pending gesture, transition it to a drag.
+                    if (destroyed || pendingDragOwner !== node || originalDragTarget !== pendingTarget) return;
+                    touchHoldElapsed = true;
+                    handleDragStart();
+                },
+                config.delayTouchStartMs
+            );
         }
 
         addMaybeListeners();

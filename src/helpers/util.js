@@ -9,6 +9,26 @@ export function getWindowOf(el) {
 }
 
 /**
+ * Schedules a timeout on the given window. Work for a zone runs on the zone's window: the browser throttles
+ * or stops the timers of a hidden window, and the loading window can be hidden while the zone's is not.
+ * @param {Window} win
+ * @param {function} callback
+ * @param {number} ms
+ * @return {{win: Window, id: number}} - pass it to clearTimeoutIn
+ */
+export function setTimeoutIn(win, callback, ms) {
+    return {win, id: win.setTimeout(callback, ms)};
+}
+
+/**
+ * Cancels a timeout through the window that scheduled it
+ * @param {{win: Window, id: number}} [timeout] - from setTimeoutIn
+ */
+export function clearTimeoutIn(timeout) {
+    if (timeout) timeout.win.clearTimeout(timeout.id);
+}
+
+/**
  * @param {Object} object
  * @return {string}
  */

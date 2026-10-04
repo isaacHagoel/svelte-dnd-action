@@ -1,6 +1,6 @@
 import {makeScroller} from "./scroller";
 import {printDebug} from "../constants";
-import {getDepth} from "./util";
+import {getDepth, getWindowOf} from "./util";
 import {isPointInsideRect} from "./intersection";
 
 /**
@@ -51,7 +51,7 @@ function findScrollableParents(element) {
     const scrollableContainers = [];
     let parent = element;
     while (parent) {
-        const {overflow} = window.getComputedStyle(parent);
+        const {overflow} = getWindowOf(parent).getComputedStyle(parent);
         if (overflow.split(" ").some(o => o.includes("auto") || o.includes("scroll"))) {
             scrollableContainers.push(parent);
         }

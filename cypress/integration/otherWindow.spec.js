@@ -3,6 +3,7 @@ import {dndzone as pointerAndKeyboardDndzone} from "../../src/action";
 import {dragHandle, dragHandleZone} from "../../src/wrappers/withDragHandles";
 import {setAriaStrings} from "../../src/helpers/aria";
 import {DRAGGED_ELEMENT_ID, TRIGGERS} from "../../src/constants";
+import {createFrame, createList, openPopup} from "./helpers/otherWindow";
 
 // A same-origin iframe stands in for any other window the zone can live in (for example a popup
 // opened with window.open): its own Window and Document, while this module was loaded by the
@@ -226,6 +227,111 @@ describe("a drag handle in another window", () => {
             handleAction.destroy();
             created.action.destroy();
             created.frame.remove();
+        }
+    });
+});
+
+describe("a drag in another window that goes away", () => {
+    const last = list => list.triggers[list.triggers.length - 1];
+    function listInFrame(options = {}, parent = document) {
+        const frame = createFrame({parent});
+        return {...frame, list: createList(frame.doc, {label: "Frame", names: ["f1", "f2"], dropAnimationDisabled: true, ...options})};
+    }
+    function startDrag({list, win}) {
+        list.element("f1").dispatchEvent(mouse(win, "mousedown", 15));
+        win.dispatchEvent(mouse(win, "mousemove", 20));
+    }
+    // The library allows one drag at a time, so a drag left behind would block this one.
+    function expectALoadingWindowDragToWork() {
+        const list = createList(document, {label: "Loading", names: ["l1"], dropAnimationDisabled: true});
+        try {
+            list.element("l1").dispatchEvent(mouse(window, "mousedown", 5));
+            window.dispatchEvent(mouse(window, "mousemove", 10));
+            window.dispatchEvent(mouse(window, "mouseup", 10));
+            expect(list.triggers, "a drag in the loading window should work").to.deep.equal([TRIGGERS.DRAG_STARTED, TRIGGERS.DROPPED_INTO_ZONE]);
+        } finally {
+            list.action.destroy();
+            list.zone.remove();
+        }
+    }
+
+    it("finalizes a pointer drag whose iframe is removed", () => {
+        const created = listInFrame();
+        startDrag(created);
+        expect(created.list.triggers).to.deep.equal([TRIGGERS.DRAG_STARTED]);
+        created.frame.remove();
+        expect(last(created.list), "the app should get the finalize event").to.equal(TRIGGERS.DROPPED_INTO_ZONE);
+        // The app destroys its zone after the iframe is gone.
+        created.list.action.destroy();
+        expectALoadingWindowDragToWork();
+    });
+
+    it("cancels a pending pointer drag whose iframe is removed", () => {
+        const created = listInFrame();
+        created.list.element("f1").dispatchEvent(mouse(created.win, "mousedown", 15));
+        created.frame.remove();
+        created.list.action.destroy();
+        expectALoadingWindowDragToWork();
+    });
+
+    it("finishes the drop animation at once when the iframe is removed during it", () => {
+        const created = listInFrame({dropAnimationDisabled: false, flipDurationMs: 300});
+        startDrag(created);
+        created.win.dispatchEvent(mouse(created.win, "mouseup", 20));
+        expect(created.list.triggers, "the drop animation should be running").to.deep.equal([TRIGGERS.DRAG_STARTED]);
+        created.frame.remove();
+        expect(last(created.list)).to.equal(TRIGGERS.DROPPED_INTO_ZONE);
+        created.list.action.destroy();
+        expectALoadingWindowDragToWork();
+    });
+
+    it("finalizes a pointer drag in a nested iframe when the outer iframe is removed", () => {
+        const outer = createFrame();
+        const created = listInFrame({}, outer.doc);
+        startDrag(created);
+        outer.frame.remove();
+        expect(last(created.list)).to.equal(TRIGGERS.DROPPED_INTO_ZONE);
+        created.list.action.destroy();
+        expectALoadingWindowDragToWork();
+    });
+
+    it("finalizes a pointer drag whose popup is closed", function () {
+        const popup = openPopup();
+        if (!popup) this.skip();
+        const list = createList(popup.doc, {label: "Popup", names: ["f1", "f2"], dropAnimationDisabled: true});
+        startDrag({list, win: popup.win});
+        popup.win.close();
+        cy.wrap(list).should(() => expect(last(list)).to.equal(TRIGGERS.DROPPED_INTO_ZONE));
+        cy.then(() => {
+            list.action.destroy();
+            expectALoadingWindowDragToWork();
+        });
+    });
+
+    it("releases a drag handle whose iframe is removed before the mouse is released", () => {
+        const loadingZone = document.createElement("div");
+        const loadingItem = document.createElement("div");
+        const loadingHandle = document.createElement("div");
+        loadingItem.appendChild(loadingHandle);
+        loadingZone.appendChild(loadingItem);
+        document.body.appendChild(loadingZone);
+        const loadingZoneAction = dragHandleZone(loadingZone, {items: [{id: "loading"}]});
+        const loadingHandleAction = dragHandle(loadingHandle);
+        const created = createZoneInFrame({}, dragHandleZone);
+        const handle = created.doc.createElement("div");
+        created.item.appendChild(handle);
+        const handleAction = dragHandle(handle);
+        try {
+            handle.dispatchEvent(mouse(created.win, "mousedown", 5));
+            expect(loadingHandle.style.cursor, "the handles share their grabbed state").to.equal("grabbing");
+            created.frame.remove();
+            expect(loadingHandle.style.cursor).to.equal("grab");
+        } finally {
+            handleAction.destroy();
+            created.action.destroy();
+            loadingHandleAction.destroy();
+            loadingZoneAction.destroy();
+            loadingZone.remove();
         }
     });
 });

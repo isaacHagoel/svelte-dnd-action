@@ -94,15 +94,19 @@ export function dragHandleZone(node, options) {
  */
 export function dragHandle(handle) {
     handle.setAttribute("role", "button");
+    let releaseWindow;
 
     function startDrag(e) {
         // preventing default to prevent lag on touch devices (because of the browser checking for screen scrolling)
         e.preventDefault();
         isItemsDragDisabled.set(false);
 
-        // Reset the startDrag/isItemsDragDisabled if the user releases the mouse/touch without initiating a drag
-        getWindowOf(handle).addEventListener("mouseup", resetStartDrag);
-        getWindowOf(handle).addEventListener("touchend", resetStartDrag);
+        // Reset the startDrag/isItemsDragDisabled if the user releases the mouse/touch without initiating a drag, or if the
+        // handle's window goes away first
+        releaseWindow = getWindowOf(handle);
+        releaseWindow.addEventListener("mouseup", resetStartDrag);
+        releaseWindow.addEventListener("touchend", resetStartDrag);
+        releaseWindow.addEventListener("pagehide", resetStartDrag);
     }
 
     function handleKeyDown(e) {
@@ -111,8 +115,9 @@ export function dragHandle(handle) {
 
     function resetStartDrag() {
         isItemsDragDisabled.set(true);
-        getWindowOf(handle).removeEventListener("mouseup", resetStartDrag);
-        getWindowOf(handle).removeEventListener("touchend", resetStartDrag);
+        releaseWindow.removeEventListener("mouseup", resetStartDrag);
+        releaseWindow.removeEventListener("touchend", resetStartDrag);
+        releaseWindow.removeEventListener("pagehide", resetStartDrag);
     }
 
     const recomputeHandleState = () => {

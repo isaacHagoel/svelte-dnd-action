@@ -48,6 +48,7 @@ function retainDocument(dropZoneEl) {
         INSTRUCTION_IDs = initAria(doc);
         registration.win.addEventListener("keydown", globalKeyDownHandler);
         registration.win.addEventListener("click", globalClickHandler);
+        registration.win.addEventListener("pagehide", handleWindowHidden);
     }
     registration.zoneCount++;
     dzToDocument.set(dropZoneEl, doc);
@@ -62,6 +63,7 @@ function releaseDocument(dropZoneEl) {
     documentToRegistration.delete(doc);
     registration.win.removeEventListener("keydown", globalKeyDownHandler);
     registration.win.removeEventListener("click", globalClickHandler);
+    registration.win.removeEventListener("pagehide", handleWindowHidden);
     destroyAria(doc);
 }
 function registerDropZone(dropZoneEl, type) {
@@ -107,6 +109,15 @@ function globalClickHandler(e) {
     if (!isDragging) return;
     if (!allDragTargets.has(e.currentTarget.document.activeElement)) {
         printDebug(() => "clicked outside of any draggable");
+        handleDrop();
+    }
+}
+
+// The focused zone's window is going away: it was closed or navigated, or its iframe was removed. End the drag so the
+// zones in the other windows become tab stops again.
+function handleWindowHidden(e) {
+    if (isDragging && focusedDz && getWindowOf(focusedDz) === e.currentTarget) {
+        printDebug(() => "the focused zone's window is going away");
         handleDrop();
     }
 }

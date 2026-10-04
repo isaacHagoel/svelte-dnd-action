@@ -93,4 +93,20 @@ describe("keyboard drags across the documents of one tab", () => {
             "should keep the parent's instructions for its own zone"
         ).not.to.equal(null);
     });
+
+    it("ends a keyboard drag whose iframe is removed, and the loading window keeps working", () => {
+        const parentList = list(document, {label: "Parent", names: ["p1", "p2"]});
+        const {frame: frameEl, doc} = createFrame();
+        const frameList = createList(doc, {label: "Frame", names: ["f1"]});
+        grab(frameList, "f1");
+        frameEl.remove();
+        expect(last(frameList), "the app should get the drag-stopped event").to.equal(TRIGGERS.DRAG_STOPPED);
+        expect(parentList.element("p1").tabIndex, "the parent's items should be tab stops again").to.equal(0);
+
+        grab(parentList, "p1");
+        expect(parentList.triggers).to.deep.equal([TRIGGERS.DRAG_STARTED]);
+        key(window, "Escape");
+        // The app destroys its zone after the iframe is gone.
+        frameList.action.destroy();
+    });
 });

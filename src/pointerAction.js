@@ -69,6 +69,8 @@ let watchedDropZones = new Set();
 // The window of the drag in progress: the dragged item's own window, which is not the one that
 // loaded this module when the zone lives in a same-origin iframe or a popup.
 let dragWindow;
+// While the drop animation runs: its timeout and the function that finalizes the drop
+let dropFinalization;
 
 // a map from type to a set of drop-zones
 const typeToDropZones = new Map();
@@ -325,7 +327,20 @@ function animateDraggedToFinalPosition(shadowElIdx, callback) {
     const transition = `transform ${dropAnimationDurationMs}ms ease`;
     draggedEl.style.transition = draggedEl.style.transition ? draggedEl.style.transition + "," + transition : transition;
     draggedEl.style.transform = `translate3d(${newTransform.x}px, ${newTransform.y}px, 0)`;
-    setTimeoutIn(dragWindow, callback, dropAnimationDurationMs);
+    dropFinalization = {timeout: setTimeoutIn(dragWindow, callback, dropAnimationDurationMs), finalize: callback};
+}
+
+// The drag's window is going away: it was closed or navigated, or its iframe was removed. Its events, timers and animation
+// frames stop, so finish the drag now, without the drop animation, and let the other windows start new drags.
+function handleDragWindowHidden() {
+    printDebug(() => "the drag's window is going away");
+    if (!finalizingPreviousDrag) {
+        handleDrop();
+    }
+    if (dropFinalization) {
+        clearTimeoutIn(dropFinalization.timeout);
+        dropFinalization.finalize();
+    }
 }
 
 function scheduleDZForRemovalAfterDrop(dz, destroy) {
@@ -361,6 +376,8 @@ function cleanupPostDrop() {
     finalizingPreviousDrag = false;
     unlockOriginDzMinDimensions = undefined;
     isDraggedOutsideOfAnyDz = false;
+    dropFinalization = undefined;
+    dragWindow.removeEventListener("pagehide", handleDragWindowHidden);
     clearTimeoutIn(touchDragHoldTimer);
     touchDragHoldTimer = undefined;
     touchHoldElapsed = false;
@@ -402,12 +419,14 @@ export function dndzone(node, options) {
         dragWindow.addEventListener("touchmove", handleMouseMoveMaybeDragStart, {passive: false, capture: false});
         dragWindow.addEventListener("mouseup", handleFalseAlarm, {passive: false});
         dragWindow.addEventListener("touchend", handleFalseAlarm, {passive: false});
+        dragWindow.addEventListener("pagehide", cancelPendingDrag);
     }
     function removeMaybeListeners() {
         dragWindow.removeEventListener("mousemove", handleMouseMoveMaybeDragStart);
         dragWindow.removeEventListener("touchmove", handleMouseMoveMaybeDragStart);
         dragWindow.removeEventListener("mouseup", handleFalseAlarm);
         dragWindow.removeEventListener("touchend", handleFalseAlarm);
+        dragWindow.removeEventListener("pagehide", cancelPendingDrag);
         if (touchDragHoldTimer) {
             clearTimeoutIn(touchDragHoldTimer);
             touchDragHoldTimer = undefined;
@@ -583,6 +602,7 @@ export function dndzone(node, options) {
         dragWindow.addEventListener("touchmove", handleMouseMove, {passive: false, capture: false});
         dragWindow.addEventListener("mouseup", handleDrop, {passive: false});
         dragWindow.addEventListener("touchend", handleDrop, {passive: false});
+        dragWindow.addEventListener("pagehide", handleDragWindowHidden);
     }
 
     function configure({

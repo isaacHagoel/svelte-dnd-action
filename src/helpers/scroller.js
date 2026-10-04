@@ -1,4 +1,5 @@
 import {isPointInsideRect} from "./intersection";
+import {getWindowOf} from "./util";
 const SCROLL_ZONE_PX = 30;
 
 /**
@@ -16,7 +17,7 @@ export function makeScroller() {
         const {directionObj, stepPx} = scrollingInfo;
         if (directionObj) {
             containerEl.scrollBy(directionObj.x * stepPx, directionObj.y * stepPx);
-            window.requestAnimationFrame(() => scrollContainer(containerEl));
+            getWindowOf(containerEl).requestAnimationFrame(() => scrollContainer(containerEl));
         }
     }
     function calcScrollStepPx(distancePx) {
@@ -92,12 +93,12 @@ export function makeScroller() {
 function calcInnerDistancesBetweenPointAndSidesOfElement(point, el) {
     // Even if the scrolling element is small it acts as a scroller for the viewport
     const rect =
-        el === document.scrollingElement
+        el === el.ownerDocument.scrollingElement
             ? {
                   top: 0,
-                  bottom: window.innerHeight,
+                  bottom: getWindowOf(el).innerHeight,
                   left: 0,
-                  right: window.innerWidth
+                  right: getWindowOf(el).innerWidth
               }
             : el.getBoundingClientRect();
     if (!isPointInsideRect(point, rect)) {

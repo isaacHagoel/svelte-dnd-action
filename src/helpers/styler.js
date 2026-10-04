@@ -2,6 +2,7 @@ import {SHADOW_ELEMENT_ATTRIBUTE_NAME, DRAGGED_ELEMENT_ID} from "../constants";
 import {findCenter} from "./intersection";
 import {svelteNodeClone} from "./svelteNodeClone";
 import {getFeatureFlag, FEATURE_FLAG_NAMES} from "../featureFlags";
+import {getWindowOf} from "./util";
 
 const TRANSITION_DURATION_SECONDS = 0.2;
 
@@ -34,6 +35,7 @@ function ensureMorphSizeTransitions(draggedEl) {
  */
 export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     const rect = originalElement.getBoundingClientRect();
+    const win = getWindowOf(originalElement);
     const draggedEl = svelteNodeClone(originalElement);
     copyStylesFromTo(originalElement, draggedEl);
     draggedEl.id = DRAGGED_ELEMENT_ID;
@@ -46,7 +48,7 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
         const center = findCenter(rect);
         elTopPx -= center.y - positionCenterOnXY.y;
         elLeftPx -= center.x - positionCenterOnXY.x;
-        window.setTimeout(() => {
+        win.setTimeout(() => {
             draggedEl.style.top = `${elTopPx}px`;
             draggedEl.style.left = `${elLeftPx}px`;
         }, 0);
@@ -58,7 +60,7 @@ export function createDraggedElementFrom(originalElement, positionCenterOnXY) {
     draggedEl.style.width = `${rect.width}px`;
     draggedEl.style.transition = `${trs("top")}, ${trs("left")}, ${trs("background-color")}, ${trs("opacity")}, ${trs("color")} `;
     // this is a workaround for a strange browser bug that causes the right border to disappear when all the transitions are added at the same time
-    window.setTimeout(() => ensureMorphSizeTransitions(draggedEl), 0);
+    win.setTimeout(() => ensureMorphSizeTransitions(draggedEl), 0);
     draggedEl.style.zIndex = "9999";
     draggedEl.style.cursor = "grabbing";
 
@@ -85,7 +87,7 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
     copyStylesFromTo(copyFromEl, draggedEl);
     const newRect = copyFromEl.getBoundingClientRect();
     const draggedElRect = draggedEl.getBoundingClientRect();
-    const draggedElComputedStyle = window.getComputedStyle(draggedEl);
+    const draggedElComputedStyle = getWindowOf(draggedEl).getComputedStyle(draggedEl);
     const currentLeft = parseFloat(draggedElComputedStyle.left);
     const currentTop = parseFloat(draggedElComputedStyle.top);
     const widthChange = newRect.width - draggedElRect.width;
@@ -109,7 +111,7 @@ export function morphDraggedElementToBeLike(draggedEl, copyFromEl, currentMouseX
  * @param {HTMLElement} copyToEl
  */
 function copyStylesFromTo(copyFromEl, copyToEl) {
-    const computedStyle = window.getComputedStyle(copyFromEl);
+    const computedStyle = getWindowOf(copyFromEl).getComputedStyle(copyFromEl);
     Array.from(computedStyle)
         .filter(
             s =>
@@ -217,9 +219,10 @@ export function styleInactiveDropZones(dropZones, getStyles = () => {}, getClass
  */
 export function preventShrinking(el) {
     const originalMinHeight = el.style.minHeight;
-    el.style.minHeight = window.getComputedStyle(el).getPropertyValue("height");
+    const computedStyle = getWindowOf(el).getComputedStyle(el);
+    el.style.minHeight = computedStyle.getPropertyValue("height");
     const originalMinWidth = el.style.minWidth;
-    el.style.minWidth = window.getComputedStyle(el).getPropertyValue("width");
+    el.style.minWidth = computedStyle.getPropertyValue("width");
     return function undo() {
         el.style.minHeight = originalMinHeight;
         el.style.minWidth = originalMinWidth;

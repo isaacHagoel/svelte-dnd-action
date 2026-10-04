@@ -65,6 +65,25 @@ describe("intersection", () => {
             document.body.appendChild(el);
             expect(isElementOffDocument(el)).to.equal(true);
         });
+        it("measures an element against its own document, not the one that loaded the module", () => {
+            // The iframe's document is taller than the test page's.
+            const frame = document.createElement("iframe");
+            frame.style.height = "100px";
+            document.body.appendChild(frame);
+            frame.contentDocument.write("<!DOCTYPE html><body></body>");
+            frame.contentDocument.close();
+            const el = frame.contentDocument.createElement("div");
+            el.style.position = "absolute";
+            el.style.top = "3000px";
+            el.style.width = "50px";
+            el.style.height = "50px";
+            frame.contentDocument.body.appendChild(el);
+            try {
+                expect(isElementOffDocument(el)).to.equal(false);
+            } finally {
+                frame.remove();
+            }
+        });
         it("returns true when fully outside to the bottom", () => {
             const el = makeDiv(50, 50);
             el.style.position = "fixed";

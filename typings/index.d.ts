@@ -79,8 +79,10 @@ export interface DndZoneAttributes<T> {
 
 /**
  * Will make the screen reader alert the provided text to the user
+ * @param doc - the document to announce in, for a zone in another window such as an iframe or a popup.
+ * Defaults to the document that loaded the library.
  */
-export declare function alertToScreenReader(txt: string): void;
+export declare function alertToScreenReader(txt: string, doc?: Document): void;
 
 // Every message key receives the same core context - itemLabel, zoneLabel, position, count -
 // so a consumer can word any of them positionally. Only dragStarted carries an extra.

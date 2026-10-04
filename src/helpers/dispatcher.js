@@ -1,3 +1,6 @@
+import {getWindowOf} from "./util";
+// Events are created in the window of the element they are dispatched on, so a listener in that window sees an
+// instance of its own CustomEvent.
 // external events
 const FINALIZE_EVENT_NAME = "finalize";
 const CONSIDER_EVENT_NAME = "consider";
@@ -13,7 +16,7 @@ const CONSIDER_EVENT_NAME = "consider";
  */
 export function dispatchFinalizeEvent(el, items, info) {
     el.dispatchEvent(
-        new CustomEvent(FINALIZE_EVENT_NAME, {
+        new (getWindowOf(el).CustomEvent)(FINALIZE_EVENT_NAME, {
             detail: {items, info}
         })
     );
@@ -27,7 +30,7 @@ export function dispatchFinalizeEvent(el, items, info) {
  */
 export function dispatchConsiderEvent(el, items, info) {
     el.dispatchEvent(
-        new CustomEvent(CONSIDER_EVENT_NAME, {
+        new (getWindowOf(el).CustomEvent)(CONSIDER_EVENT_NAME, {
             detail: {items, info}
         })
     );
@@ -46,7 +49,7 @@ export const DRAGGED_LEFT_TYPES = {
 
 export function dispatchDraggedElementEnteredContainer(containerEl, indexObj, draggedEl) {
     containerEl.dispatchEvent(
-        new CustomEvent(DRAGGED_ENTERED_EVENT_NAME, {
+        new (getWindowOf(containerEl).CustomEvent)(DRAGGED_ENTERED_EVENT_NAME, {
             detail: {indexObj, draggedEl}
         })
     );
@@ -59,7 +62,7 @@ export function dispatchDraggedElementEnteredContainer(containerEl, indexObj, dr
  */
 export function dispatchDraggedElementLeftContainerForAnother(containerEl, draggedEl, theOtherDz) {
     containerEl.dispatchEvent(
-        new CustomEvent(DRAGGED_LEFT_EVENT_NAME, {
+        new (getWindowOf(containerEl).CustomEvent)(DRAGGED_LEFT_EVENT_NAME, {
             detail: {draggedEl, type: DRAGGED_LEFT_TYPES.LEFT_FOR_ANOTHER, theOtherDz}
         })
     );
@@ -67,21 +70,22 @@ export function dispatchDraggedElementLeftContainerForAnother(containerEl, dragg
 
 export function dispatchDraggedElementLeftContainerForNone(containerEl, draggedEl) {
     containerEl.dispatchEvent(
-        new CustomEvent(DRAGGED_LEFT_EVENT_NAME, {
+        new (getWindowOf(containerEl).CustomEvent)(DRAGGED_LEFT_EVENT_NAME, {
             detail: {draggedEl, type: DRAGGED_LEFT_TYPES.OUTSIDE_OF_ANY}
         })
     );
 }
 export function dispatchDraggedElementIsOverIndex(containerEl, indexObj, draggedEl) {
     containerEl.dispatchEvent(
-        new CustomEvent(DRAGGED_OVER_INDEX_EVENT_NAME, {
+        new (getWindowOf(containerEl).CustomEvent)(DRAGGED_OVER_INDEX_EVENT_NAME, {
             detail: {indexObj, draggedEl}
         })
     );
 }
 export function dispatchDraggedLeftDocument(draggedEl) {
-    window.dispatchEvent(
-        new CustomEvent(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, {
+    const win = getWindowOf(draggedEl);
+    win.dispatchEvent(
+        new win.CustomEvent(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, {
             detail: {draggedEl}
         })
     );

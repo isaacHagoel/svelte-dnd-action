@@ -116,7 +116,7 @@ An options-object with the following attributes:
 | `dropTargetStyle` | Object&lt;String&gt; | No | `{outline: 'rgba(255, 255, 102, 0.7) solid 2px'}` | An object of styles to apply to the dnd-zone when items can be dragged into it. Note: the styles override any inline styles applied to the dnd-zone. When the styles are removed, any original inline styles will be lost |
 | `dropTargetClasses`| Array&lt;String&gt; | No | `[]` | A list of classes to apply to the dnd-zone when items can be dragged into it. Note: make sure the classes you use are global. |
 | `transformDraggedElement` | Function | No | `() => {}` | A function that is invoked when the draggable element enters the dnd-zone or hover overs a new index in the current dnd-zone. <br />Signature:<br />function(element, data, index) {}<br />**element**: The dragged element. <br />**data**: The data of the item from the items array.<br />**index**: The index the dragged element will become in the new dnd-zone.<br /><br />This allows you to override properties on the dragged element, such as innerHTML to change how it displays. If what you are after is altering styles, do it to the children, not to the dragged element itself |
-| `autoAriaDisabled` | Boolean | No | `false` | Setting it to true will disable all the automatically added aria attributes and aria alerts (for example when the user starts/ stops dragging using the keyboard).<br /> **Use it only if you intend to implement your own custom instructions, roles and alerts.** In such a case, you might find the exported function `alertToScreenReader(string)` useful. <br />**If you only want to change the wording (ex: to translate it), use `setAriaStrings` instead and leave this off.** |
+| `autoAriaDisabled` | Boolean | No | `false` | Setting it to true will disable all the automatically added aria attributes and aria alerts (for example when the user starts/ stops dragging using the keyboard).<br /> **Use it only if you intend to implement your own custom instructions, roles and alerts.** In such a case, you might find the exported function `alertToScreenReader(string, document?)` useful (pass the zone's document when the zone is in another window, such as an iframe or a popup). <br />**If you only want to change the wording (ex: to translate it), use `setAriaStrings` instead and leave this off.** |
 | `centreDraggedOnCursor` | Boolean | No | `false` | Setting it to true will cause elements from this dnd-zone to position their center on the cursor on drag start, effectively turning the cursor to the focal point that triggers all the dnd events (ex: entering another zone). Useful for dnd-zones with large items that can be dragged over small items. |
 | `useCursorForDetection` | Boolean | No | `false` | Setting it to true will use the cursor position instead of the dragged element's center for drop zone detection. This improves accuracy when dragging large elements over small drop targets. Unlike `centreDraggedOnCursor`, this option does not reposition the dragged element. |
 | `dropAnimationDisabled` | Boolean | No | `false` | Setting it to true will disable the animation of the dropped element to its final place. |
@@ -331,6 +331,15 @@ Notes:
 
 -   [Fade in/out but without using Svelte transitions](https://svelte.dev/playground/3f1e68203ef140969a8240eba3475a8d?version=3)
 -   [Nested fade in/out without using Svelte transitions](https://svelte.dev/playground/49b09aedfe0543b4bc8f575c8dbf9a53?version=3)
+
+### Zones in iframes and other windows
+
+A dndzone can live in another window than the one that loaded the library: a same-origin iframe, a popup opened with `window.open`, or another Electron window. Each zone uses its own window's events, timers and document, so drags keep working while the loading window is hidden.
+
+-   A pointer drag stays in the window it started in. It moves items between the zones in that window, not into a zone in another window or iframe.
+-   A keyboard drag moves an item into any same-type zone that Tab can reach: the zones in the same browser tab, including same-origin iframes. Zones in a separate popup window are not destinations.
+-   Each document with zones gets its own screen-reader instructions and announcements. For a custom announcement about a zone in another document, pass that document: `alertToScreenReader(text, zone.ownerDocument)`.
+-   If a window closes, or an iframe is removed, during a drag, the drag ends and the zones get their usual `finalize` event (pointer) or `consider` event with the `dragStopped` trigger (keyboard).
 
 ### Rules/ assumptions to keep in mind
 

@@ -368,8 +368,7 @@ describe("a drag in another window that goes away", () => {
     });
 
     it("finalizes a pointer drag whose popup is closed", function () {
-        const popup = openPopup();
-        if (!popup) this.skip();
+        const popup = openPopup(this);
         const list = createList(popup.doc, {label: "Popup", names: ["f1", "f2"], dropAnimationDisabled: true});
         startDrag({list, win: popup.win});
         popup.win.close();

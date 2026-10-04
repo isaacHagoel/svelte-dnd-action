@@ -17,12 +17,16 @@ export function createFrame({parent = document, style = {}} = {}) {
 }
 
 /**
- * Electron, the default Cypress browser, blocks window.open, so this returns null there. Run the
- * popup tests with a Chromium browser, e.g. `yarn test --browser chrome`.
+ * Electron, the default Cypress browser, blocks window.open, so this skips the test there. Run the
+ * popup tests with a Chromium browser, e.g. `yarn test --browser chrome`, where a blocked popup fails.
+ * @param {Mocha.Context} test - the test's `this`
  */
-export function openPopup() {
+export function openPopup(test) {
     const win = window.open("", "", "width=400,height=300");
-    if (!win) return null;
+    if (!win) {
+        if (Cypress.browser.name === "electron") test.skip();
+        throw new Error("window.open did not open a popup");
+    }
     win.document.write("<!DOCTYPE html><body style='margin:0'></body>");
     win.document.close();
     return {win, doc: win.document};

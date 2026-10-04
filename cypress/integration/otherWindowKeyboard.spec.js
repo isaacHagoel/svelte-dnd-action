@@ -29,9 +29,9 @@ describe("keyboard drags across the documents of one tab", () => {
         cleanups.push(() => created.frame.remove());
         return created;
     }
-    function popup() {
-        const created = openPopup();
-        if (created) cleanups.push(() => created.win.close());
+    function popup(test) {
+        const created = openPopup(test);
+        cleanups.push(() => created.win.close());
         return created;
     }
     function grab(created, name) {
@@ -135,8 +135,7 @@ describe("keyboard drags across the documents of one tab", () => {
     });
 
     it("moves an item between two lists inside a popup", function () {
-        const created = popup();
-        if (!created) this.skip();
+        const created = popup(this);
         const first = list(created.doc, {label: "First", names: ["a1", "a2"]});
         const second = list(created.doc, {label: "Second", names: ["b1"]});
         grab(first, "a1");
@@ -150,8 +149,7 @@ describe("keyboard drags across the documents of one tab", () => {
     });
 
     it("does not offer a popup list as a destination for a drag in the parent, or the other way round", function () {
-        const created = popup();
-        if (!created) this.skip();
+        const created = popup(this);
         const parentList = list(document, {label: "Parent", names: ["p1", "p2"]});
         const popupList = list(created.doc, {label: "Popup", names: ["q1"]});
 

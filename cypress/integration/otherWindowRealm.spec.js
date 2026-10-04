@@ -116,6 +116,44 @@ describe("a drag in another window uses that window's timers and styles", () => 
         cy.then(() => expect(triggers).to.include(TRIGGERS.DRAGGED_OVER_INDEX));
     });
 
+    it("auto-scrolls a list near its edge while the loading window's animation frames never fire", () => {
+        let observed;
+        cy.then({timeout: 10000}, () => {
+            const {win, list} = createListInFrame({
+                names: ["a", "b", "c", "d", "e"],
+                style: {overflow: "auto", height: "90px"},
+                dropAnimationDisabled: true
+            });
+            return withLoadingWindowGlobals(pausedTimers, async () => {
+                list.element("a").dispatchEvent(mouse(win, "mousedown", 50, 15));
+                win.dispatchEvent(mouse(win, "mousemove", 50, 80));
+                await sleepIn(win, 300);
+                const scrolledWhileHeld = list.zone.scrollTop;
+                win.dispatchEvent(mouse(win, "mouseup", 50, 80));
+                await sleepIn(win, 100);
+                const scrolledAtDrop = list.zone.scrollTop;
+                await sleepIn(win, 200);
+                observed = {scrolled: scrolledWhileHeld > 0, stoppedAfterDrop: list.zone.scrollTop === scrolledAtDrop};
+            });
+        });
+        cy.then(() => expect(observed).to.deep.equal({scrolled: true, stoppedAfterDrop: true}));
+    });
+
+    it("auto-scrolls the iframe's document near the edge of the iframe's viewport", () => {
+        let scrollTop;
+        cy.then({timeout: 10000}, () => {
+            const {win, doc, list} = createListInFrame({dropAnimationDisabled: true});
+            doc.body.style.height = "1000px";
+            return withLoadingWindowGlobals(pausedTimers, async () => {
+                list.element("a").dispatchEvent(mouse(win, "mousedown", 50, 15));
+                win.dispatchEvent(mouse(win, "mousemove", 50, 190));
+                await sleepIn(win, 300);
+                scrollTop = doc.scrollingElement.scrollTop;
+            }).finally(() => win.dispatchEvent(mouse(win, "mouseup", 50, 190)));
+        });
+        cy.then(() => expect(scrollTop).to.be.greaterThan(0));
+    });
+
     it("finalizes the drop animation while the loading window's timers never fire", () => {
         let observed;
         cy.then({timeout: 10000}, () => {

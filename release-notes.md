@@ -1,5 +1,14 @@
 ## Svelte Dnd Action - Release Notes
 
+### [Unreleased](https://github.com/isaacHagoel/svelte-dnd-action/pull/708)
+
+Feature: support dnd zones in another window than the one that loaded the library, such as same-origin iframes, popups opened with `window.open` and Electron windows.
+
+-   Run pointer drags on the zone's own window, so they start, reorder and finish there, also while the loading window is hidden. A pointer drag stays within its window.
+-   Keep screen-reader instructions, announcements and keyboard handling in each zone's own document. Keyboard drags can move items into same-type zones that Tab can reach, including same-origin iframes, but not into a separate popup window.
+-   End a drag cleanly when its window closes or its iframe is removed.
+-   Add an optional document argument to `alertToScreenReader`.
+
 ### [0.9.79](https://github.com/isaacHagoel/svelte-dnd-action/pull/707)
 
 Bugfix: keep drop-position detection accurate while list items are moving with Svelte's `animate:flip`, preventing the shadow element from becoming stuck at a previously visited position. Fixes [#706](https://github.com/isaacHagoel/svelte-dnd-action/issues/706).

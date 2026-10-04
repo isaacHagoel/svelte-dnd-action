@@ -332,6 +332,15 @@ Notes:
 -   [Fade in/out but without using Svelte transitions](https://svelte.dev/playground/3f1e68203ef140969a8240eba3475a8d?version=3)
 -   [Nested fade in/out without using Svelte transitions](https://svelte.dev/playground/49b09aedfe0543b4bc8f575c8dbf9a53?version=3)
 
+### Zones in iframes and other windows
+
+A dndzone can live in another window than the one that loaded the library: a same-origin iframe, a popup opened with `window.open`, or another Electron window. Each zone uses its own window's events, timers and document, so drags keep working while the loading window is hidden.
+
+-   A pointer drag stays in the window it started in. It moves items between the zones in that window, not into a zone in another window or iframe.
+-   A keyboard drag moves an item into any same-type zone that Tab can reach: the zones in the same browser tab, including same-origin iframes. Zones in a separate popup window are not destinations.
+-   Each document with zones gets its own screen-reader instructions and announcements. For a custom announcement about a zone in another document, pass that document: `alertToScreenReader(text, zone.ownerDocument)`.
+-   If a window closes, or an iframe is removed, during a drag, the drag ends and the zones get their usual `finalize` event (pointer) or `consider` event with the `dragStopped` trigger (keyboard).
+
 ### Rules/ assumptions to keep in mind
 
 -   Only one element can be dragged in any given time

@@ -24,7 +24,7 @@ Open the generated URL in Svelte Playground and save it under the maintainer's a
 
 ## At release
 
-After the feature is published, generate with `--published` and update/save the official playground. This removes the embedded build and imports `svelte-dnd-action` from npm without a version pin, so the example uses the latest release. Do not switch the official REPL until that release includes this feature.
+Generate with `--published` and update/save the official playground. This removes the embedded build and imports `svelte-dnd-action` from npm without a version pin, so the example uses the latest release. The official REPL can be prepared before publication, but other-document support will only work once npm includes this feature. After publication, reload and retest the REPL to verify that Playground resolves the new release.
 
 ## Manual checks
 

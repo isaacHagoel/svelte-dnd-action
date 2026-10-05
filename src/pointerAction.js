@@ -711,11 +711,9 @@ export function dndzone(node, options) {
             }
             // updating the idx
             elToIdx.set(draggableEl, idx);
-
-            if (!initialized) {
-                initialized = true;
-            }
         }
+        // Empty zones are initialized too: they can receive active-target styling before they have any children.
+        initialized = true;
     }
     configure(options);
 

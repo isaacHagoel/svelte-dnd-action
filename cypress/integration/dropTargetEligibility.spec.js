@@ -118,41 +118,70 @@ describe("drop-target eligibility", () => {
         });
     });
 
-    it("replaces old target styles and classes and clears the replacements on drop", () => {
-        const source = list(document, {label: "Source", names: ["a"], dropAnimationDisabled: true});
-        const target = list(document, {label: "Target", names: ["b"], dropTargetStyle: {outline: "solid 2px blue"}, dropTargetClasses: ["old"]});
+    [false, true].forEach(empty => {
+        const targetNames = empty ? [] : ["b"];
+        const description = empty ? "empty" : "populated";
+        it(`replaces old ${description} target styles and classes and clears the replacements on drop`, () => {
+            const source = list(document, {label: "Source", names: ["a"], dropAnimationDisabled: true});
+            const target = list(document, {
+                label: "Target",
+                names: targetNames,
+                dropTargetStyle: {outline: "solid 2px blue"},
+                dropTargetClasses: ["old"]
+            });
+            startPointer(source);
+            expect(target.zone.classList.contains("old")).to.equal(true);
+            update(target, {dropTargetStyle: {border: "solid 3px red"}, dropTargetClasses: ["new"]});
+            expect(target.zone.style.outline).to.equal("");
+            expect(target.zone.style.border).not.to.equal("");
+            expect(target.zone.classList.contains("old")).to.equal(false);
+            expect(target.zone.classList.contains("new")).to.equal(true);
+            source.win.dispatchEvent(mouse(source.win, "mouseup", 50, 20));
+            expect(target.zone.style.border).to.equal("");
+            expect(target.zone.classList.contains("new")).to.equal(false);
+            expect(target.zone.classList.contains("old")).to.equal(false);
+        });
+
+        it(`removes old ${description} target styling when disabling incoming drops and changing styles together`, () => {
+            const source = list(document, {label: "Source", names: ["a"], dropAnimationDisabled: true});
+            const target = list(document, {label: "Target", names: targetNames, dropTargetClasses: ["old"]});
+            startPointer(source);
+            update(target, {dropFromOthersDisabled: true, dropTargetStyle: {border: "solid 3px red"}, dropTargetClasses: ["new"]});
+            expect(target.zone.style.outline).to.equal("");
+            expect(target.zone.style.border).to.equal("");
+            expect(target.zone.classList.contains("old")).to.equal(false);
+            expect(target.zone.classList.contains("new")).to.equal(false);
+            source.win.dispatchEvent(mouse(source.win, "mouseup", 50, 20));
+            expect(target.zone.classList.contains("old")).to.equal(false);
+            expect(target.zone.classList.contains("new")).to.equal(false);
+            expect(target.zone.style.outline).to.equal("");
+            expect(target.zone.style.border).to.equal("");
+        });
+
+        it(`styles an enabled same-type ${description} destination but not a disabled one`, () => {
+            const source = list(document, {label: "Source", names: ["a"], dropAnimationDisabled: true});
+            const target = list(document, {label: "Target", names: targetNames, dropFromOthersDisabled: true});
+            startPointer(source);
+            update(target, {dropFromOthersDisabled: true, dropTargetStyle: {border: "solid 3px red"}});
+            expect(target.zone.style.border).to.equal("");
+            update(target, {dropFromOthersDisabled: false, dropTargetStyle: {border: "solid 3px red"}});
+            expect(target.zone.style.border).not.to.equal("");
+            update(target, {dropFromOthersDisabled: true, dropTargetStyle: {border: "solid 3px red"}});
+            expect(target.zone.style.border).to.equal("");
+        });
+    });
+
+    it("reconciles an empty target in the drag's own iframe", () => {
+        const {doc} = frame();
+        const source = list(doc, {label: "Source", names: ["a"], dropAnimationDisabled: true});
+        const target = list(doc, {label: "Target", names: [], dropTargetClasses: ["old"]});
         startPointer(source);
         expect(target.zone.classList.contains("old")).to.equal(true);
         update(target, {dropTargetStyle: {border: "solid 3px red"}, dropTargetClasses: ["new"]});
-        expect(target.zone.style.outline).to.equal("");
-        expect(target.zone.style.border).not.to.equal("");
         expect(target.zone.classList.contains("old")).to.equal(false);
         expect(target.zone.classList.contains("new")).to.equal(true);
         source.win.dispatchEvent(mouse(source.win, "mouseup", 50, 20));
-        expect(target.zone.style.border).to.equal("");
         expect(target.zone.classList.contains("new")).to.equal(false);
-    });
-
-    it("removes old target styling when disabling incoming drops and changing styles together", () => {
-        const source = list(document, {label: "Source", names: ["a"], dropAnimationDisabled: true});
-        const target = list(document, {label: "Target", names: ["b"], dropTargetClasses: ["old"]});
-        startPointer(source);
-        update(target, {dropFromOthersDisabled: true, dropTargetStyle: {border: "solid 3px red"}, dropTargetClasses: ["new"]});
-        expect(target.zone.style.outline).to.equal("");
-        expect(target.zone.style.border).to.equal("");
-        expect(target.zone.classList.contains("old")).to.equal(false);
-        expect(target.zone.classList.contains("new")).to.equal(false);
-    });
-
-    it("styles an enabled same-type destination but not a disabled one", () => {
-        const source = list(document, {label: "Source", names: ["a"], dropAnimationDisabled: true});
-        const target = list(document, {label: "Target", names: ["b"], dropFromOthersDisabled: true});
-        startPointer(source);
-        update(target, {dropFromOthersDisabled: true, dropTargetStyle: {border: "solid 3px red"}});
-        expect(target.zone.style.border).to.equal("");
-        update(target, {dropFromOthersDisabled: false, dropTargetStyle: {border: "solid 3px red"}});
-        expect(target.zone.style.border).not.to.equal("");
-        update(target, {dropFromOthersDisabled: true, dropTargetStyle: {border: "solid 3px red"}});
         expect(target.zone.style.border).to.equal("");
     });
 

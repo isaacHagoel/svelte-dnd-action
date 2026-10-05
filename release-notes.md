@@ -10,7 +10,7 @@ Feature: support dndzones in same-origin iframes and other windows, including po
 -   Enforce keyboard drop restrictions even when a disabled or other-type destination is focused by a click or application code.
 -   Restrict keyboard reordering to the grabbed item, leaving arrow keys in nested controls and unrelated items untouched.
 -   Exclude lists nested inside the grabbed item from destination styling and move-between-lists announcements.
--   Keep mid-pointer-drag styles and classes limited to eligible destinations, removing the previously applied styling when options change.
+-   Keep mid-pointer-drag styles and classes limited to eligible destinations, including empty lists, removing the previously applied styling when options change.
 
 ### [0.9.79](https://github.com/isaacHagoel/svelte-dnd-action/pull/707)
 

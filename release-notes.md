@@ -1,6 +1,6 @@
 ## Svelte Dnd Action - Release Notes
 
-### [0.9.80](https://github.com/isaacHagoel/svelte-dnd-action/pull/709) (unreleased)
+### [0.9.80](https://github.com/isaacHagoel/svelte-dnd-action/pull/709)
 
 Feature: support dndzones in same-origin iframes and other windows, including pointer and keyboard interaction, document-local screen-reader instructions and announcements, scrolling, and cleanup when the window closes. Thanks to [@chhoumann](https://github.com/chhoumann) for [#708](https://github.com/isaacHagoel/svelte-dnd-action/pull/708).
 

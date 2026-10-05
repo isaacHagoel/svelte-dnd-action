@@ -1,4 +1,35 @@
 /**
+ * The window an element lives in. A drop zone can live in another window than the one that
+ * loaded this module, for example a same-origin iframe or a popup opened with window.open.
+ * @param {Node} el
+ * @return {Window}
+ */
+export function getWindowOf(el) {
+    // eslint-disable-next-line no-restricted-globals -- for a document without a window, e.g. after its window closed
+    return el.ownerDocument.defaultView || window;
+}
+
+/**
+ * Schedules a timeout on the given window. Work for a zone runs on the zone's window: the browser throttles
+ * or stops the timers of a hidden window, and the loading window can be hidden while the zone's is not.
+ * @param {Window} win
+ * @param {function} callback
+ * @param {number} ms
+ * @return {{win: Window, id: number}} - pass it to clearTimeoutIn
+ */
+export function setTimeoutIn(win, callback, ms) {
+    return {win, id: win.setTimeout(callback, ms)};
+}
+
+/**
+ * Cancels a timeout through the window that scheduled it
+ * @param {{win: Window, id: number}} [timeout] - from setTimeoutIn
+ */
+export function clearTimeoutIn(timeout) {
+    if (timeout) timeout.win.clearTimeout(timeout.id);
+}
+
+/**
  * @param {Object} object
  * @return {string}
  */

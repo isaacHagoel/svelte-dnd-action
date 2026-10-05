@@ -7,12 +7,15 @@ import {
     dispatchDraggedLeftDocument,
     dispatchDraggedElementIsOverIndex
 } from "./dispatcher";
-import {getDepth} from "./util";
+import {clearTimeoutIn, getDepth, getWindowOf, setTimeoutIn} from "./util";
 import {printDebug} from "../constants";
 
 const INTERVAL_MS = 200;
 const TOLERANCE_PX = 10;
 let next;
+// The observation in progress. A consider handler can end the drag in the middle of an observation tick, for example by
+// removing the drag's window, and the tick must not carry on with a drag that has ended.
+let currentObservation;
 
 /**
  * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
@@ -28,6 +31,9 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
     let lastIndexFound;
     let lastIsDraggedInADropZone = false;
     let lastCentrePositionOfDragged;
+    const win = getWindowOf(draggedEl);
+    const observation = {};
+    currentObservation = observation;
     // We are sorting to make sure that in case of nested zones of the same type the one "on top" is considered first
     const dropZonesFromDeepToShallow = Array.from(dropZones).sort((dz1, dz2) => getDepth(dz2) - getDepth(dz1));
 
@@ -44,7 +50,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
             Math.abs(lastCentrePositionOfDragged.x - referencePoint.x) < TOLERANCE_PX &&
             Math.abs(lastCentrePositionOfDragged.y - referencePoint.y) < TOLERANCE_PX
         ) {
-            next = window.setTimeout(andNow, intervalMs);
+            next = setTimeoutIn(win, andNow, intervalMs);
             return;
         }
         if (isElementOffDocument(draggedEl)) {
@@ -68,6 +74,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
             // the element is over a container
             if (dz !== lastDropZoneFound) {
                 lastDropZoneFound && dispatchDraggedElementLeftContainerForAnother(lastDropZoneFound, draggedEl, dz);
+                if (currentObservation !== observation) return;
                 dispatchDraggedElementEnteredContainer(dz, indexObj, draggedEl);
                 lastDropZoneFound = dz;
             } else if (index !== lastIndexFound) {
@@ -86,7 +93,8 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
         } else {
             lastIsDraggedInADropZone = true;
         }
-        next = window.setTimeout(andNow, intervalMs);
+        if (currentObservation !== observation) return;
+        next = setTimeoutIn(win, andNow, intervalMs);
     }
     andNow();
 }
@@ -94,6 +102,8 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, multiScr
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
 export function unobserve() {
     printDebug(() => "unobserving");
-    clearTimeout(next);
+    currentObservation = undefined;
+    clearTimeoutIn(next);
+    next = undefined;
     resetIndexesCache();
 }

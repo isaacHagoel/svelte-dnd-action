@@ -1,5 +1,17 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.80](https://github.com/isaacHagoel/svelte-dnd-action/pull/709)
+
+Feature: support dndzones in same-origin iframes and other windows, including pointer and keyboard interaction, document-local screen-reader instructions and announcements, scrolling, and cleanup when the window closes. Thanks to [@chhoumann](https://github.com/chhoumann) for [#708](https://github.com/isaacHagoel/svelte-dnd-action/pull/708).
+
+-   Use the zone's own window for events, timers, animation frames and computed styles, so drags continue when the loading window is hidden.
+-   Both pointer and keyboard transfers stay within the document they started in. Lists inside an iframe or popup work normally, but neither input transfers items between documents.
+-   Custom screen-reader announcements accept an optional document: `alertToScreenReader(text, zone.ownerDocument)`.
+-   Enforce keyboard drop restrictions even when a disabled or other-type destination is focused by a click or application code.
+-   Restrict keyboard reordering to the grabbed item, leaving arrow keys in nested controls and unrelated items untouched.
+-   Exclude lists nested inside the grabbed item from destination styling and move-between-lists announcements.
+-   Keep mid-pointer-drag styles and classes limited to eligible destinations, including empty lists, removing the previously applied styling when options change.
+
 ### [0.9.79](https://github.com/isaacHagoel/svelte-dnd-action/pull/707)
 
 Bugfix: keep drop-position detection accurate while list items are moving with Svelte's `animate:flip`, preventing the shadow element from becoming stuck at a previously visited position. Fixes [#706](https://github.com/isaacHagoel/svelte-dnd-action/issues/706).

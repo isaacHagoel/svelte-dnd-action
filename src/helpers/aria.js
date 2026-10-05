@@ -33,15 +33,18 @@ let ariaStrings = {...DEFAULT_ARIA_STRINGS};
 let instructionCtx = {keyboardDragTrigger: DEFAULT_KEYBOARD_DRAG_TRIGGER};
 
 const ALERT_DIV_ID = "dnd-action-aria-alert";
-let alertsDiv;
+// A map from a document to its alerts div. A zone can live in another window than the one that loaded this module, so each
+// document with zones gets its own alerts and instructions. It is a Map rather than a WeakMap so the instructions in every
+// document can be re-rendered; destroyAria removes the entry.
+const docToAlertsDiv = new Map();
 
-function initAriaOnBrowser() {
-    if (alertsDiv) {
+function initAriaOnBrowser(doc) {
+    if (docToAlertsDiv.has(doc)) {
         // it is already initialized
         return;
     }
     // setting the dynamic alerts
-    alertsDiv = document.createElement("div");
+    const alertsDiv = doc.createElement("div");
     (function initAlertsDiv() {
         alertsDiv.id = ALERT_DIV_ID;
         // tab index -1 makes the alert be read twice on chrome for some reason
@@ -55,40 +58,51 @@ function initAriaOnBrowser() {
         alertsDiv.style.width = "0";
         alertsDiv.setAttribute("role", "alert");
     })();
-    document.body.prepend(alertsDiv);
+    doc.body.prepend(alertsDiv);
+    // forget the documents whose window is gone
+    docToAlertsDiv.forEach((_, knownDoc) => !knownDoc.defaultView && docToAlertsDiv.delete(knownDoc));
+    docToAlertsDiv.set(doc, alertsDiv);
 
     // setting the instructions
     Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) =>
-        document.body.prepend(instructionToHiddenDiv(id, formatWithFallback(key, instructionCtx)))
+        doc.body.prepend(instructionToHiddenDiv(doc, id, formatWithFallback(key, instructionCtx)))
     );
 }
 
 /**
  * Initializes the static aria instructions so they can be attached to zones
+ * @param {Document} [doc] - the document of the zones, defaults to the one that loaded this module
  * @return {{DND_ZONE_ACTIVE: string, DND_ZONE_DRAG_DISABLED: string} | null} - the IDs for static aria instruction (to be used via aria-describedby) or null on the server
  */
-export function initAria() {
+export function initAria(doc) {
     if (isOnServer) return null;
-    if (document.readyState === "complete") {
-        initAriaOnBrowser();
+    // eslint-disable-next-line no-restricted-globals -- the documented default
+    doc = doc || document;
+    if (doc.readyState === "complete") {
+        initAriaOnBrowser(doc);
     } else {
-        window.addEventListener("DOMContentLoaded", initAriaOnBrowser);
+        doc.addEventListener("DOMContentLoaded", () => initAriaOnBrowser(doc));
     }
     return {...INSTRUCTION_IDs};
 }
 
 /**
- * Removes all the artifacts (dom elements) added by this module
+ * Removes all the artifacts (dom elements) added by this module to the given document
+ * @param {Document} [doc] - defaults to the document that loaded this module
  */
-export function destroyAria() {
-    if (isOnServer || !alertsDiv) return;
-    Object.keys(INSTRUCTION_ID_TO_STRING_KEY).forEach(id => document.getElementById(id)?.remove());
+export function destroyAria(doc) {
+    if (isOnServer) return;
+    // eslint-disable-next-line no-restricted-globals -- the documented default
+    doc = doc || document;
+    const alertsDiv = docToAlertsDiv.get(doc);
+    if (!alertsDiv) return;
+    Object.keys(INSTRUCTION_ID_TO_STRING_KEY).forEach(id => doc.getElementById(id)?.remove());
     alertsDiv.remove();
-    alertsDiv = undefined;
+    docToAlertsDiv.delete(doc);
 }
 
-function instructionToHiddenDiv(id, txt) {
-    const div = document.createElement("div");
+function instructionToHiddenDiv(doc, id, txt) {
+    const div = doc.createElement("div");
     div.id = id;
     renderInstruction(div, txt);
     div.style.display = "none";
@@ -99,7 +113,7 @@ function instructionToHiddenDiv(id, txt) {
 
 function renderInstruction(div, txt) {
     div.replaceChildren();
-    const paragraph = document.createElement("p");
+    const paragraph = div.ownerDocument.createElement("p");
     paragraph.textContent = txt;
     div.appendChild(paragraph);
 }
@@ -107,14 +121,19 @@ function renderInstruction(div, txt) {
 /**
  * Will make the screen reader alert the provided text to the user
  * @param {string} txt
+ * @param {Document} [doc] - the document to announce in, for a zone in another window such as an iframe or a popup.
+ * Defaults to the document that loaded this module.
  */
-export function alertToScreenReader(txt) {
+export function alertToScreenReader(txt, doc) {
     if (isOnServer) return;
-    if (!alertsDiv) {
-        initAriaOnBrowser();
+    // eslint-disable-next-line no-restricted-globals -- the documented default
+    doc = doc || document;
+    if (!docToAlertsDiv.has(doc)) {
+        initAriaOnBrowser(doc);
     }
+    const alertsDiv = docToAlertsDiv.get(doc);
     alertsDiv.innerHTML = "";
-    const alertText = document.createTextNode(txt);
+    const alertText = doc.createTextNode(txt);
     alertsDiv.appendChild(alertText);
     // this is needed for Safari
     alertsDiv.style.display = "none";
@@ -183,10 +202,12 @@ function formatWithFallback(key, ctx) {
 
 function refreshInstructions() {
     if (isOnServer) return;
-    Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) => {
-        const div = document.getElementById(id);
-        if (div) renderInstruction(div, formatWithFallback(key, instructionCtx));
-    });
+    docToAlertsDiv.forEach((alertsDiv, doc) =>
+        Object.entries(INSTRUCTION_ID_TO_STRING_KEY).forEach(([id, key]) => {
+            const div = doc.getElementById(id);
+            if (div) renderInstruction(div, formatWithFallback(key, instructionCtx));
+        })
+    );
 }
 
 /**
@@ -205,7 +226,8 @@ export function setInstructionContext(ctx) {
  * escape because this function runs during the drag lifecycle.
  * @param {string} key - one of the keys accepted by setAriaStrings
  * @param {Object} [ctx] - the interpolation context for that key
+ * @param {Document} [doc] - the document of the zone the message is about, defaults to the one that loaded this module
  */
-export function announceToScreenReader(key, ctx) {
-    alertToScreenReader(formatWithFallback(key, ctx));
+export function announceToScreenReader(key, ctx, doc) {
+    alertToScreenReader(formatWithFallback(key, ctx), doc);
 }

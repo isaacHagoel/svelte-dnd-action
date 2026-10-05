@@ -71,6 +71,7 @@ export function overrideItemIdKeyNameBeforeInitialisingDndZones(newKeyName) {
     ITEM_ID_KEY = newKeyName;
 }
 
+// eslint-disable-next-line no-restricted-globals -- detects server-side rendering
 export const isOnServer = typeof window === "undefined";
 
 export let printDebug = () => {};

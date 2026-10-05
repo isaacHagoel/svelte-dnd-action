@@ -1,5 +1,5 @@
 // Build a Svelte Playground URL without publishing a package or depending on its private save API.
-// Before release the example embeds the exact local build. After release, --published uses npm 0.9.80.
+// Before release the example embeds the exact local build. After release, --published uses the latest npm version.
 const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
@@ -11,7 +11,7 @@ const files = ["App", "Lists"].map(name => ({
     type: "svelte",
     source: fs.readFileSync(path.join(__dirname, `${name}.svelte`), "utf8")
 }));
-files[1].source = files[1].source.replace('from "svelte-dnd-action"', published ? 'from "svelte-dnd-action@0.9.80"' : 'from "./dnd.js"');
+if (!published) files[1].source = files[1].source.replace('from "svelte-dnd-action"', 'from "./dnd.js"');
 if (!published) {
     files.push({name: "dnd", type: "js", source: fs.readFileSync(path.join(__dirname, "../../dist/index.mjs"), "utf8")});
 }

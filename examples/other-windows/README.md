@@ -1,6 +1,6 @@
 # Zones in other windows
 
-[Open the official release-preview REPL](https://svelte.dev/playground/be37a2f642a14a21ae8c5c11bf0a8055?version=4.2.20).
+[Open the official example REPL](https://svelte.dev/playground/be37a2f642a14a21ae8c5c11bf0a8055?version=4.2.20).
 
 An example for Svelte 3/4's component API (the saved playground uses Svelte 4.2.20). It mounts the same `Lists` component and the same library instance into a page, a same-origin iframe and an optional popup. The component's styles are copied into each target document as well.
 
@@ -24,7 +24,7 @@ Open the generated URL in Svelte Playground and save it under the maintainer's a
 
 ## At release
 
-After `0.9.80` is published, generate with `--published` and update/save the official playground. This removes the embedded build and imports `svelte-dnd-action@0.9.80` from npm. Do not use that variant before the package exists.
+After the feature is published, generate with `--published` and update/save the official playground. This removes the embedded build and imports `svelte-dnd-action` from npm without a version pin, so the example uses the latest release. Do not switch the official REPL until that release includes this feature.
 
 ## Manual checks
 

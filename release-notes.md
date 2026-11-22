@@ -2,7 +2,7 @@
 
 ### [0.9.81](https://github.com/isaacHagoel/svelte-dnd-action/pull/711)
 
-Bugfix: create the screen-reader instructions for keyboard dragging when a dndzone is first mounted while its document is in the `interactive` state (for example while images are still loading, or in Firefox after `document.write()` + `close()` in an iframe or popup). Previously `aria-describedby` could point at instructions that did not exist. Fixes [#710](https://github.com/isaacHagoel/svelte-dnd-action/issues/710). Thanks to [@The-LukeZ](https://github.com/The-LukeZ) for the report and fix.
+Bugfix: create the screen-reader instructions for keyboard dragging when a dndzone is first mounted while its document is in the `interactive` state (for example while images are still loading, or in Firefox after `document.write()` + `close()` in an iframe or popup). Previously `aria-describedby` could point at instructions that did not exist.
 
 ### [0.9.80](https://github.com/isaacHagoel/svelte-dnd-action/pull/709)
 

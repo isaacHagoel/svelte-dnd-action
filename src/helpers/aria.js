@@ -78,10 +78,12 @@ export function initAria(doc) {
     if (isOnServer) return null;
     // eslint-disable-next-line no-restricted-globals -- the documented default
     doc = doc || document;
-    if (doc.readyState === "complete") {
+    // "interactive" can come after DOMContentLoaded (e.g. while images load, or in Firefox after document.write() + close()),
+    // so only wait for that event while the document is still loading; the body exists in every other state.
+    if (doc.readyState !== "loading") {
         initAriaOnBrowser(doc);
     } else {
-        doc.addEventListener("DOMContentLoaded", () => initAriaOnBrowser(doc));
+        doc.addEventListener("DOMContentLoaded", () => initAriaOnBrowser(doc), {once: true});
     }
     return {...INSTRUCTION_IDs};
 }

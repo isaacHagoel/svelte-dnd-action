@@ -177,9 +177,7 @@ describe("aria strings", () => {
         expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal("appuyez sur space_or_enter");
 
         setKeyboardDragTrigger("space");
-        expect(document.getElementById(ZONE_ACTIVE_ID).textContent, "a formatter should re-render on a trigger change").to.equal(
-            "appuyez sur space"
-        );
+        expect(document.getElementById(ZONE_ACTIVE_ID).textContent, "a formatter should re-render on a trigger change").to.equal("appuyez sur space");
         expect(seen, "the context should carry the configured mode, never a pressed key").to.deep.equal(["space_or_enter", "space"]);
     });
 
@@ -206,5 +204,39 @@ describe("aria strings", () => {
         expect(document.getElementById(ZONE_ACTIVE_ID).textContent).to.equal(
             "Tab to one the items and press space-bar or enter to start dragging it"
         );
+    });
+});
+
+describe("aria init timing", () => {
+    const ZONE_ACTIVE_ID = "dnd-zone-active";
+
+    // readyState is an accessor on Document.prototype, so an own property can stand in for a given loading phase
+    function docInState(readyState) {
+        const doc = document.implementation.createHTMLDocument("");
+        Object.defineProperty(doc, "readyState", {configurable: true, get: () => readyState});
+        return doc;
+    }
+
+    it("initializes right away when the document is interactive", () => {
+        // DOMContentLoaded may already have fired in this state, so waiting for it could leave the instructions missing
+        const doc = docInState("interactive");
+        initAria(doc);
+        try {
+            expect(doc.getElementById(ZONE_ACTIVE_ID)).to.not.equal(null);
+        } finally {
+            destroyAria(doc);
+        }
+    });
+
+    it("waits for DOMContentLoaded while the document is loading", () => {
+        const doc = docInState("loading");
+        initAria(doc);
+        try {
+            expect(doc.getElementById(ZONE_ACTIVE_ID)).to.equal(null);
+            doc.dispatchEvent(new Event("DOMContentLoaded"));
+            expect(doc.getElementById(ZONE_ACTIVE_ID)).to.not.equal(null);
+        } finally {
+            destroyAria(doc);
+        }
     });
 });

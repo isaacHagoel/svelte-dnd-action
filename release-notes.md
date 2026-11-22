@@ -1,5 +1,9 @@
 ## Svelte Dnd Action - Release Notes
 
+### [0.9.81](https://github.com/isaacHagoel/svelte-dnd-action/pull/711)
+
+Bugfix: create the screen-reader instructions for keyboard dragging when a dndzone is first mounted while its document is in the `interactive` state (for example while images are still loading, or in Firefox after `document.write()` + `close()` in an iframe or popup). Previously `aria-describedby` could point at instructions that did not exist.
+
 ### [0.9.80](https://github.com/isaacHagoel/svelte-dnd-action/pull/709)
 
 Feature: support dndzones in same-origin iframes and other windows, including pointer and keyboard interaction, document-local screen-reader instructions and announcements, scrolling, and cleanup when the window closes. Thanks to [@chhoumann](https://github.com/chhoumann) for [#708](https://github.com/isaacHagoel/svelte-dnd-action/pull/708).
